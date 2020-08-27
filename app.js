@@ -12,3 +12,5 @@ app.get('/',(req , res , next) =>{  // path /
     })
 
 })
+
+module.exports = app ;
