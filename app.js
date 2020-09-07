@@ -35,11 +35,13 @@ app.use((req, res, next) => {
 
 
 //set Router
-const testRouter = require('./routes/testRoutes');
+const testRouter = require('./routes/testRoute');
+const userRouter = require('./routes/userRoute');
 
 //set path 
 
 app.use('/test',testRouter);
+app.use('/user',userRouter);
 
 // app.get('/',(req , res , next) =>{  // path /
 
