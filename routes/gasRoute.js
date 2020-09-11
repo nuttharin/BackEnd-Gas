@@ -1,4 +1,14 @@
 const express = require('express');
 const router = express.Router();
 
-const testController = require('../controllerrs/gasController');
+const gasController = require('../controllerrs/gasController');
+
+router.get('/get/getLastPressureBySerialNumber', gasController.getLastPressureBySerialNumber );
+
+
+//POST
+
+router.post('/post/collectPressureIoT',gasController.collectPressureIoT);
+
+module.exports = router;
+

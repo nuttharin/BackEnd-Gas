@@ -1,0 +1,8 @@
+/user/post/userPosition
+user_id: '2222', int
+province_id: undefined, int 
+amphure_id: undefined, int 
+district_id: undefined, string
+road: undefined, string
+other: undefined, string 
+name_address: undefined string

@@ -37,11 +37,13 @@ app.use((req, res, next) => {
 //set Router
 const testRouter = require('./routes/testRoute');
 const userRouter = require('./routes/userRoute');
+const gasRouter = require('./routes/gasRoute');
 
 //set path 
 
 app.use('/test',testRouter);
 app.use('/user',userRouter);
+app.use('/gas',gasRouter);
 
 // app.get('/',(req , res , next) =>{  // path /
 
