@@ -107,6 +107,53 @@ getDistrict = (req, res, next) =>{
     );
 }
 
+getPositionByUserid = (req, res, next) =>{
+   
+    let parameter = req.query;
+    let user_id = parameter.user_id ;
+    //console.log(parameter);
+    let resData = {
+        status : "",
+        data : ""
+    }   
+    if(user_id == "" || user_id == undefined)
+    {
+        resData.status = "error";
+        resData.data = "not have parameter ( user_id )";
+        res.status(400).json(resData);
+    }
+    else{
+        let sql = `SELECT tb_province.name_th province,tb_amphure.name_th amphure
+                    ,tb_district.name_th district,tb_user_address.road road
+                    ,tb_user_address.other other,tb_district.zip_code zip_code
+                    ,tb_user_address.name_address name_address
+                    FROM tb_user_address
+                    LEFT JOIN tb_province ON tb_province.id = tb_user_address.province_id
+                    LEFT JOIN tb_amphure ON tb_amphure.id = tb_user_address.amphure_id
+                    LEFT JOIN tb_district ON tb_district.id = tb_user_address.district_id
+                    where tb_user_address.user_id = ${user_id} ;`;
+        pool.query(
+            sql, 
+            (err, result) => {
+                //console.log(err)
+                if (err) {
+                    //console.log(err);                      
+                    resData.status = "error";
+                    resData.data = "query command error";
+                    res.status(400).json(resData);
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.data = result.rows;                
+                    res.status(200).json(resData);
+                }
+            }
+        );
+    }
+
+}
+
 
 
 
@@ -118,13 +165,24 @@ login = (req , res , next) =>{
 };
 
 register = (req , res , next) =>{ 
-    
 };
 
+funCheckParameter = async (data) => {
+    let dataKey = "" ;
+    await Object.entries(data).forEach(entry => {
+        const [key, value] = entry;
+        if( (value == '' || value == undefined) && key != 'id' )
+        {
+          
+            dataKey = key ;
+           
+        }
+    });
+    return dataKey;
+}
 
-userAddPosition =  (req, res, next) =>{
+userAddPosition = async  (req, res, next) =>{
     let parameter = req.body;    
-    //data = req.data ; 
     let data = new Position();   
     data.user_id = parameter.user_id;
     data.province_id = parameter.province_id;
@@ -138,24 +196,19 @@ userAddPosition =  (req, res, next) =>{
         status : "",
         data : ""
     }   
-    let checkParameter  = true ;
-    Object.entries(data).forEach(entry => {
-        const [key, value] = entry;
-
-        if( (value == '' || value == undefined) && key != 'id' )
-        {
-            //console.log(key, value);  
-            checkParameter.parameter = false ;
-            resData.status = "error";
-            resData.data = "not have parameter ( "+key +" )"
-        }
-    });
-    if(checkParameter == false)
+    //let checkParameter  = true ;
+    let checkParameter = await funCheckParameter(data) ;
+    //console.log(checkParameter)
+    
+    if(checkParameter != "")
     {
         //console.log(checkParameter)
+        resData.status = "error";
+        resData.data = "not have parameter ( "+ checkParameter +" )"
         res.status(400).json(resData);
     }
-    else{
+    else
+    {
         let sql = ` INSERT INTO public.tb_user_address(
             user_id, province_id, amphure_id, district_id, road, other, name_address)
             VALUES (  ${data.user_id}, ${data.province_id}, ${data.amphure_id}, 
@@ -165,8 +218,7 @@ userAddPosition =  (req, res, next) =>{
             (err, result) => {
                 //console.log(err)
                 if (err) {
-                    console.log(err);  
-                    
+                    //console.log(err);                      
                     resData.status = "error";
                     resData.data = "query command error";
                     res.status(400).json(resData);
@@ -180,25 +232,14 @@ userAddPosition =  (req, res, next) =>{
             }
         );
     }
-
-   
-  
-  
     //res.status(200).json(resData);
 
 }
 
-getPositionByUserid = (req, res, next) =>{
-    // SELECT   tb_user_address.id,user_id , tb_province.name_th ,
-    // tb_amphure.name_th , tb_district.name_th ,
-    // tb_district.zip_code
-    // ,road ,other, name_address
-    // FROM public.tb_user_address
-    // left join public.tb_province ON tb_province.id = tb_user_address.province_id
-    // left join public.tb_amphure ON tb_amphure.id = tb_user_address.amphure_id
-    // left join public.tb_district ON tb_district.id = tb_user_address.district_id
-    // ORDER BY id ASC 
+getGasDetail = (req ,res ,next) =>{
+    
 }
+
 
 
 

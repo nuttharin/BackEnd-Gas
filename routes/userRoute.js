@@ -7,6 +7,7 @@ const userController = require('../controllerrs/userController');
 router.get('/get/province', userController.getProvince );
 router.get('/get/amphure',userController.getAmphure) ;
 router.get('/get/district',userController.getDistrict) ;
+router.get('/get/positionByUserid',userController.getPositionByUserid)
 
 
 //POST
