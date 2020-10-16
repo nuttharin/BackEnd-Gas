@@ -1,5 +1,8 @@
 const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
-const { User , Position } = require("../model/userModel");
+const { User , Position , Rider , Order } = require("../model/userModel");
+const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
+const bcrypt = require('bcrypt');
+saltRounds = process.env.SALTROUND_SECRET ;
 
 
 // GET
@@ -82,7 +85,7 @@ getDistrict = (req, res, next) =>{
         }   
         res.json(data)
     }
-    let sql = `select name_th,name_en,zip_code from tb_district where amphure_id = `+parseInt(idAmphure)+` ORDER BY id ASC `;
+    let sql = `select id , name_th,name_en,zip_code from tb_district where amphure_id = `+parseInt(idAmphure)+` ORDER BY id ASC `;
     pool.query(
         sql, 
         (err, result) => {
@@ -106,6 +109,7 @@ getDistrict = (req, res, next) =>{
         }
     );
 }
+
 
 getPositionByUserid = (req, res, next) =>{
    
@@ -154,6 +158,74 @@ getPositionByUserid = (req, res, next) =>{
 
 }
 
+// get order ทั้งหมด
+getOrderAll = (req, res, next) =>{    
+} 
+
+// get order ที่เรารับ
+getOrderByRiderId = (req, res, next) =>{
+    console.log('getOrderAll');
+    let sql = `  `;
+    pool.query(
+        sql, 
+        (err, result) => {
+
+            if (err) {
+                //console.log(err);  
+                let data = {
+                    status : "error",
+                    data : ""
+                }   
+                res.status(400).json(data)
+            }
+            else
+            {
+                console.log(result.rows)
+                console.log(result.rows.order_gas)
+                result.rows.order_gas = JSON.parse(result.rows.order_gas) ;
+                let data = {
+                    status : "success",
+                    data : result.rows
+                }
+                res.status(200).json(data);
+            }
+        }
+    );
+} 
+
+getOrderHistoryByRiderId = (req, res, next)=>{
+    console.log('getOrderHistory');
+    let sql = `  `;
+    pool.query(
+        sql, 
+        (err, result) => {
+
+            if (err) {
+                //console.log(err);  
+                let data = {
+                    status : "error",
+                    data : ""
+                }   
+                res.status(400).json(data)
+            }
+            else
+            {
+                console.log(result.rows)
+                console.log(result.rows.order_gas)
+                result.rows.order_gas = JSON.parse(result.rows.order_gas) ;
+                let data = {
+                    status : "success",
+                    data : result.rows
+                }
+                res.status(200).json(data);
+            }
+        }
+    );
+}
+
+getOrderByProvince = (req, res, next) =>{
+
+} 
 
 
 
@@ -162,25 +234,62 @@ getPositionByUserid = (req, res, next) =>{
 // POST
 
 login = (req , res , next) =>{ 
-};
 
-register = (req , res , next) =>{ 
-};
-
-funCheckParameter = async (data) => {
-    let dataKey = "" ;
-    await Object.entries(data).forEach(entry => {
-        const [key, value] = entry;
-        if( (value == '' || value == undefined) && key != 'id' )
-        {
-          
-            dataKey = key ;
-           
-        }
+    bcrypt.compare(myPlaintextPassword, hash, function(err, result) {
+        // result == true
     });
-    return dataKey;
+};
+
+registerUser = (req , res , next) =>{ 
+};
+
+registerRider = async (req , res , next) =>{
+    let data = req.body ;
+    let rider = new Rider();
+    let checkParameter = await funCheckParameterWithOutId(data) ;
+    //console.log(checkParameter)
+    
+    if(checkParameter != "")
+    {
+        //console.log(checkParameter)
+        resData.status = "error";
+        resData.data = "not have parameter ( "+ checkParameter +" )"
+        res.status(400).json(resData);
+    }
+    else
+    {
+        bcrypt.hash(myPlaintextPassword, saltRounds, function(err, hash) {
+            // Store hash in your password DB.
+        });
+
+        let sql = ` INSERT INTO public.tb_rider(
+                    name, password, "idCard", email, phone, "createDate", "modifyDate")
+                    VALUES ( 'rider 1', '', '1129900402241', 
+                    'nut_514@hotmail.com', '0812318897', 
+                    '11/02/2020 00:00:00', '11/02/2020 00:00:00'); `;
+        pool.query(
+            sql, 
+            (err, result) => {
+                //console.log(err)
+                if (err) {
+                    //console.log(err);                      
+                    resData.status = "error";
+                    resData.data = "query command error";
+                    res.status(400).json(resData);
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.data = "insert complete";
+                    res.status(200).json(resData);
+                }
+            }
+        );
+    }
+    
 }
 
+ 
 userAddPosition = async  (req, res, next) =>{
     let parameter = req.body;    
     let data = new Position();   
@@ -197,7 +306,7 @@ userAddPosition = async  (req, res, next) =>{
         data : ""
     }   
     //let checkParameter  = true ;
-    let checkParameter = await funCheckParameter(data) ;
+    let checkParameter = await funCheckParameterWithOutId(data) ;
     //console.log(checkParameter)
     
     if(checkParameter != "")
@@ -235,10 +344,71 @@ userAddPosition = async  (req, res, next) =>{
     //res.status(200).json(resData);
 
 }
+  
+userOrderGas = async (req, res, next) => {
+    let parameter = req.body;
+    console.log(parameter)
+    let data = new Order() ;
+    data.user_id = parameter.user_id ;
+    data.address_id = parameter.address_id ;
+    data.rider_id = parameter.rider_id ;   
+    data.type_delivery = parameter.type_delivery ;
+    data.order_gas = parameter.order_gas ;
 
-getGasDetail = (req ,res ,next) =>{
-    
+    data.status = "no receive" ;
+    let resData = {
+        status : "",
+        data : ""
+    }   
+    //let checkParameter  = true ;
+    let checkParameter = await funCheckParameterWithOutId(data) ;
+    if(checkParameter != "")
+    {
+        //console.log(checkParameter)
+        resData.status = "error";
+        resData.data = "not have parameter ( "+ checkParameter +" )"
+        res.status(400).json(resData);
+    }
+    else
+    {
+        let sql = ` INSERT INTO public.tb_gas_order(
+            user_id, address_id, type_delivery, order_gas, status, rider_id)
+            VALUES (${data.user_id}, ${data.address_id}, '${data.type_delivery}', '${data.order_gas}'
+            , '${data.status}', ${data.rider_id}); `;
+        pool.query(
+            sql, 
+            (err, result) => {
+                //console.log(err)
+                if (err) {
+                    console.log(err);                      
+                    resData.status = "error";
+                    resData.data = "query command error : "+ err;
+                    res.status(400).json(resData);
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.data = "insert complete";
+                    res.status(200).json(resData);
+                }
+            }
+        );
+    }
+
 }
+
+userCancelOrder = (req, res, next) => {
+     
+}
+
+riderGetOrder = (req, res, next) =>{
+
+}
+
+
+
+
+
 
 
 
@@ -262,5 +432,9 @@ module.exports = {
     getAmphure,
     getDistrict,
     userAddPosition,
-    getPositionByUserid
+    userOrderGas,
+    getPositionByUserid,
+    getOrderAll,
+    getOrderByProvince,
+    getOrderByRiderId
 };

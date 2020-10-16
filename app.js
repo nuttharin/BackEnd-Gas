@@ -38,13 +38,14 @@ app.use((req, res, next) => {
 const testRouter = require('./routes/testRoute');
 const userRouter = require('./routes/userRoute');
 const gasRouter = require('./routes/gasRoute');
+const appGasRouter = require('./routes/appGasRoute');
 
 //set path 
 
 app.use('/test',testRouter);
 app.use('/user',userRouter);
 app.use('/gas',gasRouter);
-
+app.use('/app',appGasRouter);
 // app.get('/',(req , res , next) =>{  // path /
 
 //     res.status(200).json({
