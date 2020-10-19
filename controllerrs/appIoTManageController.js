@@ -1,11 +1,12 @@
 const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
-const { User , Position ,PositionUserId, Rider , Order , Gas } = require("../model/userModel");
+const { User , Position ,PositionUserId, Rider , Order } = require("../model/userModel");
 const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
 
 
 const { Double } = require("mongodb");
 const moment = require('moment');
 const bcrypt = require('bcrypt'); 
+const { IoT } = require("../model/gasModel");
 saltRounds = process.env.SALTROUND_SECRET ;
 
 
@@ -123,75 +124,110 @@ getUserAddressByAddressId = (req ,res ,next) =>{
 
 
 //#region POST
-
-
-// SELECT tb_user.name from tb_user
-// LEFT JOIN tb_address_user on tb_address_user.user_id = tb_user.id
-// LEFT JOIN tb_province on tb_province.id = tb_address_user.province_id
-// LEFT JOIN tb_amphure on tb_amphure.id = tb_address_user.amphure_id
-// LEFT JOIN tb_district on tb_district.id = tb_address_user.district_id
-
-// SELECT tb_user.id , tb_user.name , tb_user.email , tb_user.phone from tb_user
-// LEFT JOIN tb_address_user on tb_address_user.user_id = tb_user.id
-// LEFT JOIN tb_province on tb_province.id = tb_address_user.province_id
-// LEFT JOIN tb_amphure on tb_amphure.id = tb_address_user.amphure_id
-// LEFT JOIN tb_district on tb_district.id = tb_address_user.district_id
-// WHERE tb_user.id = 1
-
-
-userLogin = async (req , res , next) =>{ 
-
+ 
+registerIoT = async (req ,res ,next) =>{
     let dataBody = req.body ;
-    let dataLogin = {
-        user : dataBody.username,
-        pwd : dataBody.password
-    }
-    // console.log(dataLogin)
+    let dataIoT = new IoT();
+
+
+    
+    dataUser.name= dataBody.name ;
+    dataUser.password = dataBody.password ;
+    dataUser.idCard = dataBody.idCard ;
+    dataUser.email = dataBody.email;
+    dataUser.phone = dataBody.phone;         
+    dataUser.createDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+    dataUser.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+
+    // dataAddress.user_id = dataBody.;
+    dataAddress.province_id = dataBody.province ;
+    dataAddress.amphure_id = dataBody.amphure ;
+    dataAddress.district_id = dataBody.district ;
+    dataAddress.road = dataBody.road;
+    dataAddress.other = dataBody.other;
+    dataAddress.name_address = dataBody.name_address;
+    dataAddress.lat = dataBody.lat ;
+    dataAddress.lon = dataBody.lon ;
+
+
     let resData = {
         status : "",
         data : ""
-    }     
-
-    let sql = `SELECT * FROM tb_user
-                WHERE tb_user.email = '${dataLogin.user}'
-                AND tb_user."isDelete" = 0 `;
-    pool.query(
-        sql, 
-        async (err, result) => {
-
-            if (err) {
-                //console.log(err);  
-                resData.status = "error";
-                resData.data = err;
-                res.status(400).json(resData);
-            }
-            else
-            {
-                
-                if(result.rows.length > 0)
-                {
-                    let match = await bcrypt.compare(dataBody.password, result.rows[0].password);
-                    if(match) 
-                    {
-                        console.log(result.rows)
-                        resData.status = "success";
-                        resData.data = result.rows ;
-                        res.status(200).json(resData);
-                    }
-                    else{
-                        resData.status = "error";
-                        resData.data = [];
-                        res.status(200).json(resData);
-                    }
-                }
-               
-            }
+    }   
+    
+    let checkParameter = await funCheckParameterWithOutId(dataUser);
+    if(checkParameter != "" || checkParameter2 != "")
+    {
+        //console.log(checkParameter)
+        if(checkParameter != "") {
+            resData.status = "error";
+            resData.data = "not have parameter ( "+ checkParameter +" )";    
+            res.status(400).json(resData);
         }
-    );
-};
+        else {
+            resData.status = "error";
+            resData.data = "not have parameter ( "+ checkParameter2 +" )";    
+            res.status(400).json(resData);
+        }
+        
+        
+    }
+    else
+    {
+       
+       
+        //INSERT INTO "public"."tb_register_iot"("user_id", "serialNumber", "createDate", "modifyDate") VALUES (1, 'GASIOT000001', '2020-10-19 11:49:39', '2020-10-19 11:49:41') RETURNING *
+        let sql = `INSERT INTO "public"."tb_user"("name", "password", "idCard", "email", "phone", "createDate", "modifyDate") 
+                   VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}'
+                   , '${dataUser.createDate}', '${dataUser.modifyDate}') RETURNING *`;
+        // console.log(sql)
+        pool.query(
+            sql, 
+            (err, result) => {
+                //console.log(err)
+                if (err) {
+                    //console.log(err);                      
+                    resData.status = "error";
+                    resData.data = "query command error tb_user: " + err;
+                    res.status(400).json(resData);
+                }
+                else
+                {
+                    sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
+                        "road", "other", "name_address", "latitude", "longitude") 
+                        VALUES (${result.rows[0].id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
+                        '${dataAddress.district_id}', '${dataAddress.road}', '${dataAddress.other}',
+                        '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
+                        RETURNING *`;                   
+                              
+                    pool.query(
+                        sql, 
+                        (err, result) => {
+                            //console.log(err)
+                            if (err) {
+                                resData.status = "error";
+                                resData.data = "query command error tb_address_user: " + err;
+                                res.status(400).json(resData);
+                            }
+                            else
+                            {      
+                                resData.status = "success";
+                                resData.data = "insert complete";
+                                res.status(200).json(resData);
+                            }
+                        }
+                    );
+                }
+            }
+        );
+    }
+} 
 
 
+//#endregion
 
+
+//#region xx
 registerUser = async (req , res , next) =>{ 
     let dataBody = req.body ;
     let dataUser = new User();
@@ -201,7 +237,6 @@ registerUser = async (req , res , next) =>{
     dataUser.idCard = dataBody.idCard ;
     dataUser.email = dataBody.email;
     dataUser.phone = dataBody.phone;         
-    dataUser.type = dataBody.type;
     dataUser.createDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
     dataUser.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
 
@@ -236,86 +271,58 @@ registerUser = async (req , res , next) =>{
             resData.data = "not have parameter ( "+ checkParameter2 +" )";    
             res.status(400).json(resData);
         }
+        
+        
     }
     else
-    {       
-        let sql = `SELECT * FROM tb_user
-                    WHERE tb_user.email = '${dataUser.email}'`;
+    {
+       
+       
+        dataUser.password = await bcrypt.hash(dataBody.password , parseInt(saltRounds));
+
+        let sql = `INSERT INTO "public"."tb_user"("name", "password", "idCard", "email", "phone", "createDate", "modifyDate") 
+                   VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}'
+                   , '${dataUser.createDate}', '${dataUser.modifyDate}') RETURNING *`;
+        // console.log(sql)
         pool.query(
             sql, 
-            async (err, result) => {
+            (err, result) => {
                 //console.log(err)
                 if (err) {
+                    //console.log(err);                      
                     resData.status = "error";
-                    resData.data = "query command error : " +err;
+                    resData.data = "query command error tb_user: " + err;
                     res.status(400).json(resData);
                 }
                 else
                 {
-                    console.log(result.rows)
-                    if(result.rows.length > 0){
-                        resData.status = "error";
-                        resData.data = "Duplicate username";
-                        res.status(200).json(resData);
-                    }
-                    else
-                    {
-                        dataUser.password = await bcrypt.hash(dataBody.password , parseInt(saltRounds));
-
-                        sql = `INSERT INTO "public"."tb_user"("name", "password", "idCard", "email", "phone",
-                                    "createDate", "modifyDate" ,"type" , "isDelete" ) 
-                                VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}'
-                                , '${dataUser.createDate}', '${dataUser.modifyDate}','${dataUser.type}' , 0) RETURNING *`;
-                        // console.log(sql)
-                        pool.query(
-                            sql, 
-                            (err, result) => 
-                            {
-                                //console.log(err)
-                                if (err) {
-                                    //console.log(err);                      
-                                    resData.status = "error";
-                                    resData.data = "query command error tb_user: " + err;
-                                    res.status(400).json(resData);
-                                }
-                                else
-                                {
-                                    sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
-                                        "road", "other", "name_address", "latitude", "longitude") 
-                                        VALUES (${result.rows[0].id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
-                                        '${dataAddress.district_id}', '${dataAddress.road}', '${dataAddress.other}',
-                                        '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
-                                        RETURNING *`;                   
-                                            
-                                    pool.query(
-                                        sql, 
-                                        (err, result) => {
-                                            //console.log(err)
-                                            if (err) {
-                                                resData.status = "error";
-                                                resData.data = "query command error tb_address_user: " + err;
-                                                res.status(400).json(resData);
-                                            }
-                                            else
-                                            {      
-                                                resData.status = "success";
-                                                resData.data = "insert complete";
-                                                res.status(200).json(resData);
-                                            }
-                                        }
-                                    );
-                                }
+                    sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
+                        "road", "other", "name_address", "latitude", "longitude") 
+                        VALUES (${result.rows[0].id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
+                        '${dataAddress.district_id}', '${dataAddress.road}', '${dataAddress.other}',
+                        '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
+                        RETURNING *`;                   
+                              
+                    pool.query(
+                        sql, 
+                        (err, result) => {
+                            //console.log(err)
+                            if (err) {
+                                resData.status = "error";
+                                resData.data = "query command error tb_address_user: " + err;
+                                res.status(400).json(resData);
                             }
-                        );
-                    }
-                
-                  
+                            else
+                            {      
+                                resData.status = "success";
+                                resData.data = "insert complete";
+                                res.status(200).json(resData);
+                            }
+                        }
+                    );
                 }
             }
         );
-        
-       
-        
     }
 
 };
@@ -428,7 +435,6 @@ editRiderProfile = (req , res , next) =>{
 
 };
 
-// User Address
 addUserAddress = async (req , res , next) => {
     let dataBody = req.body ; 
     let dataAddress = new PositionUserId();
@@ -457,40 +463,30 @@ addUserAddress = async (req , res , next) => {
     }
     else
     {
-        let addAddress = await funAddUserAddress( dataAddress.user_id , dataAddress.province_id , dataAddress.amphure_id ,
-        dataAddress.district_id ,dataAddress.road ,dataAddress.other ,
-        dataAddress.name_address , dataAddress.lat , dataAddress.lon );
-        if(addAddress)
-        {
-
-        }
-        else{
-            
-        }
-        // sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
-        //                     "road", "other", "name_address", "latitude", "longitude") 
-        //                     VALUES (${dataAddress.user_id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
-        //                     '${dataAddress.district_id}', '${dataAddress.road}', '${dataAddress.other}',
-        //                     '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
-        //                     RETURNING *`;                   
+        sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
+                            "road", "other", "name_address", "latitude", "longitude") 
+                            VALUES (${dataAddress.user_id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
+                            '${dataAddress.district_id}', '${dataAddress.road}', '${dataAddress.other}',
+                            '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
+                            RETURNING *`;                   
                                 
-        // pool.query(
-        //     sql, 
-        //     (err, result) => {
-        //         //console.log(err)
-        //         if (err) {
-        //             resData.status = "error";
-        //             resData.data = "query command error tb_address_user: " + err;
-        //             res.status(400).json(resData);
-        //         }
-        //         else
-        //         {      
-        //             resData.status = "success";
-        //             resData.data = "insert complete";
-        //             res.status(200).json(resData);
-        //         }
-        //     }
-        // );
+        pool.query(
+            sql, 
+            (err, result) => {
+                //console.log(err)
+                if (err) {
+                    resData.status = "error";
+                    resData.data = "query command error tb_address_user: " + err;
+                    res.status(400).json(resData);
+                }
+                else
+                {      
+                    resData.status = "success";
+                    resData.data = "insert complete";
+                    res.status(200).json(resData);
+                }
+            }
+        );
     }
 
 
@@ -596,31 +592,7 @@ deleteUserAddress = async (req , res , next) =>{
     }
 };
 
-
-funAddUserAddress = async () =>{
-
-    sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
-                            "road", "other", "name_address", "latitude", "longitude") 
-                            VALUES (${dataAddress.user_id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
-                            '${dataAddress.district_id}', '${dataAddress.road}', '${dataAddress.other}',
-                            '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
-                            RETURNING *`;                   
-                                
-    pool.query(
-        sql, 
-        (err, result) => {
-            //console.log(err)
-            if (err) {
-                return false;
-            }
-            else
-            {      
-                return true;
-            }
-        }
-    );
-}
-
+//#endregion
 
 
  
@@ -632,12 +604,5 @@ funAddUserAddress = async () =>{
 
 
 module.exports = {
-    getUserDetailById,
-    getUserAddressByUserId,
-    getUserAddressByAddressId,
-    registerUser,
-    addUserAddress,
-    editUserAddress,
-    deleteUserAddress,
-    userLogin
+   registerIoT
 }; 

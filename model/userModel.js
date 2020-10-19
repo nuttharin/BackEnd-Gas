@@ -1,11 +1,12 @@
 class User {
-    constructor(id, name, password, idCard,email,phone,address,province,amphure,district, createDate, modifyDate) {
+    constructor(id, name, password, idCard,email,phone, createDate, modifyDate,type) {
         this.id = id ;
         this.name= name ;
         this.password = password ;
         this.idCard = idCard ;
         this.email = email;
         this.phone = phone;        
+        this.type = type ;
         // this.address = address;
         // this.province = province;
         // this.amphure = amphure;
