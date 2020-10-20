@@ -212,10 +212,10 @@ userLogin = async (req , res , next) =>{
 
 
 registerUser = async (req , res , next) =>{ 
-  
+    console.log(req.body);
+
     upload(req, res,async function (err) {
         console.log(req.files);
-        console.log(req.body);
         if (err instanceof multer.MulterError) {
           // A Multer error occurred when uploading.
         }
