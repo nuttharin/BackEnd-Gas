@@ -6,6 +6,16 @@ class Gas {
     }
   }
 
+  
+class IoT {
+  constructor(serialNumber, user_id ) {
+    this.serialNumber = serialNumber ;
+    this.user_id = user_id ;
+
+  }
+}
+
 module.exports = {
-    Gas
+    Gas,
+    IoT
 }
