@@ -20,6 +20,7 @@ app.use(morgan('dev')); // เเสดงการทำงาน
 app.use(bodyParser.urlencoded({extended : false})); // false ใช้อัลกอในการ map json ธรรมดา ,true = high
 app.use(bodyParser.json());
 app.use(compression());
+app.use(express.static('uploads'));
 
 //---------------Access-Control-Allow-Origin----------
 app.use((req, res, next) => {
@@ -52,6 +53,13 @@ app.use('/app',appGasRouter);
 //         message : 'Get rootdd /'
 //     })
 
+// })
+
+
+// app.post('/pic',upload.single('profile') , (req,res,next) =>{
+//     console.log(req.file)
+//     console.log(req.body.d)
+//     res.status(200).json("xx")
 // })
 
 

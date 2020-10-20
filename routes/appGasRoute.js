@@ -27,6 +27,7 @@ router.post('/post/login',appUserManageController.userLogin)
 
 router.post('/post/registerUser',appUserManageController.registerUser);
 
+
 // User address mamagement
 
 router.get('/get/userAddressByUserId',appUserManageController.getUserAddressByUserId);
