@@ -16,6 +16,17 @@ class User {
     }
 }
 
+class UserData {
+    constructor(id, name,email,phone, modifyDate) {
+        this.id = id ;
+        this.name= name ;
+        // this.idCard = idCard ;
+        this.email = email;
+        this.phone = phone;
+        this.modifyDate = modifyDate ;
+    }
+}
+
 class Rider {
     constructor(id, name, password, idCard,email,phone, createDate, modifyDate){
         this.id = id ;
@@ -77,6 +88,7 @@ class PositionUserId {
 
 module.exports = {
     User,
+    UserData,
     Rider,
     Position,
     PositionUserId,

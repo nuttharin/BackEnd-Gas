@@ -6,8 +6,7 @@ const moment = require('moment');
 
 
 getGasDetail = (req ,res ,next) =>{
-    let sql = `select name, type, description, price 
-               from tb_gas_detail ORDER BY id ASC  `;
+    let sql = `select * from tb_gas_detail ORDER BY id ASC  `;
     pool.query(
         sql, 
         (err, result) => {

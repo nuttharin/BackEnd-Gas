@@ -6,6 +6,7 @@ const appOrderController = require('../controllerrs/appOrderController');
 const appUserManageController = require('../controllerrs/appUserManageController');
 const userController = require('../controllerrs/userController');
 const appIoTController = require('../controllerrs/appIoTManageController');
+const gasController = require('../controllerrs/gasController');
 
 
 
@@ -26,6 +27,8 @@ router.post('/post/login',appUserManageController.userLogin)
 // User Management 
 
 router.post('/post/registerUser',appUserManageController.registerUser);
+router.post('/post/edit/user',appUserManageController.editUserByUserId);
+router.post('/post/delete/user',appUserManageController.deleteUserByUserId);
 
 
 // User address mamagement
@@ -48,7 +51,17 @@ router.post('/post/delete/userAddress',appUserManageController.deleteUserAddress
 
 // IoT
 
+router.get('/get/iot/iotByUserId',appIoTController.getIoTByUserId);
+router.get('/get/iot/iotAll',appIoTController.getIoTDeviceAll);
+
 router.post('/post/add/iot',appIoTController.registerIoT);
+router.post('/post/edit/iot',appIoTController.editIotByUserId);
+router.post('/post/delete/iot',appIoTController.deleteIoTByUserId);
+
+
+// GAS
+router.get('/get/gas/detail',appGasController.getGasDetail);
+
 
 
 module.exports = router;

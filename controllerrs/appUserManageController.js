@@ -1,5 +1,5 @@
 const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
-const { User , Position ,PositionUserId, Rider , Order , Gas } = require("../model/userModel");
+const { User , Position ,PositionUserId, Rider , Order , UserData} = require("../model/userModel");
 const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
 
 
@@ -31,7 +31,7 @@ const upload = multer({
 //#region GET
 
 getUserDetailById = (req ,res ,next) =>{
-    let userID = req.query.userID ;
+    let userID = req.query.user_id ;
 
     let sql = `SELECT tb_user.id , tb_user.name , tb_user.email , tb_user.phone from tb_user
     LEFT JOIN tb_address_user on tb_address_user.user_id = tb_user.id
@@ -47,91 +47,26 @@ getUserDetailById = (req ,res ,next) =>{
                 //console.log(err);  
                 let data = {
                     status : "error",
+                    statusCode : 200,
+
                     data : err
                 }   
-                res.status(400).json(data)
+                res.status(200).json(data)
             }
             else
             {
                 let data = {
                     status : "success",
+                    statusCode : 201,
+
                     data : result.rows
                 }
-                res.status(200).json(data);
+                res.status(201).json(data);
             }
         }
     );
 };
 
-getUserAddressByUserId = (req ,res ,next) =>{
-    let userID = req.query.userID ;
-    let resData = {
-        status : "",
-        data : ""
-    }   
-    let sql = `SELECT tbAdd."id",tbADD.name_address,
-            tbAdd.province_id , tbAdd.amphure_id , tbAdd.district_id,
-            tbAdd.road , tbAdd.other , tbAdd.latitude, tbAdd.longitude,
-            tbP.name_th as province, tbA.name_th as amphure, tbD.name_th as district
-            
-            FROM tb_address_user as tbAdd
-            LEFT JOIN tb_province as tbP on tbP.id = tbAdd.province_id
-            LEFT JOIN tb_amphure as tbA on tbA.id = tbAdd.amphure_id
-            LEFT JOIN tb_district as tbD on tbD.id = tbAdd.district_id
-            WHERE  tbAdd.user_id = ${userID}`;
-    pool.query(
-        sql, 
-        (err, result) => {
-            //console.log(err)
-            if (err) {
-                
-            }
-            else
-            {        
-                resData.status = "success";
-                resData.data = result.rows;
-                // console.log(result.rows[0].id)
-                res.status(200).json(resData);
-            }
-        }
-    );
-};
-
-getUserAddressByAddressId = (req ,res ,next) =>{
-    let addressID = req.query.addressID ;
-    let resData = {
-        status : "",
-        data : ""
-    }   
-    let sql = `SELECT tbAdd."id",tbADD.name_address,
-                tbAdd.province_id , tbAdd.amphure_id , tbAdd.district_id,
-                tbAdd.road , tbAdd.other , tbAdd.latitude, tbAdd.longitude,
-                tbP.name_th as province, tbA.name_th as amphure, tbD.name_th as district
-                
-                FROM tb_address_user as tbAdd
-                LEFT JOIN tb_province as tbP on tbP.id = tbAdd.province_id
-                LEFT JOIN tb_amphure as tbA on tbA.id = tbAdd.amphure_id
-                LEFT JOIN tb_district as tbD on tbD.id = tbAdd.district_id
-                WHERE tbAdd.id  = ${addressID}`;
-    pool.query(
-        sql, 
-        (err, result) => {
-            //console.log(err)
-            if (err) {
-                resData.status = "error";
-                resData.data = "query command error";
-                res.status(400).json(resData);
-            }
-            else
-            {        
-                resData.status = "success";
-                resData.data = result.rows[0];
-                // console.log(result.rows[0].id)
-                res.status(200).json(resData);
-            }
-        }
-    );
-};
 
 
 
@@ -209,8 +144,6 @@ userLogin = async (req , res , next) =>{
     );
 };
 
-
-
 registerUser = async (req , res , next) =>{ 
     console.log(req.body);
 
@@ -241,14 +174,16 @@ registerUser = async (req , res , next) =>{
             let checkParameter = await funCheckParameterWithOutId(dataUser);
             let resData = {
                 status : "",
+                statusCode : "",
                 data : ""
             }   
             if(checkParameter != "" )
             {
                 //console.log(checkParameter)       
                 resData.status = "error";
+                resData.statusCode = 200 ;
                 resData.data = "not have parameter ( "+ checkParameter +" )";    
-                res.status(400).json(resData);
+                res.status(200).json(resData);
             }
             else
             {       
@@ -260,14 +195,16 @@ registerUser = async (req , res , next) =>{
                         //console.log(err)
                         if (err) {
                             resData.status = "error";
+                            resData.statusCode = 200 ;
                             resData.data = "query command error : " +err;
-                            res.status(400).json(resData);
+                            res.status(200).json(resData);
                         }
                         else
                         {
                             console.log(result.rows)
                             if(result.rows.length > 0){
                                 resData.status = "error";
+                                resData.statusCode = 200 ;
                                 resData.data = "Duplicate username";
                                 res.status(200).json(resData);
                             }
@@ -288,14 +225,17 @@ registerUser = async (req , res , next) =>{
                                         if (err) {
                                             //console.log(err);                      
                                             resData.status = "error";
+                                            resData.statusCode = 200 ;
+
                                             resData.data = "query command error tb_user: " + err;
                                             res.status(400).json(resData);
                                         }
                                         else
                                         {
                                             resData.status = "success";
+                                            resData.statusCode = 201 ;
                                             resData.data = "insert complete";
-                                            res.status(200).json(resData);
+                                            res.status(201).json(resData);
                                             
                                         }
                                     }
@@ -314,8 +254,100 @@ registerUser = async (req , res , next) =>{
 
 };
 
-editUserProfile = (req , res , next) =>{
+editUserByUserId = async (req , res , next) =>{
+    //UPDATE "public"."tb_user" SET "name" = 'x', "email" = 'x', "phone" = 'x' WHERE "id" = 16
+    let dataUser = new UserData;
+    let dataBody = req.body;
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }     
+    dataUser.id = dataBody.user_id;
+    dataUser.name = dataBody.name ;
+    dataUser.email = dataBody.email ;
+    dataUser.phone = dataBody.phone ;    
+    dataUser.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+    let checkParameter = await funCheckParameter(dataUser);
 
+
+    if(checkParameter != "" ) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        res.status(200).json(resData);
+    }
+    else{       
+        let sql = `UPDATE "public"."tb_user" SET "name" = '${dataUser.name}',
+                     "email" = '${dataUser.email}', "phone" = '${dataUser.phone}' 
+                    WHERE "id" = ${dataUser.id}`;
+        pool.query(
+            sql, 
+            (err, result) => {
+    
+                if (err) {
+                    //console.log(err);  
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = "error update tb_user : " + err;    
+                    res.status(200).json(resData);
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "update complete";    
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+
+
+
+
+};
+
+deleteUserByUserId = async (req , res , next) =>{
+    //UPDATE "public"."tb_user" SET "isDelete" = 1 WHERE "id" = 16
+    let user_id = req.body.user_id ;
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }     
+    if(user_id == "" || user_id == null ) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( user_id )";    
+        res.status(200).json(resData);
+    }
+    else{       
+        let sql = `UPDATE "public"."tb_user" SET "isDelete" = 1 WHERE "id" = ${user_id}`;
+        pool.query(
+            sql, 
+            (err, result) => {    
+                if (err) {
+                    //console.log(err);  
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = "error delete tb_user : " + err;    
+                    res.status(200).json(resData);
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "delete complete";    
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
 };
 
 registerRider = async (req , res , next) =>{
@@ -422,6 +454,8 @@ editRiderProfile = (req , res , next) =>{
 
 };
 
+
+//#region  user Address
 // User Address
 addUserAddress = async (req , res , next) => {
     let dataBody = req.body ; 
@@ -439,6 +473,7 @@ addUserAddress = async (req , res , next) => {
     let checkParameter = await funCheckParameterWithOutId(dataAddress);
     let resData = {
         status : "",
+        statusCode : 200,
         data : ""
     }   
     if(checkParameter != "" )
@@ -447,44 +482,45 @@ addUserAddress = async (req , res , next) => {
        
         resData.status = "error";
         resData.data = "not have parameter ( "+ checkParameter +" )";    
-        res.status(400).json(resData);
+        res.status(200).json(resData);
     }
     else
     {
-        let addAddress = await funAddUserAddress( dataAddress.user_id , dataAddress.province_id , dataAddress.amphure_id ,
-        dataAddress.district_id ,dataAddress.road ,dataAddress.other ,
-        dataAddress.name_address , dataAddress.lat , dataAddress.lon );
-        if(addAddress)
-        {
+        // let addAddress = await funAddUserAddress( dataAddress.user_id , dataAddress.province_id , dataAddress.amphure_id ,
+        // dataAddress.district_id ,dataAddress.road ,dataAddress.other ,
+        // dataAddress.name_address , dataAddress.lat , dataAddress.lon );
+        // if(addAddress)
+        // {
 
-        }
-        else{
+        // }
+        // else{
             
-        }
-        // sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
-        //                     "road", "other", "name_address", "latitude", "longitude") 
-        //                     VALUES (${dataAddress.user_id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
-        //                     '${dataAddress.district_id}', '${dataAddress.road}', '${dataAddress.other}',
-        //                     '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
-        //                     RETURNING *`;                   
+        //}
+        sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
+                            "road", "other", "name_address", "latitude", "longitude") 
+                            VALUES (${dataAddress.user_id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
+                            '${dataAddress.district_id}', '${dataAddress.road}', '${dataAddress.other}',
+                            '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
+                            RETURNING *`;                   
                                 
-        // pool.query(
-        //     sql, 
-        //     (err, result) => {
-        //         //console.log(err)
-        //         if (err) {
-        //             resData.status = "error";
-        //             resData.data = "query command error tb_address_user: " + err;
-        //             res.status(400).json(resData);
-        //         }
-        //         else
-        //         {      
-        //             resData.status = "success";
-        //             resData.data = "insert complete";
-        //             res.status(200).json(resData);
-        //         }
-        //     }
-        // );
+        pool.query(
+            sql, 
+            (err, result) => {
+                //console.log(err)
+                if (err) {
+                    resData.status = "error";
+                    resData.data = "query command error tb_address_user: " + err;
+                    res.status(200).json(resData);
+                }
+                else
+                {      
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "insert complete";
+                    res.status(201).json(resData);
+                }
+            }
+        );
     }
 
 
@@ -494,7 +530,7 @@ editUserAddress = async (req , res , next) =>{
     let dataBody = req.body ;
     let dataAddress = new Position();
 
-    dataAddress.id = dataBody.addressID ;
+    dataAddress.id = dataBody.address_id ;
     dataAddress.province_id = dataBody.province ;
     dataAddress.amphure_id = dataBody.amphure ;
     dataAddress.district_id = dataBody.district ;
@@ -507,14 +543,16 @@ editUserAddress = async (req , res , next) =>{
     let checkParameter = await funCheckParameter(dataAddress);
     let resData = {
         status : "",
+        statusCode : "",
         data : ""
     }   
     if(checkParameter != "" )
     {
         //console.log(checkParameter)       
         resData.status = "error";
+        resData.statusCode = 200 ;
         resData.data = "not have parameter ( "+ checkParameter +" )";    
-        res.status(400).json(resData);
+        res.status(200).json(resData);
     }
     else
     {
@@ -529,19 +567,19 @@ editUserAddress = async (req , res , next) =>{
 
                 if (err) {
                     //console.log(err);  
-                    let data = {
-                        status : "error",
-                        data : err
-                    }   
-                    res.status(400).json(data)
+                  
+                    resData.status = "error" ;
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(200).json(resData);
                 }
                 else
                 {
-                    let data = {
-                        status : "success",
-                        data : "update complete"
-                    }
-                    res.status(200).json(data);
+                    
+                    resData.status = "success" ;
+                    resData.statusCode = 201 ;
+                    resData.data = "update complete" ;
+                    res.status(201).json(resData);
                 }
             }
         );
@@ -553,14 +591,19 @@ editUserAddress = async (req , res , next) =>{
 deleteUserAddress = async (req , res , next) =>{
     //DELETE FROM "public"."tb_address_user" WHERE "id" = 6
     
-    let addressID = req.body.addressID ;
-   
+    let addressID = req.body.address_id ;
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }   
     if(addressID == "" || addressID == null ) 
     {
         //console.log(checkParameter)       
         resData.status = "error";
+        resData.statusCode = 200 ;
         resData.data = "not have parameter ( addressID )";    
-        res.status(400).json(resData);
+        res.status(200).json(resData);
     }
     else
     {
@@ -571,25 +614,105 @@ deleteUserAddress = async (req , res , next) =>{
 
                 if (err) {
                     //console.log(err);  
-                    let data = {
-                        status : "error",
-                        data : err
-                    }   
-                    res.status(400).json(data)
+                    resData.status = "error" ;
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(200).json(resData);
                 }
                 else
                 {
-                    let data = {
-                        status : "success",
-                        data : "delete complete"
-                    }
-                    res.status(200).json(data);
+                  
+
+                    resData.status = "success" ;
+                    resData.statusCode = 201 ;
+                    resData.data = "delete complete" ;
+                    res.status(201).json(resData);
                 }
             }
         );
     }
 };
 
+getUserAddressByUserId = (req ,res ,next) =>{
+    let userID = req.query.user_id ;
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }   
+    let sql = `SELECT tbAdd."id",tbADD.name_address,
+            tbAdd.province_id , tbAdd.amphure_id , tbAdd.district_id,
+            tbAdd.road , tbAdd.other , tbAdd.latitude, tbAdd.longitude,
+            tbP.name_th as province, tbA.name_th as amphure, tbD.name_th as district
+            
+            FROM tb_address_user as tbAdd
+            LEFT JOIN tb_province as tbP on tbP.id = tbAdd.province_id
+            LEFT JOIN tb_amphure as tbA on tbA.id = tbAdd.amphure_id
+            LEFT JOIN tb_district as tbD on tbD.id = tbAdd.district_id
+            WHERE  tbAdd.user_id = ${userID}`;
+    pool.query(
+        sql, 
+        (err, result) => {
+            //console.log(err)
+            if (err) {
+                resData.status = "error";
+                resData.statusCode = 200 ;
+                resData.data = "query command error";
+                res.status(200).json(resData);
+            }
+            else
+            {        
+                resData.status = "success";
+                resData.data = result.rows;
+                resData.statusCode = 201;
+                // console.log(result.rows[0].id)
+                res.status(201).json(resData);
+            }
+        }
+    );
+};
+
+getUserAddressByAddressId = (req ,res ,next) =>{
+    let addressID = req.query.address_id ;
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }   
+    let sql = `SELECT tbAdd."id",tbADD.name_address,
+                tbAdd.province_id , tbAdd.amphure_id , tbAdd.district_id,
+                tbAdd.road , tbAdd.other , tbAdd.latitude, tbAdd.longitude,
+                tbP.name_th as province, tbA.name_th as amphure, tbD.name_th as district
+                
+                FROM tb_address_user as tbAdd
+                LEFT JOIN tb_province as tbP on tbP.id = tbAdd.province_id
+                LEFT JOIN tb_amphure as tbA on tbA.id = tbAdd.amphure_id
+                LEFT JOIN tb_district as tbD on tbD.id = tbAdd.district_id
+                WHERE tbAdd.id  = ${addressID}`;
+    pool.query(
+        sql, 
+        (err, result) => {
+            //console.log(err)
+            if (err) {
+                resData.status = "error";
+                resData.statusCode = 200 ;
+                resData.data = "query command error";
+                res.status(200).json(resData);
+            }
+            else
+            {        
+                resData.status = "success";
+                resData.statusCode = 201 ;
+                resData.data = result.rows;
+                // console.log(result.rows[0].id)
+                res.status(201).json(resData);
+            }
+        }
+    );
+};
+
+
+//#endregion
 
 funAddUserAddress = async () =>{
 
@@ -630,6 +753,8 @@ module.exports = {
     getUserAddressByUserId,
     getUserAddressByAddressId,
     registerUser,
+    editUserByUserId,
+    deleteUserByUserId,
     addUserAddress,
     editUserAddress,
     deleteUserAddress,
