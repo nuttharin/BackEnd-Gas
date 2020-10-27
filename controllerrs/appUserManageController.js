@@ -31,6 +31,7 @@ const upload = multer({
 //#region GET
 
 getUserDetailById = (req ,res ,next) =>{
+
     let userID = req.query.user_id ;
 
     let sql = `SELECT tb_user.id , tb_user.name , tb_user.email , tb_user.phone from tb_user
@@ -92,7 +93,7 @@ getUserDetailById = (req ,res ,next) =>{
 // LEFT JOIN tb_district on tb_district.id = tb_address_user.district_id
 // WHERE tb_user.id = 1
 
-
+// User
 userLogin = async (req , res , next) =>{ 
 
     let dataBody = req.body ;
@@ -145,7 +146,7 @@ userLogin = async (req , res , next) =>{
 };
 
 registerUser = async (req , res , next) =>{ 
-    console.log(req.body);
+    //console.log(req.body);
 
     upload(req, res,async function (err) {
         console.log(req.files);
@@ -350,112 +351,11 @@ deleteUserByUserId = async (req , res , next) =>{
     }
 };
 
-registerRider = async (req , res , next) =>{
-    let dataBody = req.body ;
-    let dataUser = new User();
-    let dataAddress = new Position();
-    dataUser.name= dataBody.name ;
-    dataUser.password = dataBody.password ;
-    dataUser.idCard = dataBody.idCard ;
-    dataUser.email = dataBody.email;
-    dataUser.phone = dataBody.phone;         
-    dataUser.createDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
-    dataUser.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
 
-    // dataAddress.user_id = dataBody.;
-    dataAddress.province_id = dataBody.province ;
-    dataAddress.amphure_id = dataBody.amphure ;
-    dataAddress.district_id = dataBody.district ;
-    dataAddress.road = dataBody.road;
-    dataAddress.other = dataBody.other;
-    dataAddress.name_address = dataBody.name_address;
-    dataAddress.lat = dataBody.lat ;
-    dataAddress.lon = dataBody.lon ;
-
-    dataAddress
-
-    let resData = {
-        status : "",
-        data : ""
-    }   
-    
-    let checkParameter = await funCheckParameterWithOutId(dataUser);
-    let checkParameter2 = await funCheckParameterWithOutId(dataAddress);
-    if(checkParameter != "" || checkParameter2 != "")
-    {
-        //console.log(checkParameter)
-        if(checkParameter != "") {
-            resData.status = "error";
-            resData.data = "not have parameter ( "+ checkParameter +" )";    
-            res.status(400).json(resData);
-        }
-        else {
-            resData.status = "error";
-            resData.data = "not have parameter ( "+ checkParameter2 +" )";    
-            res.status(400).json(resData);
-        }
-        
-        
-    }
-    else
-    {
-       
-       
-        dataUser.password = await bcrypt.hash(dataBody.password , parseInt(saltRounds));
-
-        let sql = `INSERT INTO "public"."tb_user"("name", "password", "idCard", "email", "phone", "createDate", "modifyDate") 
-                   VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}'
-                   , '${dataUser.createDate}', '${dataUser.modifyDate}') RETURNING *`;
-        // console.log(sql)
-        pool.query(
-            sql, 
-            (err, result) => {
-                //console.log(err)
-                if (err) {
-                    //console.log(err);                      
-                    resData.status = "error";
-                    resData.data = "query command error tb_user: " + err;
-                    res.status(400).json(resData);
-                }
-                else
-                {
-                    sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
-                        "road", "other", "name_address", "latitude", "longitude") 
-                        VALUES (${result.rows[0].id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
-                        '${dataAddress.district_id}', '${dataAddress.road}', '${dataAddress.other}',
-                        '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
-                        RETURNING *`;                   
-                              
-                    pool.query(
-                        sql, 
-                        (err, result) => {
-                            //console.log(err)
-                            if (err) {
-                                resData.status = "error";
-                                resData.data = "query command error tb_address_user: " + err;
-                                res.status(400).json(resData);
-                            }
-                            else
-                            {      
-                                resData.status = "success";
-                                resData.data = "insert complete";
-                                res.status(200).json(resData);
-                            }
-                        }
-                    );
-                }
-            }
-        );
-    }
-    
-};
-
-editRiderProfile = (req , res , next) =>{
-
-};
 
 
 //#region  user Address
+
 // User Address
 addUserAddress = async (req , res , next) => {
     let dataBody = req.body ; 

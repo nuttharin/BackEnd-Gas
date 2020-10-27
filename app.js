@@ -47,6 +47,12 @@ app.use('/test',testRouter);
 app.use('/user',userRouter);
 app.use('/gas',gasRouter);
 app.use('/app',appGasRouter);
+
+app.use('/pictureRegisterUser', express.static('./upload/picture/register'));
+app.use('/pictureRegisterDriver', express.static('./upload/picture/register_driver'));
+//app.use('/static', express.static('z'))
+
+
 // app.get('/',(req , res , next) =>{  // path /
 
 //     res.status(200).json({

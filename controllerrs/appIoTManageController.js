@@ -8,12 +8,14 @@ const { Double } = require("mongodb");
 const moment = require('moment');
 const bcrypt = require('bcrypt'); 
 const { IoT , IoTData } = require("../model/gasModel");
+// const { resetGasIoT } = require("./gasController");
 saltRounds = process.env.SALTROUND_SECRET ;
 
 
-//#region GET
+
 
 //#region iot device
+//#region GET
 getIoTByUserId = (req ,res,next) => {
      
     let userID = req.query.user_id ;
@@ -100,7 +102,9 @@ getIoTDeviceAll = (req , res,next) =>{
     );
     
 }
+//#endregion
 
+//#region POST
 registerIoT = async (req ,res ,next) =>{
     let dataBody = req.body ;
     let dataIoT = new IoT();
@@ -298,6 +302,40 @@ deleteIoTByUserId = async (req, res, next) =>{
    
 }
 
+resetGasIoT = (req , res , next) =>{
+    let newDate = new Date();   
+    let data = req.body ;
+
+    
+    MongoClient.connect(URL_MONGODB_IOT,function(err,db){
+        let dbo = db.db(process.env.DATABASE_DATA_IOT);
+        
+
+
+        dbo.collection(nameMapTable)
+        .insertOne( { serialNumber : serialNumber, Around : 1 ,dateTime : newDate } ,(err,result)=>
+        {
+            if(err)
+            {
+                // console.log("error")
+                // throw err;
+                res.status(200).json({
+                    status : "error",
+                    data : ""
+                });
+            }
+            else
+            {                
+                res.status(200).json({
+                    status : "success",
+                    data : ""
+                });
+            }
+
+        });
+    });
+} 
+//#endregion
 //#endregion
 
 

@@ -40,6 +40,17 @@ class Rider {
     }
 }
 
+class RiderData {
+    constructor(id, name,email,phone, modifyDate) {
+        this.id = id ;
+        this.name= name ;
+        // this.idCard = idCard ;
+        this.email = email;
+        this.phone = phone;
+        this.modifyDate = modifyDate ;
+    }
+}
+
 class Order{
     constructor(id,user_id, address_id, type_delivery, order_gas, status, rider_id){
         this.id = id ;
