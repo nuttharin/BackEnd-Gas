@@ -42,8 +42,8 @@ getGasDetail = (req ,res ,next) =>{
 
 getPercentPressureBySerialNumber = (req ,res ,next) =>{
     let data = new Gas();
-    let dataBody = req.body ;
-    data.serialNumber = req.body.serialNumber ;
+    let dataBody = req.query ;
+    data.serialNumber = req.query.serialNumber ;
     //data.serialNumber = 'A111111111'
     if( data.serialNumber == null ||  data.serialNumber == "")
     {
