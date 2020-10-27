@@ -42,16 +42,20 @@ getGasDetail = (req ,res ,next) =>{
 
 getPercentPressureBySerialNumber = (req ,res ,next) =>{
     let data = new Gas();
-    let dataBody = req.query ;
+    //let dataBody = req.query ;
     data.serialNumber = req.query.serialNumber ;
+    let resData = {
+        status : "",
+        statuCode : 200 ,
+        data : ""
+    }   
     //data.serialNumber = 'A111111111'
     if( data.serialNumber == null ||  data.serialNumber == "")
     {
-        let data = {
-            status : "error",
-            data : "not have parameter is serialNumber"
-        }   
-        res.json(data)
+        resData.status = "error" ; 
+        resData.statuCode = 200 ;
+        resData.data = "not have parameter is serialNumber" ;
+        res.status(resData.statuCode).json(resData)
     }
     else
     {
@@ -63,29 +67,53 @@ getPercentPressureBySerialNumber = (req ,res ,next) =>{
             dbo.collection(tb_mongodb_iot)
             .find(
                 { serialNumber: { $eq : data.serialNumber } } ,
-                {_id : 0}
+                { _id : 0}
             )
             .sort(mysort).limit(-1)
-            .toArray(function(err, result) 
+            .toArray(async function(err, result) 
             {
                 //console.log(moment(result[0].dateTime).format(' D/MM/YYYY h:mm:ss'))
                 console.log(result[0]);
                 result[0].dateTime = moment(result[0].dateTime).format(' D/MM/YYYY h:mm:ss');
-                if (err) {
-                    //console.log(err);  
-                    let data = {
-                        status : "error",
-                        data : "query command error"
-                    }   
-                    res.json(data);
+                if (err) 
+                {
+                    //console.log(err);                      
+                    resData.status = "error" ; 
+                    resData.statuCode = 200 ;
+                    resData.data = "query command error :" + err ;
+                    res.status(resData.statuCode).json(resData)
                 }
                 else
                 {
-                    let data = {
-                        status : "success",
-                        data : result[0]
+                    let voltPressure = result[0].pressure ;
+                    let percentPressure ;                   
+                    if(voltPressure <= 0.5)
+                    {
+                        percentPressure = 0 ;
+                        result[0].pressure = await percentPressure ;
                     }
-                    res.json(data);
+                    else if(voltPressure >= 4.4 && voltPressure <=4.5)
+                    {
+                        percentPressure = 100 ;
+                        result[0].pressure = await percentPressure ;
+
+                    }
+                    else if (voltPressure > 0.5 && voltPressure < 4.5) {
+                        percentPressure = Math.ceil((voltPressure/4.4)*100);
+                        if(percentPressure >= 100)
+                        {
+                            percentPressure = 100 ;                                
+                        }
+                        result[0].pressure = await percentPressure ;
+                    }
+                    else {
+                        percentPressure = "over limit" ;
+                        result[0].pressure = await percentPressure ;
+                    }
+                    resData.status = "success"; 
+                    resData.statuCode = 201 ;
+                    resData.data = result[0];
+                    res.status(resData.statuCode).json(resData);                    
                 }
     
                 db.close();
