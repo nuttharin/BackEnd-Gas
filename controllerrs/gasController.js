@@ -136,7 +136,6 @@ resetGasIoT = (req , res , next) =>{
                     data : ""
                 });
             }
-
         });
     });
 }

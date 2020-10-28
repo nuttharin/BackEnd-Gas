@@ -24,7 +24,8 @@ router.get('/get/district',userController.getDistrict);
 
 
 //===== login =====//
-router.post('/post/login',appUserManageController.userLogin)
+router.post('/post/login',appUserManageController.userLogin);
+router.post('/post/loginDriver',appDriverController.driverLogin);
 
 
 
@@ -68,6 +69,7 @@ router.get('/get/iot/iotAll',appIoTController.getIoTDeviceAll);
 router.post('/post/add/iot',appIoTController.registerIoT);
 router.post('/post/edit/iot',appIoTController.editIotByUserId);
 router.post('/post/delete/iot',appIoTController.deleteIoTByUserId);
+router.post('/post/reset/iot' , appIoTController.resetGasIoT) ;
 
 
 //===== GAS =====//

@@ -7,15 +7,19 @@ const { insertIoTMongoDB } = require('../function/functionMongoDB');
 const { Double } = require("mongodb");
 const moment = require('moment');
 const bcrypt = require('bcrypt'); 
-const { IoT , IoTData } = require("../model/gasModel");
+const { IoT , IoTData , Gas} = require("../model/gasModel");
 // const { resetGasIoT } = require("./gasController");
 saltRounds = process.env.SALTROUND_SECRET ;
+
+const tb_mongodb_iot = 'tb_test' ;
+const tb_map_around = process.env.DB_MONGODB_AROUND ;
 
 
 
 
 //#region iot device
 //#region GET
+
 getIoTByUserId = (req ,res,next) => {
      
     let userID = req.query.user_id ;
@@ -102,9 +106,14 @@ getIoTDeviceAll = (req , res,next) =>{
     );
     
 }
+
 //#endregion
 
+
+
+
 //#region POST
+
 registerIoT = async (req ,res ,next) =>{
     let dataBody = req.body ;
     let dataIoT = new IoT();
@@ -303,16 +312,99 @@ deleteIoTByUserId = async (req, res, next) =>{
 }
 
 resetGasIoT = (req , res , next) =>{
-    let newDate = new Date();   
-    let data = req.body ;
+    // let data = req.body ;
+    let data = new Gas();
+    //let dataBody = req.query ;
+    data.serialNumber = req.body.serialNumber ;
+    let resData = {
+        status : "",
+        statuCode : 200 ,
+        data : ""
+    } 
+    console.log(data)
+    MongoClient.connect(URL_MONGODB_IOT, function(err, db) 
+    {
+        if (err) throw err;
+        let dbo = db.db(process.env.DATABASE_DATA_IOT);
+        dbo.collection('tb_mapAround')
+        // dbo.collection(tb_map_around)
+        .find(
+            { serialNumber: { $eq : data.serialNumber } } ,
+            { _id : 0}
+        )
+        .toArray(async function(err, result) 
+        {
+            //console.log(moment(result[0].dateTime).format(' D/MM/YYYY h:mm:ss'))
+            console.log(result.length );
+            if (err) 
+            {
+                //console.log(err);                      
+                resData.status = "error" ; 
+                resData.statuCode = 200 ;
+                resData.data = "query command error :" + err ;
+                res.status(resData.statuCode).json(resData)
+            }
+            else
+            {               
+                // resData.status = "success"; 
+                // resData.statuCode = 201 ;
+                // resData.data = result;
+                // res.status(resData.statuCode).json(resData);       
+                if(result.length > 0)
+                {
+                    let nextAround = result[0].around + 1 ; 
+                    let newDate = new Date();  
+                    newDate.setHours(newDate.getHours()+7);
 
-    
+                    // dbo.collection(tb_map_around)
+                    // .insertOne( { serialNumber :  data.serialNumber, Around : nextAround ,dateTime : newDate } ,(err,result)=>
+                    // {
+                    //     if(err)
+                    //     {
+                    //         // console.log("error")
+                    //         // throw err;
+                    //         res.status(200).json({
+                    //             status : "error",
+                    //             data : ""
+                    //         });
+                    //     }
+                    //     else
+                    //     {                
+                    //         res.status(200).json({
+                    //             status : "success",
+                    //             data : ""
+                    //         });
+                    //     }
+
+                    // });
+                }             
+            }
+            db.close();
+        });
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     MongoClient.connect(URL_MONGODB_IOT,function(err,db){
         let dbo = db.db(process.env.DATABASE_DATA_IOT);
         
 
 
-        dbo.collection(nameMapTable)
+        dbo.collection(tb_map_around)
         .insertOne( { serialNumber : serialNumber, Around : 1 ,dateTime : newDate } ,(err,result)=>
         {
             if(err)
@@ -335,6 +427,7 @@ resetGasIoT = (req , res , next) =>{
         });
     });
 } 
+
 //#endregion
 //#endregion
 
@@ -373,5 +466,6 @@ module.exports = {
    getIoTByUserId,
    getIoTDeviceAll,
    deleteIoTByUserId,
-   editIotByUserId
+   editIotByUserId,
+   resetGasIoT
 }; 

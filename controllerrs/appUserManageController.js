@@ -104,6 +104,7 @@ userLogin = async (req , res , next) =>{
     // console.log(dataLogin)
     let resData = {
         status : "",
+        statusCode : 200,
         data : ""
     }     
 
@@ -117,6 +118,7 @@ userLogin = async (req , res , next) =>{
             if (err) {
                 //console.log(err);  
                 resData.status = "error";
+                resData.statusCode = 200 ;
                 resData.data = err;
                 res.status(400).json(resData);
             }
@@ -130,14 +132,22 @@ userLogin = async (req , res , next) =>{
                     {
                         console.log(result.rows)
                         resData.status = "success";
+                        resData.statusCode = 201 ;
                         resData.data = result.rows ;
                         res.status(200).json(resData);
                     }
                     else{
                         resData.status = "error";
+                        resData.statusCode = 200 ;
                         resData.data = [];
                         res.status(200).json(resData);
                     }
+                }
+                else{
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = "not have username";
+                    res.status(resData.statusCode).json(resData);
                 }
                
             }

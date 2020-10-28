@@ -87,12 +87,12 @@ getPercentPressureBySerialNumber = (req ,res ,next) =>{
                 {
                     let voltPressure = result[0].pressure ;
                     let percentPressure ;                   
-                    if(voltPressure <= 0.5)
+                    if(voltPressure <= 0.5 && voltPressure >= 0)
                     {
                         percentPressure = 0 ;
                         result[0].pressure = await percentPressure ;
                     }
-                    else if(voltPressure >= 4.4 && voltPressure <=4.5)
+                    else if(voltPressure >= 4.4 && voltPressure <= 4.5)
                     {
                         percentPressure = 100 ;
                         result[0].pressure = await percentPressure ;
@@ -107,7 +107,7 @@ getPercentPressureBySerialNumber = (req ,res ,next) =>{
                         result[0].pressure = await percentPressure ;
                     }
                     else {
-                        percentPressure = "over limit" ;
+                        percentPressure = "Error value" ;
                         result[0].pressure = await percentPressure ;
                     }
                     resData.status = "success"; 

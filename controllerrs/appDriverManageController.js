@@ -92,6 +92,65 @@ getRiderDetailById = (req ,res ,next) =>{
 
 //#region POST
 // Driver 
+driverLogin = async (req , res,next) =>{
+    let dataBody = req.body ;
+    let dataLogin = {
+        user : dataBody.username,
+        pwd : dataBody.password
+    }
+    console.log(dataLogin)
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }     
+
+    let sql = `SELECT * FROM tb_rider
+                WHERE tb_rider.email = '${dataLogin.user}'
+                AND tb_rider."isDelete" = 0 `;
+                console.log(sql)
+    pool.query(
+        sql, 
+        async (err, result) => {
+            //console.log(result)
+            if (err) {
+                //console.log(err);  
+                resData.status = "error";
+                resData.data = err;
+                res.status(resData.statusCode).json(resData);
+            }
+            else
+            {
+                
+                if(result.rows.length > 0)
+                {
+                    let match = await bcrypt.compare(dataBody.password, result.rows[0].password);
+                    if(match) 
+                    {
+                        console.log(result.rows)
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = result.rows ;
+                        res.status(resData.statusCode).json(resData);
+                    }
+                    else{
+                        resData.status = "error";
+                        resData.statusCode = 200 ;
+                        resData.data = [];
+                        res.status(resData.statusCode).json(resData);
+                    }
+                }
+                else{
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = "not have username";
+                    res.status(resData.statusCode).json(resData);
+                }
+               
+            }
+        }
+    );
+}
 
 registerRider = async (req , res , next) => {
     upload(req, res,async function (err) {
@@ -302,6 +361,7 @@ deleteRiderByRiderId = async (req , res , next) =>{
 //#endregion 
 
 module.exports = {
+    driverLogin,
     registerRider,
     editRiderByRiderId ,
     deleteRiderByRiderId
