@@ -326,8 +326,7 @@ resetGasIoT = (req , res , next) =>{
     {
         if (err) throw err;
         let dbo = db.db(process.env.DATABASE_DATA_IOT);
-        dbo.collection('tb_mapAround')
-        // dbo.collection(tb_map_around)
+        dbo.collection(tb_map_around)
         .find(
             { serialNumber: { $eq : data.serialNumber } } ,
             { _id : 0}
@@ -346,37 +345,38 @@ resetGasIoT = (req , res , next) =>{
             }
             else
             {               
-                // resData.status = "success"; 
-                // resData.statuCode = 201 ;
-                // resData.data = result;
-                // res.status(resData.statuCode).json(resData);       
+                   
                 if(result.length > 0)
                 {
                     let nextAround = result[0].around + 1 ; 
                     let newDate = new Date();  
                     newDate.setHours(newDate.getHours()+7);
-
-                    // dbo.collection(tb_map_around)
-                    // .insertOne( { serialNumber :  data.serialNumber, Around : nextAround ,dateTime : newDate } ,(err,result)=>
-                    // {
-                    //     if(err)
-                    //     {
-                    //         // console.log("error")
-                    //         // throw err;
-                    //         res.status(200).json({
-                    //             status : "error",
-                    //             data : ""
-                    //         });
-                    //     }
-                    //     else
-                    //     {                
-                    //         res.status(200).json({
-                    //             status : "success",
-                    //             data : ""
-                    //         });
-                    //     }
-
-                    // });
+                    let queryWhere = {
+                        serialNumber : data.serialNumber
+                    }
+                    let newValue = {
+                        $set : {
+                            around : nextAround,
+                            dateTime : newDate
+                        }
+                    }
+                    dbo.collection(tb_map_around)
+                    .updateOne(queryWhere,newValue,(err,result)=>
+                    {
+                        if(err)
+                        {
+                            resData.status = "success"; 
+                            resData.data = result;
+                            res.status(resData.statuCode).json(resData);  
+                        }
+                        else
+                        {                
+                            resData.status = "success"; 
+                            resData.statuCode = 201 ;
+                            resData.data = "reset complete";
+                            res.status(resData.statuCode).json(resData);  
+                        }
+                    });
                 }             
             }
             db.close();
@@ -399,33 +399,7 @@ resetGasIoT = (req , res , next) =>{
 
 
 
-    MongoClient.connect(URL_MONGODB_IOT,function(err,db){
-        let dbo = db.db(process.env.DATABASE_DATA_IOT);
-        
-
-
-        dbo.collection(tb_map_around)
-        .insertOne( { serialNumber : serialNumber, Around : 1 ,dateTime : newDate } ,(err,result)=>
-        {
-            if(err)
-            {
-                // console.log("error")
-                // throw err;
-                res.status(200).json({
-                    status : "error",
-                    data : ""
-                });
-            }
-            else
-            {                
-                res.status(200).json({
-                    status : "success",
-                    data : ""
-                });
-            }
-
-        });
-    });
+    
 } 
 
 //#endregion

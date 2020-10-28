@@ -30,6 +30,35 @@ const upload = multer({
 
 //#region GET
 
+getBankAll = (req, res,next) =>{
+    let resData = {
+        status : "",
+        statuCode : 200 ,
+        data : ""
+    }   
+    let sql = ``;
+    pool.query(
+        sql, 
+        (err, result) => {
+
+            if (err) {
+                //console.log(err); 
+                resData.status = "error"; 
+                resData.statuCode = 200 ;
+                resData.data = err ;
+                res.status(resData.statuCode).json(resData)
+            }
+            else
+            {    
+                resData.status = "success"; 
+                resData.statuCode = 201 ;
+                resData.data = result.rows ;
+                res.status(resData.statuCode).json(resData);
+            }
+        }
+    );
+};
+
 getUserDetailById = (req ,res ,next) =>{
 
     let userID = req.query.user_id ;
@@ -94,6 +123,7 @@ getUserDetailById = (req ,res ,next) =>{
 // WHERE tb_user.id = 1
 
 // User
+
 userLogin = async (req , res , next) =>{ 
 
     let dataBody = req.body ;
