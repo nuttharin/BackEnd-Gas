@@ -6,9 +6,12 @@ getGasDetail = (req ,res ,next) =>{
         statusCode : 200 ,
         data : ""
     }
-    if()
+    if(data == "" || data == null)
     {
-
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        res.status(200).json(resData);
     }   
     else {
         let sql = ``;

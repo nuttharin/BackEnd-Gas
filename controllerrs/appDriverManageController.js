@@ -1,6 +1,6 @@
 const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
 const { User , Position ,PositionUserId, Rider , Order , UserData} = require("../model/userModel");
-const { BankDriver } = require("../model/driverModel");
+const { BankDriver ,BankDriverData} = require("../model/driverModel");
 const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
 
 
@@ -93,6 +93,46 @@ getRiderDetailById = (req ,res ,next) =>{
 
 //#region POST
 // Driver 
+getDriverProfileById = async (req , res,next) =>{
+    let data = req.query.driver_id
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( driver_id )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT id,name,email,phone FROM "public"."tb_rider"
+                    WHERE id = ${data} `;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    resData.status = "success"; 
+                    resData.statusCode = 201 ;
+                    resData.data = result.rows ;
+                    res.status(resData.statusCode).json(resData);
+                }
+            }
+        );
+    }
+}
+
 driverLogin = async (req , res,next) =>{
     let dataBody = req.body ;
     let dataLogin = {
@@ -364,6 +404,8 @@ deleteRiderByRiderId = async (req , res , next) =>{
 
 
 
+
+
 // Bank
 getDriverBankByDriverId = async (req ,res ,next) =>{
     let data = req.query.driver_id
@@ -380,8 +422,11 @@ getDriverBankByDriverId = async (req ,res ,next) =>{
         res.status(200).json(resData);
     }   
     else {
-        let sql = `SELECT * FROM "public"."tb_bank_driver" 
-        WHERE  driver_id = ${data}  AND "isDelete" = 0`;
+        let sql = `SELECT tb_bank_driver.id as driverBank_id ,tb_bank_detail."name",
+                    tb_bank_detail.swiftcode,bank_id,driver_id,bank_name,bank_account 
+                    FROM "public"."tb_bank_driver" 
+                    INNER JOIN tb_bank_detail ON tb_bank_detail."id" = tb_bank_driver.bank_id
+                    WHERE  driver_id = ${data}  AND "isDelete" = 0`;
         pool.query(
             sql, 
             (err, result) => {
@@ -420,8 +465,11 @@ getDriverBankById = (req,res,next) =>{
         res.status(200).json(resData);
     }   
     else {
-        let sql = `SELECT * FROM "public"."tb_bank_driver" 
-                    WHERE  id = ${data} AND "isDelete" = 0`;
+        let sql = `SELECT tb_bank_driver.id as driverBank_id ,tb_bank_detail."name",
+                    tb_bank_detail.swiftcode,bank_id,driver_id,bank_name,bank_account 
+                    FROM "public"."tb_bank_driver" 
+                    INNER JOIN tb_bank_detail ON tb_bank_detail."id" = tb_bank_driver.bank_id 
+                    WHERE  tb_bank_driver.id = ${data} AND "isDelete" = 0`;
         pool.query(
             sql, 
             (err, result) => {
@@ -535,11 +583,13 @@ addDriverBank = async (req , res , next) => {
 }
 
 editDriverBank = async (req ,res ,next)=> {
-    let dataBank = new BankDriver();
-    let dataBody = req.body.driverBank_id ;
+
+    //UPDATE "public"."tb_bank_driver" SET "bank_id" = 4, "bank_name" = 'ธารินทร์ ตันตะโยธินv', "bank_account" = '1111-2222-3333-4444v' WHERE "id" = 1
+    let dataBank = new BankDriverData();
+    let dataBody = req.body ;
     //let dd = await x(dataBody.driver_id)
     //console.log(dd)
-    dataBank.driver_id = dataBody.driver_id ;
+    dataBank.id = dataBody.driverBank_id ;
     dataBank.bank_id = dataBody.bank_id ;
     dataBank.name_account = dataBody.name_account ;
     dataBank.bank_account = dataBody.bank_account;
@@ -560,7 +610,10 @@ editDriverBank = async (req ,res ,next)=> {
     }
     else
     {
-        let sql = ``;
+        let sql = `UPDATE "public"."tb_bank_driver" 
+                    SET "bank_id" = ${ dataBank.bank_id}, "bank_name" = '${dataBank.name_account}',
+                    "bank_account" = '${dataBank.bank_account}' 
+                    WHERE "id" = ${dataBank.id}`;
         pool.query(
             sql, 
             (err, result) => {
@@ -620,7 +673,7 @@ deleteDriverBank = async (req,res,next) =>{
                 {
                     resData.status = "success";
                     resData.statusCode = 201 ;
-                    resData.data = "update complete";    
+                    resData.data = "delete complete";    
                     res.status(201).json(resData);
                 }
             }
@@ -658,9 +711,12 @@ x = async (id) =>{
 module.exports = {
     driverLogin,
     registerRider,
+    getDriverProfileById,
     editRiderByRiderId ,
     deleteRiderByRiderId,
     addDriverBank,
+    editDriverBank,
+    deleteDriverBank ,
     getDriverBankByDriverId,
     getDriverBankById
     

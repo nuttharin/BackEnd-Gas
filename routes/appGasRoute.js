@@ -15,7 +15,6 @@ const appGeneralController = require('../controllerrs/appGeneralController');
 
 // router.get('/get/getGasType',appGasController.getGasDetail);
 // router.get('/get/getOrderGasById',appGasController.getOrderGasById);
-//router.get('/get/getUserDetailById',appUserManageController.getUserDetailById)
 
 //===== General ===== //
 router.get('/get/province',appGeneralController.getProvince);
@@ -33,6 +32,7 @@ router.post('/post/loginDriver',appDriverController.driverLogin);
 
 
 //===== User Management =====//
+router.get('/get/getUserDetailById',appUserManageController.getUserDetailById)
 
 router.post('/post/registerUser',appUserManageController.registerUser);
 router.post('/post/edit/user',appUserManageController.editUserByUserId);
@@ -56,12 +56,16 @@ router.post('/post/delete/userAddress',appUserManageController.deleteUserAddress
 router.get('/get/driverBankByDriverId',appDriverController.getDriverBankByDriverId);
 router.get('/get/driverBankById',appDriverController.getDriverBankById);
 
+router.get('/get/getDriverProfileById',appDriverController.getDriverProfileById);
+
 
 router.post('/post/registerDriver',appDriverController.registerRider);
 router.post('/post/edit/driver',appDriverController.editRiderByRiderId);
 router.post('/post/delete/driver',appDriverController.deleteRiderByRiderId);
 
 router.post('/post/add/bankDriver',appDriverController.addDriverBank);
+router.post('/post/edit/bankDriver',appDriverController.editDriverBank);
+router.post('/post/delete/bankDriver',appDriverController.deleteDriverBank);
 
 
 
