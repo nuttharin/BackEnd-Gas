@@ -30,34 +30,6 @@ const upload = multer({
 
 //#region GET
 
-getBankAll = (req, res,next) =>{
-    let resData = {
-        status : "",
-        statuCode : 200 ,
-        data : ""
-    }   
-    let sql = ``;
-    pool.query(
-        sql, 
-        (err, result) => {
-
-            if (err) {
-                //console.log(err); 
-                resData.status = "error"; 
-                resData.statuCode = 200 ;
-                resData.data = err ;
-                res.status(resData.statuCode).json(resData)
-            }
-            else
-            {    
-                resData.status = "success"; 
-                resData.statuCode = 201 ;
-                resData.data = result.rows ;
-                res.status(resData.statuCode).json(resData);
-            }
-        }
-    );
-};
 
 getUserDetailById = (req ,res ,next) =>{
 
@@ -242,7 +214,7 @@ registerUser = async (req , res , next) =>{
                         }
                         else
                         {
-                            console.log(result.rows)
+                            //console.log(result.rows)
                             if(result.rows.length > 0){
                                 resData.status = "error";
                                 resData.statusCode = 200 ;
@@ -322,7 +294,8 @@ editUserByUserId = async (req , res , next) =>{
     }
     else{       
         let sql = `UPDATE "public"."tb_user" SET "name" = '${dataUser.name}',
-                     "email" = '${dataUser.email}', "phone" = '${dataUser.phone}' 
+                     "email" = '${dataUser.email}', "phone" = '${dataUser.phone}' ,
+                    "modifyDate" = '${dataUser.modifyDate}'
                     WHERE "id" = ${dataUser.id}`;
         pool.query(
             sql, 
@@ -426,20 +399,11 @@ addUserAddress = async (req , res , next) => {
     }
     else
     {
-        // let addAddress = await funAddUserAddress( dataAddress.user_id , dataAddress.province_id , dataAddress.amphure_id ,
-        // dataAddress.district_id ,dataAddress.road ,dataAddress.other ,
-        // dataAddress.name_address , dataAddress.lat , dataAddress.lon );
-        // if(addAddress)
-        // {
-
-        // }
-        // else{
-            
-        //}
+        //INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id", "road", "other", "name_address", "latitude", "longitude") VALUES (21, 1, 1, 1, 'xxx', 'xxx', 'xxx-xxx', '10.111', '10.222') RETURNING *
         sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
                             "road", "other", "name_address", "latitude", "longitude") 
                             VALUES (${dataAddress.user_id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
-                            '${dataAddress.district_id}', '${dataAddress.road}', '${dataAddress.other}',
+                            ${dataAddress.district_id}, '${dataAddress.road}', '${dataAddress.other}',
                             '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
                             RETURNING *`;                   
                                 
@@ -498,7 +462,7 @@ editUserAddress = async (req , res , next) =>{
     {
         let sql = `UPDATE "public"."tb_address_user" SET 
         "province_id" = ${ dataAddress.province_id}, "amphure_id" = ${dataAddress.amphure_id} ,
-        "district_id" = '${dataAddress.district_id}', "road" = '${dataAddress.road}',
+        "district_id" = ${dataAddress.district_id}, "road" = '${dataAddress.road}',
         "other" = '${dataAddress.other}', "name_address" = '${dataAddress.name_address}',
         "latitude" = '${dataAddress.lat}', "longitude" = '${dataAddress.lon}' WHERE "id" = ${dataAddress.id }`;
         pool.query(
@@ -586,9 +550,9 @@ getUserAddressByUserId = (req ,res ,next) =>{
             tbP.name_th as province, tbA.name_th as amphure, tbD.name_th as district
             
             FROM tb_address_user as tbAdd
-            LEFT JOIN tb_province as tbP on tbP.id = tbAdd.province_id
-            LEFT JOIN tb_amphure as tbA on tbA.id = tbAdd.amphure_id
-            LEFT JOIN tb_district as tbD on tbD.id = tbAdd.district_id
+            LEFT JOIN tb_provinces as tbP on tbP.id = tbAdd.province_id
+            LEFT JOIN tb_districts as tbA on tbA.id = tbAdd.amphure_id
+            LEFT JOIN tb_subdistricts as tbD on tbD.id = tbAdd.district_id
             WHERE  tbAdd.user_id = ${userID}`;
     pool.query(
         sql, 
@@ -625,9 +589,9 @@ getUserAddressByAddressId = (req ,res ,next) =>{
                 tbP.name_th as province, tbA.name_th as amphure, tbD.name_th as district
                 
                 FROM tb_address_user as tbAdd
-                LEFT JOIN tb_province as tbP on tbP.id = tbAdd.province_id
-                LEFT JOIN tb_amphure as tbA on tbA.id = tbAdd.amphure_id
-                LEFT JOIN tb_district as tbD on tbD.id = tbAdd.district_id
+                LEFT JOIN tb_provinces as tbP on tbP.id = tbAdd.province_id
+                LEFT JOIN tb_districts as tbA on tbA.id = tbAdd.amphure_id
+                LEFT JOIN tb_subdistricts as tbD on tbD.id = tbAdd.district_id
                 WHERE tbAdd.id  = ${addressID}`;
     pool.query(
         sql, 

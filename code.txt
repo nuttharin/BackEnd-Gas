@@ -1,29 +1,190 @@
 
 getGasDetail = (req ,res ,next) =>{
-     let resData = {
+    let data = req.query.x
+    let resData = {
         status : "",
-        statuCode : 200 ,
+        statusCode : 200 ,
         data : ""
-    }   
-    let sql = ``;
-    pool.query(
-        sql, 
-        (err, result) => {
+    }
+    if()
+    {
 
-            if (err) {
-                //console.log(err); 
-                resData.status = "error"; 
-                resData.statuCode = 200 ;
-                resData.data = err ;
-                res.status(resData.statuCode).json(resData)
+    }   
+    else {
+        let sql = ``;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    resData.status = "success"; 
+                    resData.statusCode = 201 ;
+                    resData.data = result.rows ;
+                    res.status(resData.statusCode).json(resData);
+                }
             }
-            else
-            {    
-                resData.status = "success"; 
-                resData.statuCode = 201 ;
-                resData.data = result.rows ;
-                res.status(resData.statuCode).json(resData);
-            }
-        }
-    );
+        );
+    }
+    
 };
+
+ resData.status = "success";
+resData.statusCode = 201 ;
+resData.data = "insert complete";
+res.status(201).json(resData);
+
+
+
+    let dataBank = new BankDriver();
+    let dataBody = req.body ;
+
+
+    dataBank.driver_id = dataBody.driver_id ;
+    dataBank.bank_id = dataBody.bank_id ;
+    dataBank.name_account = dataBody.name_account ;
+    dataBank.bank_account = dataBody.bank_account;
+    dataBank.modidyDate =  moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+    let checkParameter = await funCheckParameterWithOutId(dataBank);
+
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    } ;
+    if(checkParameter != "" ) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        res.status(200).json(resData);
+    }
+    else{   
+        let sql = `INSERT INTO "public"."tb_bank_driver"("driver_id", "bank_id",
+                "bank_name", "bank_account", "modifyDate") 
+                    VALUES (${dataBank.driver_id}, ${dataBank.bank_id}, '${dataBank.name_account}',
+                     '${dataBank.bank_account}', '${dataBank.modidyDate}') 
+                    RETURNING *`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "insert complete";
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+
+
+
+    else{       
+        let sql = `UPDATE "public"."tb_register_iot" SET "serialNumber" = '${dataIoT.serialNumber}', 
+                    "modifyDate" = '2020-10-22 17:40:11',
+                    "lat" = '${dataIoT.lat}', "lon" = '${dataIoT.lon}' WHERE "id" = ${dataIoT.id}`;
+        pool.query(
+            sql, 
+            (err, result) => {
+    
+                if (err) {
+                    //console.log(err);  
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = "error update tb_register_iot : " + err;    
+                    res.status(200).json(resData);
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "update complete";    
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+
+
+
+    let dataBank = new BankDriver();
+    let dataBody = req.body ;
+    //let dd = await x(dataBody.driver_id)
+    //console.log(dd)
+    dataBank.driver_id = dataBody.driver_id ;
+    dataBank.bank_id = dataBody.bank_id ;
+    dataBank.name_account = dataBody.name_account ;
+    dataBank.bank_account = dataBody.bank_account;
+    dataBank.modidyDate =  moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+    let checkParameter = await funCheckParameterWithOutId(dataBank);
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    } ;
+    if(checkParameter != "" ) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        res.status(200).json(resData);
+    }
+    else
+    {
+        let sql = ``;
+        pool.query(
+            sql, 
+            (err, result) => {
+    
+                if (err) {
+                    //console.log(err);  
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = "error update tb_register_iot : " + err;    
+                    res.status(200).json(resData);
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "update complete";    
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+
+
+    let data = req.body.driverBank_id;   
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    } ;
+    if(data == "" || data == null) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( driverBank_id )";    
+        res.status(200).json(resData);
+    }

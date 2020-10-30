@@ -7,108 +7,7 @@ saltRounds = process.env.SALTROUND_SECRET ;
 
 // GET
 
-getProvince = (req , res , next) => {
-    let sql = `select id , name_th , name_en from tb_province ORDER BY id ASC `;
-    pool.query(
-        sql, 
-        (err, result) => {
 
-            if (err) {
-                //console.log(err);  
-                let data = {
-                    status : "error",
-                    data : ""
-                }   
-                res.status(400).json(data)
-            }
-            else
-            {
-                let data = {
-                    status : "success",
-                    data : result.rows
-                }
-                res.status(200).json(data);
-            }
-        }
-    );
-
-};
-
-getAmphure = (req , res, next) => {
-
-    let idProvince = req.query.idProvince ;
-    if(idProvince == null || idProvince == "")
-    {
-        let data = {
-            status : "error",
-            data : "not have idProvince"
-        }   
-        res.status(400).json(data)
-    }
-    else
-    {
-        let sql = `select id , name_th, name_en from tb_amphure where province_id =`+parseInt(idProvince)+` ORDER BY id ASC `;
-        pool.query(
-            sql, 
-            (err, result) => {
-    
-                if (err) {
-                    //console.log(err);  
-                    let data = {
-                        status : "error",
-                        data : "query command error"
-                    }   
-                    res.status(400).json(data);
-                }
-                else
-                {
-                    let data = {
-                        status : "success",
-                        data : result.rows
-                    }
-                    res.status(200).json(data);
-                }
-            }
-        );
-    }
-
-   
-};
-
-getDistrict = (req, res, next) =>{
-    let idAmphure = req.query.idAmphure ;
-    if(idAmphure == null || idAmphure == "")
-    {
-        let data = {
-            status : "error",
-            data : "not have idAmphure"
-        }   
-        res.json(data)
-    }
-    let sql = `select id , name_th,name_en,zip_code from tb_district where amphure_id = `+parseInt(idAmphure)+` ORDER BY id ASC `;
-    pool.query(
-        sql, 
-        (err, result) => {
-            //console.log(err)
-            if (err) {
-                //console.log(err);  
-                let data = {
-                    status : "error",
-                    data : "query command error"
-                }   
-                res.status(400).json(data);
-            }
-            else
-            {
-                let data = {
-                    status : "success",
-                    data : result.rows
-                }
-                res.status(200).json(data);
-            }
-        }
-    );
-}
 
 
 getPositionByUserid = (req, res, next) =>{
@@ -428,9 +327,6 @@ riderGetOrder = (req, res, next) =>{
 
 
 module.exports = {
-    getProvince,
-    getAmphure,
-    getDistrict,
     userAddPosition,
     userOrderGas,
     getPositionByUserid,

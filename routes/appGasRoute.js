@@ -8,6 +8,8 @@ const userController = require('../controllerrs/userController');
 const appIoTController = require('../controllerrs/appIoTManageController');
 const gasController = require('../controllerrs/gasController');
 const appDriverController = require('../controllerrs/appDriverManageController');
+const appGeneralController = require('../controllerrs/appGeneralController');
+
 
 
 
@@ -16,9 +18,10 @@ const appDriverController = require('../controllerrs/appDriverManageController')
 //router.get('/get/getUserDetailById',appUserManageController.getUserDetailById)
 
 //===== General ===== //
-router.get('/get/province',userController.getProvince);
-router.get('/get/amphure',userController.getAmphure) ;
-router.get('/get/district',userController.getDistrict);
+router.get('/get/province',appGeneralController.getProvince);
+router.get('/get/amphure',appGeneralController.getAmphure) ;
+router.get('/get/district',appGeneralController.getDistrict);
+router.get('/get/bankAll',appGeneralController.getBankAll);
 
 
 
@@ -50,9 +53,15 @@ router.post('/post/delete/userAddress',appUserManageController.deleteUserAddress
 
 
 //===== Rider Management =====//
+router.get('/get/driverBankByDriverId',appDriverController.getDriverBankByDriverId);
+router.get('/get/driverBankById',appDriverController.getDriverBankById);
+
+
 router.post('/post/registerDriver',appDriverController.registerRider);
 router.post('/post/edit/driver',appDriverController.editRiderByRiderId);
 router.post('/post/delete/driver',appDriverController.deleteRiderByRiderId);
+
+router.post('/post/add/bankDriver',appDriverController.addDriverBank);
 
 
 
@@ -74,7 +83,6 @@ router.post('/post/reset/iot' , appIoTController.resetGasIoT) ;
 
 //===== GAS =====//
 router.get('/get/gas/detail',appGasController.getGasDetail);
-
 router.get('/get/iot/gas/percentPressure',appGasController.getPercentPressureBySerialNumber);
 
 
