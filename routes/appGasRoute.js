@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const appGasController = require('../controllerrs/appGasController');
-const appOrderController = require('../controllerrs/appOrderController');
+//const appOrderController = require('../controllerrs/appOrderController');
 const appUserManageController = require('../controllerrs/appUserManageController');
 const userController = require('../controllerrs/userController');
 const appIoTController = require('../controllerrs/appIoTManageController');
 const gasController = require('../controllerrs/gasController');
 const appDriverController = require('../controllerrs/appDriverManageController');
 const appGeneralController = require('../controllerrs/appGeneralController');
+const appOrderController = require('../controllerrs/appOrderManageController')
 
 
 
@@ -21,6 +22,7 @@ router.get('/get/province',appGeneralController.getProvince);
 router.get('/get/amphure',appGeneralController.getAmphure) ;
 router.get('/get/district',appGeneralController.getDistrict);
 router.get('/get/bankAll',appGeneralController.getBankAll);
+router.get('/get/paymentChannel',appGeneralController.getPaymentChannel);
 
 
 
@@ -71,7 +73,23 @@ router.post('/post/delete/bankDriver',appDriverController.deleteDriverBank);
 
 
 //===== Order =====//
+//user
+router.get('/get/orderUser/orderByUserId',appOrderController.getOrderByUserId);
 
+router.post('/post/add/orderUser',appOrderController.addOrderUser);
+router.post('/post/edt/orderUser',appOrderController.editOrderUser);
+router.post('/post/delete/orderUser',appOrderController.cancalOrderUser);
+
+//driver
+
+
+
+//===== Cart =====//
+router.get('/get/cart/cartByuserId',appOrderController.getOrderInCartByUserId);
+
+router.post('/post/add/cart',appOrderController.addOrderInCartByUserId);
+router.post('/post/edit/cart',appOrderController.editOrderInCartById);
+router.post('/post/delete/cart',appOrderController.deleteOrderInCartById);
 
 
 //===== IoT =====//

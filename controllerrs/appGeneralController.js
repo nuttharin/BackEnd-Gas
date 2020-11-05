@@ -139,9 +139,39 @@ getBankAll = (req, res,next) =>{
     );
 };
 
+getPaymentChannel = (req,res,next)=>{
+    let resData = {
+        status : "",
+        statuCode : 200 ,
+        data : ""
+    }   
+    let sql = `SELECT * FROM "public"."tb_payment_channel"`;
+    pool.query(
+        sql, 
+        (err, result) => {
+
+            if (err) {
+                //console.log(err); 
+                resData.status = "error"; 
+                resData.statuCode = 200 ;
+                resData.data = err ;
+                res.status(resData.statuCode).json(resData)
+            }
+            else
+            {    
+                resData.status = "success"; 
+                resData.statuCode = 201 ;
+                resData.data = result.rows ;
+                res.status(resData.statuCode).json(resData);
+            }
+        }
+    );
+}
+
 module.exports = {
     getProvince,
     getAmphure,
     getDistrict,
-    getBankAll
+    getBankAll,
+    getPaymentChannel
 }

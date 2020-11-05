@@ -92,7 +92,8 @@ getRiderDetailById = (req ,res ,next) =>{
 
 
 //#region POST
-// Driver 
+
+//# Driver 
 getDriverProfileById = async (req , res,next) =>{
     let data = req.query.driver_id
     let resData = {
@@ -398,6 +399,7 @@ deleteRiderByRiderId = async (req , res , next) =>{
         );
     }
 };
+//#endregion 
 
 
 
@@ -406,7 +408,7 @@ deleteRiderByRiderId = async (req , res , next) =>{
 
 
 
-// Bank
+//# Bank
 getDriverBankByDriverId = async (req ,res ,next) =>{
     let data = req.query.driver_id
     let resData = {
@@ -680,6 +682,11 @@ deleteDriverBank = async (req,res,next) =>{
         );
     }
 }
+//#endregion 
+
+
+
+
 
 //#endregion 
 

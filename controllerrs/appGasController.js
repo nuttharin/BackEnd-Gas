@@ -92,11 +92,12 @@ getPercentPressureBySerialNumber = (req ,res ,next) =>{
                             "dateTime" : { $gte : timeAround }
                         } 
                     )
-                    .sort(mysort).limit(-1)
+                    .sort(mysort)
+                    .limit(3)
                     .toArray(async function(err, result) 
                     {
-                        // console.log(moment(result[0].dateTime).format(' D/MM/YYYY h:mm:ss'))
-                        // console.log(result);
+                        console.log(moment(result[0].dateTime).format(' D/MM/YYYY h:mm:ss'))
+                        console.log(result);
                         delete result[0]._id ;
                         result[0].dateTime = moment(result[0].dateTime).format(' D/MM/YYYY HH:mm:ss');
                         if (err) 
@@ -109,38 +110,79 @@ getPercentPressureBySerialNumber = (req ,res ,next) =>{
                         }
                         else
                         {
-                            let voltPressure = result[0].pressure ;
-                            let percentPressure ;                   
-                            if(voltPressure <= 0.5 && voltPressure >= 0)
+                            if(result.length > 0)
                             {
-                                percentPressure = 0 ;
-                                result[0].pressure = await percentPressure ;
-                            }
-                            else if(voltPressure >= 4.4 && voltPressure <= 4.5)
-                            {
-                                percentPressure = 100 ;
-                                result[0].pressure = await percentPressure ;
-        
-                            }
-                            else if (voltPressure > 0.5 && voltPressure < 4.5) {
-                                percentPressure = Math.ceil((voltPressure/4.4)*100) ;
-                                if(percentPressure >= 100)
+                                console.log(result)
+                                let arrPressure = { };
+                                let voltPressure = result[0].pressure ;
+                                let percentPressure ;
+                                // let statusOpen = "Close";  
+                                // if(result.length == 3)
+                                // {
+                                //     arrPressure = await {
+                                //         pressure0 : result[0].pressure,
+                                //         pressure1 : result[1].pressure,
+                                //         pressure2 : result[2].pressure
+                                //     }                                    
+                                // }
+                                // else if (result.length == 2)
+                                // {
+                                //     arrPressure = await {
+                                //         pressure0 : result[0].pressure,
+                                //         pressure1 : result[1].pressure
+                                //     }
+                                // } 
+                                // else if (result.length == 1)
+                                // {
+                                //     arrPressure = await {
+                                //         pressure0 : result[0].pressure                                       
+                                //     }
+                                // }
+                               
+                               
+                                console.log(arrPressure)
+                                 
+    
+                                if(voltPressure <= 0.5 && voltPressure >= 0)
                                 {
-                                    percentPressure = 100 ;                                
+                                    percentPressure = 0 ;
+                                    result[0].pressure = await percentPressure ;
                                 }
-                                result[0].pressure = await percentPressure ;
+                                else if(voltPressure >= 4.4 && voltPressure <= 4.5)
+                                {
+                                    percentPressure = 100 ;
+                                    result[0].pressure = await percentPressure ;
+            
+                                }
+                                else if (voltPressure > 0.5 && voltPressure < 4.5) {
+                                    percentPressure = Math.ceil((voltPressure/4.4)*100) ;
+                                    if(percentPressure >= 100)
+                                    {
+                                        percentPressure = 100 ;                                
+                                    }
+                                    result[0].pressure = await percentPressure ;
+                                }
+                                else {
+                                    percentPressure = "Error value" ;
+                                    result[0].pressure = await percentPressure ;
+                                }
+    
+                                resData.status = "success"; 
+                                resData.statuCode = 201 ;
+                                resData.data = result[0] ;
+                                res.status(resData.statuCode).json(resData) ; 
                             }
-                            else {
-                                percentPressure = "Error value" ;
-                                result[0].pressure = await percentPressure ;
+                            else
+                            {
+                                resData.status = "success"; 
+                                resData.statuCode = 201 ;
+                                resData.data = result ;
+                                res.status(resData.statuCode).json(resData) ;
                             }
-
-                            resData.status = "success"; 
-                            resData.statuCode = 201 ;
-                            resData.data = result[0] ;
-                            res.status(resData.statuCode).json(resData) ;                    
+                                               
                         }            
                         db.close();
+                        //console.log(result)
                     })
                 }
             });

@@ -26,6 +26,21 @@ funCheckParameter = async (data) => {
     return dataKey;
 }
 
+funCheckBody = async (data) =>{
+    let dataKey = "" ;
+    console.log(data)
+    await Object.entries(data).forEach(entry => {
+        const [key, value] = entry;
+        console.log(value)
+        if( (value == '' || value == undefined) )
+        {          
+            console.log(dataKey)
+            dataKey = key ;           
+        }
+    });
+    return dataKey;
+}
+
 funHashString = async (str) =>{
 
 }
@@ -35,5 +50,6 @@ funHashString = async (str) =>{
 module.exports = {
     funCheckParameter,
     funCheckParameterWithOutId,
-    funHashString
+    funHashString,
+    funCheckBody
 }
