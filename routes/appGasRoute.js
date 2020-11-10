@@ -9,7 +9,8 @@ const appIoTController = require('../controllerrs/appIoTManageController');
 const gasController = require('../controllerrs/gasController');
 const appDriverController = require('../controllerrs/appDriverManageController');
 const appGeneralController = require('../controllerrs/appGeneralController');
-const appOrderController = require('../controllerrs/appOrderManageController')
+const appOrderController = require('../controllerrs/appOrderManageController');
+const appOrderManageController = require('../controllerrs/appOrderManageController');
 
 
 
@@ -69,18 +70,7 @@ router.post('/post/add/bankDriver',appDriverController.addDriverBank);
 router.post('/post/edit/bankDriver',appDriverController.editDriverBank);
 router.post('/post/delete/bankDriver',appDriverController.deleteDriverBank);
 
-
-
-
-//===== Order =====//
-//user
-router.get('/get/orderUser/orderByUserId',appOrderController.getOrderByUserId);
-
-router.post('/post/add/orderUser',appOrderController.addOrderUser);
-router.post('/post/edt/orderUser',appOrderController.editOrderUser);
-router.post('/post/delete/orderUser',appOrderController.cancalOrderUser);
-
-//driver
+router.post('/post/edit/driver/workStatus',appDriverController.editStatusWorkByRiderId)
 
 
 
@@ -90,6 +80,24 @@ router.get('/get/cart/cartByuserId',appOrderController.getOrderInCartByUserId);
 router.post('/post/add/cart',appOrderController.addOrderInCartByUserId);
 router.post('/post/edit/cart',appOrderController.editOrderInCartById);
 router.post('/post/delete/cart',appOrderController.deleteOrderInCartById);
+
+
+//===== Order =====//
+//user
+//router.get('/get/orderUser/orderByUserId',appOrderController.getOrderByUserId);
+router.get('/get/orderUser/orderHistoryAllByUserId',appOrderManageController.getOrderHistoryAllByUserId);
+router.get('/get/orderUser/orderByOrderId',appOrderManageController.getOrderByOderId);
+// router.get()
+
+router.post('/post/add/orderUser',appOrderController.addOrderUser);
+router.post('/post/edt/orderUser',appOrderController.editOrderUser);
+router.post('/post/delete/orderUser',appOrderController.cancalOrderUser);
+
+//driver
+
+
+
+
 
 
 //===== IoT =====//

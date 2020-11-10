@@ -272,9 +272,9 @@ registerRider = async (req , res , next) => {
                                 dataUser.password = await bcrypt.hash(dataBody.password , parseInt(saltRounds));
                                 ///pictureRegisterUser/1603179432347_userID_.jpg
                                 sql = `INSERT INTO "public"."tb_rider"("name", "password", "idCard", "email", "phone",
-                                            "createDate", "modifyDate" , "isDelete", "urlPicture" ) 
+                                            "createDate", "modifyDate" , "isDelete", "urlPicture" ,"statusWork" ) 
                                         VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}'
-                                        , '${dataUser.createDate}', '${dataUser.modifyDate}' , 0 , '${JSON.stringify(pathUploadPic)}') RETURNING *`;
+                                        , '${dataUser.createDate}', '${dataUser.modifyDate}' , 0 , '${JSON.stringify(pathUploadPic)} ,1') RETURNING *`;
                                 // console.log(sql)
                                 pool.query(
                                     sql, 
@@ -399,6 +399,47 @@ deleteRiderByRiderId = async (req , res , next) =>{
         );
     }
 };
+
+editStatusWorkByRiderId = async (req, res,next) => {
+    //UPDATE "public"."tb_rider" SET "statusWork" = 1 WHERE "id" = 4
+    let data = req.body ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( driver_id )";    
+        res.status(200).json(resData);
+    }   
+    else 
+    {
+        let sql = `UPDATE "public"."tb_rider" SET "statusWork" = ${data.status} WHERE "id" = ${data.driver_id}`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "update complete";    
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+}
 //#endregion 
 
 
@@ -725,6 +766,7 @@ module.exports = {
     editDriverBank,
     deleteDriverBank ,
     getDriverBankByDriverId,
-    getDriverBankById
+    getDriverBankById,
+    editStatusWorkByRiderId
     
 }

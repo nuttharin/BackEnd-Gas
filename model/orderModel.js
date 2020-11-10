@@ -30,12 +30,12 @@ class Order {
     this.payment_id = payment_id ;
     this.order_number = order_number ;
     this.address_id = address_id ;
-    this.status = status ;
     this.order = order ;
 
   }
 }
-  
+
+
 
   module.exports = {
       CartData ,

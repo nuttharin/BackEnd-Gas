@@ -229,14 +229,8 @@ deleteOrderInCartById = (req,res,next) =>{
 }
 
 //Order
-getOrderByUserId = async (req,res,next) =>{
-    // SELECT * FROM tb_order
-    // INNER JOIN tb_payment_channel ON tb_payment_channel."id" = tb_order.payment_id
-    // INNER JOIN tb_order_status ON tb_order_status."id" = tb_order.status
-    // INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
-    // INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
-    
-    let data = req.query.x
+getOrderHistoryAllByUserId = async (req,res,next) => {
+    let data = req.query.user_id
     let resData = {
         status : "",
         statusCode : 200 ,
@@ -246,11 +240,130 @@ getOrderByUserId = async (req,res,next) =>{
     {
         resData.status = "error";
         resData.statusCode = 200 ;
-        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        resData.data = "not have parameter ( user_id )";    
         res.status(200).json(resData);
     }   
     else {
-        let sql = ``;
+        let arrOrder = {} ;
+        let dataAll ;
+
+        let sql = `SELECT tb_order.order_number as order_number, sum((tb_order_detail.quality * tb_gas_detail.price)) as price_all,
+        tb_order."modifyDate" as modify_date , tb_order_status."name" as status_order
+        FROM tb_order
+        INNER JOIN tb_order_status ON tb_order_status."id" = tb_order.status
+        INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+        INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id
+        WHERE tb_order.user_id = ${data} AND tb_order.status <> 1
+        GROUP BY order_number , modify_date , status_order 
+        ORDER BY order_number `;
+        pool.query(
+            sql, 
+            async (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    //console.log(result.rows[0]);
+                    dataAll = await result.rows ;
+                    sql = `SELECT  tb_order.order_number as order_number,tb_gas_detail."name" as gas_type ,tb_order_detail.quality ,
+                            (tb_gas_detail.price) as price                  
+                            FROM tb_order
+                            INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+                            INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id
+                            WHERE tb_order.user_id = ${data} AND tb_order.status <> 1 ORDER BY order_number`;
+                    pool.query(
+                        sql, 
+                        async (err, result) => {
+
+                            if (err) {
+                                //console.log(err); 
+                                resData.status = "error"; 
+                                resData.statusCode = 200 ;
+                                resData.data = err ;
+                                res.status(resData.statusCode).json(resData)
+                            }
+                            else
+                            {    
+                                //console.log(result.rows[0])
+                                let temp ;
+                                for (let i = 0; i < dataAll.length; i++) {
+                                    dataAll[i].order_list = [] ;
+                                   for (let j = 0; j < result.rows.length; j++) {
+                                        if(dataAll[i].order_number == result.rows[j].order_number)
+                                        {
+                                            temp = result.rows[j] ;
+                                            await dataAll[i].order_list.push(result.rows[j])
+                                        }
+                                   }                                    
+                                }
+                                //console.log(dataAll)
+                                resData.status = "success"; 
+                                resData.statusCode = 201 ;
+                                resData.data = dataAll ;
+                                res.status(resData.statusCode).json(resData);
+                            }
+                        }
+                    );
+                   
+                }
+            }
+        ); 
+    }
+}
+
+getOrderByUserId = async (req,res,next) =>{
+    // SELECT * FROM tb_order
+    // INNER JOIN tb_payment_channel ON tb_payment_channel."id" = tb_order.payment_id
+    // INNER JOIN tb_order_status ON tb_order_status."id" = tb_order.status
+    // INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+    // INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
+    
+    let data = req.query.order_id
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( order_id )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT order_number , tb_order."createDate" as create_date,
+                    tb_order."receiveDate" as receive_date,
+                    tb_order."paymentDate" as payment_date,
+                    tb_order."sendDate" as send_date,
+                    tb_address_user.other as address_order,
+                    tb_address_user.road as address_road,
+                    tb_subdistricts.name_th as subdis_name,
+                    tb_districts.name_th as dis_name,
+                    tb_provinces.name_th as provice_name,
+                    tb_address_user.name_address,
+                    tb_rider."name" as driver_name,
+                    tb_rider.phone as driver_phone,
+                    tb_gas_detail."name" as gas_type,
+                    tb_order_detail.quality as gas_quality,
+                    (tb_order_detail.quality*tb_gas_detail.price) as gas_prices
+                    FROM tb_order
+                    INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+                    INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id 
+                    INNER JOIN tb_payment_channel ON tb_payment_channel."id" = tb_order.payment_id
+                    INNER JOIN tb_order_status ON tb_order_status."id" = tb_order.status
+                    INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
+                    INNER JOIN tb_provinces ON tb_provinces."id" = tb_address_user.province_id
+                    INNER JOIN tb_districts ON tb_districts."id" = tb_address_user.amphure_id
+                    INNER JOIN tb_subdistricts ON tb_subdistricts."id" = tb_address_user.district_id
+                    INNER JOIN tb_rider ON tb_rider."id" = tb_order.rider_id
+                    WHERE tb_order."id" = ${data}`;
         pool.query(
             sql, 
             (err, result) => {
@@ -263,7 +376,7 @@ getOrderByUserId = async (req,res,next) =>{
                     res.status(resData.statusCode).json(resData)
                 }
                 else
-                {    
+                {   console.log(result.rows)
                     resData.status = "success"; 
                     resData.statusCode = 201 ;
                     resData.data = result.rows ;
@@ -277,7 +390,100 @@ getOrderByUserId = async (req,res,next) =>{
 }
 
 getOrderByOderId = async (req,res,next) =>{
+    let data = req.query.order_id
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( order_id )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT order_number , tb_order."createDate" as create_date,
+                    tb_order."receiveDate" as receive_date,
+                    tb_order."paymentDate" as payment_date,
+                    tb_order."sendDate" as send_date,
+                    tb_address_user.other as address_other,
+                    tb_address_user.road as address_road,
+                    tb_subdistricts.name_th as subdis_name,
+                    tb_districts.name_th as dis_name,
+                    tb_provinces.name_th as provice_name,
+                    tb_subdistricts.zip_code as zip_code,
+                    tb_address_user.name_address,
+                    tb_rider."name" as driver_name,
+                    tb_rider.phone as driver_phone,
+                    tb_gas_detail."name" as gas_type,
+                    tb_order_detail.quality as gas_quality,
+                    tb_gas_detail.price as gas_price,
+                    (tb_order_detail.quality*tb_gas_detail.price) as gas_price_all
+                    FROM tb_order
+                    INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+                    INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id 
+                    INNER JOIN tb_payment_channel ON tb_payment_channel."id" = tb_order.payment_id
+                    INNER JOIN tb_order_status ON tb_order_status."id" = tb_order.status
+                    INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
+                    INNER JOIN tb_provinces ON tb_provinces."id" = tb_address_user.province_id
+                    INNER JOIN tb_districts ON tb_districts."id" = tb_address_user.amphure_id
+                    INNER JOIN tb_subdistricts ON tb_subdistricts."id" = tb_address_user.district_id
+                    INNER JOIN tb_rider ON tb_rider."id" = tb_order.rider_id
+                    WHERE tb_order."id" = ${data}`;
+        pool.query(
+            sql, 
+            async (err, result) => {
 
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {   
+                    let dataTemp = await result.rows ;
+                    //delete dataTemp.create_date ;
+                    dataTemp = dataTemp.map(x => ({
+                        gas_type : x.gas_type,
+                        prices : x.gas_price,
+                        price_all : x.gas_price_all,
+                        quality : x.gas_quality
+
+                    }));
+                    console.log(dataTemp)
+                    console.log(result.rows[0].dis_name.substring(0,4) +"xx")
+                    //result.rows[0].payment_date = await moment( result.rows[0].payment_date).format('YYYY-MM-DD H:mm:ss');
+                    resData.status = "success"; 
+                    resData.statusCode = 201 ;
+                    resData.data = await {
+                        order_number : result.rows[0].order_number,
+                        create_date :  moment( result.rows[0].create_date).format('YYYY-MM-DD H:mm:ss'),
+                        receive_date :  moment( result.rows[0].receive_date).format('YYYY-MM-DD H:mm:ss'),
+                        payment_date :  moment( result.rows[0].payment_date).format('YYYY-MM-DD H:mm:ss'),
+                        send_date :  moment( result.rows[0].send_date).format('YYYY-MM-DD H:mm:ss'),
+                        driver_name : result.rows[0].driver_name,
+                        driver_phone : result.rows[0].driver_phone,
+                        address :  `${result.rows[0].name_address} ` +
+                        `${result.rows[0].address_other} ${result.rows[0].address_road} ` +
+                        `${(result.rows[0].dis_name.substring(0,4) == "เขต ")? "แขวง "+result.rows[0].subdis_name:"ต."+result.rows[0].subdis_name}`+
+                        `${(result.rows[0].dis_name.substring(0,4) == "เขต ")? "เขต "+result.rows[0].dis_name:" อ."+ result.rows[0].dis_name}`+
+                        ` จ. ${result.rows[0].provice_name } ${result.rows[0].zip_code }`,
+                        name_address : result.rows[0].name_address,
+                        address_other : result.rows[0].address_other,
+                        address_road : result.rows[0].address_road,
+                        district : result.rows[0].dis_name,
+                        subdistrict :result.rows[0].subdis_name,
+                        order_list : dataTemp,
+                    } ;
+                    res.status(resData.statusCode).json(resData);
+                }
+            }
+        );
+    }
 }
 
 addOrderUser = async (req,res,next) =>{
@@ -304,7 +510,6 @@ addOrderUser = async (req,res,next) =>{
     dataOrder.payment_id = dataBody.payment_id;
     dataOrder.order_number =  moment(new Date()).format('YYYYMMDDHmm');
     dataOrder.address_id = dataBody.address_id ;
-    dataOrder.status = dataBody.status ;
     dataOrder.order = dataBody.order ;
     let checkparameter = await funCheckParameterWithOutId(dataOrder) ;
     //console.log(checkparameter);
@@ -322,7 +527,7 @@ addOrderUser = async (req,res,next) =>{
         "modifyDate", "send_type", "payment_id", "order_number", "address_id", "status") 
         VALUES (${dataOrder.user_id}, '${dataOrder.priceall}', '${dataOrder.createDate}',
          '${dataOrder.modifyDate}', '${dataOrder.send_type}', ${dataOrder.payment_id}, 
-         '${dataOrder.order_number}', ${dataOrder.address_id}, '${dataOrder.status}') RETURNING *`;
+         '${dataOrder.order_number}', ${dataOrder.address_id}, 3) RETURNING *`;
         pool.query(
             sql, 
             async (err, result) => {
@@ -377,11 +582,13 @@ addOrderUser = async (req,res,next) =>{
 }
 
 editOrderUser = (req,res,next) =>{
+    
 }
 
 cancalOrderUser = (req,res,next) =>{
     //UPDATE "public"."tb_order" SET "status" = '1' WHERE "id" = 2
     let data = req.body.order_id ;
+    let newDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss')
     let resData = {
         status : "",
         statusCode : 200 ,
@@ -396,7 +603,8 @@ cancalOrderUser = (req,res,next) =>{
     }   
     else 
     {
-        let sql = `UPDATE "public"."tb_order" SET "status" = '1' WHERE "id" = ${data}`;
+        let sql = `UPDATE "public"."tb_order" SET "modifyDate" = '${newDate}', "status" = '1' 
+                    WHERE "id" = ${data}`;
         pool.query(
             sql, 
             (err, result) => {
@@ -420,6 +628,10 @@ cancalOrderUser = (req,res,next) =>{
     }
 }
 
+successOrderUser = () =>{
+    //UPDATE "public"."tb_order" SET "status" = 4 WHERE "id" = 3
+}
+
 
 module.exports = {
     
@@ -428,7 +640,10 @@ module.exports = {
     editOrderInCartById,
     deleteOrderInCartById,
     getOrderByUserId,
+    getOrderHistoryAllByUserId,
+    getOrderByOderId,
     addOrderUser,
     editOrderUser,
     cancalOrderUser
+
 }

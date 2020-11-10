@@ -260,3 +260,30 @@ res.status(201).json(resData);
         );
     }
 }
+
+
+
+
+-- SELECT tb_order.order_number as order_number, sum((tb_order_detail.quality * tb_gas_detail.price)) as price_all,
+-- tb_order."modifyDate" as modify_date , tb_order_status."name" as status_order
+-- FROM tb_order
+-- INNER JOIN tb_payment_channel ON tb_payment_channel."id" = tb_order.payment_id
+-- INNER JOIN tb_order_status ON tb_order_status."id" = tb_order.status
+-- INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+-- INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id
+-- WHERE tb_order.user_id = 15  
+-- GROUP BY order_number , modify_date , status_order 
+-- ORDER BY order_number
+
+SELECT  tb_order.order_number as order_number,tb_gas_detail."name" as gas_type ,tb_order_detail.quality ,
+                    (tb_gas_detail.price) as price                  
+                    FROM tb_order
+                    INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+                    INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id
+                    WHERE tb_order.user_id = 15 ORDER BY order_number
+
+
+                    UPDATE "public"."tb_order" SET "rider_id" = 4 WHERE "id" = 1
+                    UPDATE "public"."tb_order" SET "receiveDate" = '2020-11-10 14:13:20' WHERE "id" = 1
+
+                    INSERT INTO "public"."tb_machine_gas"("owner", "phone", "lat", "lon", "status") VALUES ('chill talk', '0812318897', '10.22222', '10.11111', 1) RETURNING *
