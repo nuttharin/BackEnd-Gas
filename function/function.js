@@ -45,7 +45,7 @@ funHashString = async (str) =>{
 
 }
 
-funCalDistanceLatLon = async () =>{
+funCalDistanceLatLon = async (lat1,lon1,lat2,lon2) =>{
     var R = 6371; // Radius of the earth in km
         var dLat = deg2rad(lat2-lat1);  // deg2rad below
         var dLon = deg2rad(lon2-lon1); 
@@ -56,7 +56,7 @@ funCalDistanceLatLon = async () =>{
             ; 
         var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
         var d = R * c; // Distance in km  
-        console.log("ระยะทาง : " + d);
+        //console.log("ระยะทาง : " + d);
         // if(parseInt(d) <= 0 )
         // {
         //     d = Math.ceil(d * 1000 )+ " M";
@@ -65,13 +65,13 @@ funCalDistanceLatLon = async () =>{
         // {
         //     d = d+"Km";
         // }    
-        d = Math.ceil(d * 1000 )+ " M";
-        console.log(d);
+        d = Math.ceil(d * 1000 );
+        //console.log(d);
         return d
        
 }
 
-funCalDistanceLatLon2 = async () =>{
+funCalDistanceLatLon2 = async (lat1,lon1,lat2,lon2,unit) =>{
     var rlat1 = Math.PI * lat1 / 180
     var rlat2 = Math.PI * lat2 / 180
     var rlon1 = Math.PI * lon1 / 180
@@ -96,8 +96,8 @@ funCalDistanceLatLon2 = async () =>{
     // {
     //     dist = dist+"Km";
     // }
-    console.log("1----------" + dist)
-    return dist
+    //console.log("1----------" + dist)
+    return Math.ceil( dist * 1000 )
 }
  
 function deg2rad(deg) {

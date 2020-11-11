@@ -95,7 +95,7 @@ router.post('/post/delete/orderUser',appOrderController.cancalOrderUser);
 
 //driver
 
-
+router.get('/post/driver/distance',appOrderController.sendOrderToDriver);
 
 
 

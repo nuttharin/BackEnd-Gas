@@ -635,8 +635,9 @@ successOrderUser = () =>{
 sendOrderToDriver = async (req,res,next) => {
     //13.860396, 100.513604
     //13.860674, 100.511575
+    // meter
     let distance = await funCalDistanceLatLon(13.860396, 100.513604,13.860674, 100.511575);
-    let distance2 = await funCalDistanceLatLon(13.860396, 100.513604,13.860674, 100.511575);
+    let distance2 = await funCalDistanceLatLon2(13.860396, 100.513604,13.860674, 100.511575,"K");
     console.log(distance);
     console.log(distance2);
 
@@ -655,6 +656,7 @@ module.exports = {
     getOrderByOderId,
     addOrderUser,
     editOrderUser,
-    cancalOrderUser
+    cancalOrderUser,
+    sendOrderToDriver
 
 }
