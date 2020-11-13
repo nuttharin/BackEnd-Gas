@@ -19,7 +19,7 @@ class Cart {
 
 class Order {
   constructor(id, user_id, priceall, createDate,modifyDate, receiveDate,send_type,payment_id,
-    order_number, address_id,status,order){
+    order_number, address_id,status,order,machine_id){
     this.id  = id ;
     this.user_id = user_id ;
     this.priceall = priceall ;
@@ -31,6 +31,7 @@ class Order {
     this.order_number = order_number ;
     this.address_id = address_id ;
     this.order = order ;
+    this.machine_id = machine_id ;
 
   }
 }

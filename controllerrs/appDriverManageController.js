@@ -1,6 +1,6 @@
 const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
 const { User , Position ,PositionUserId, Rider , Order , UserData} = require("../model/userModel");
-const { BankDriver ,BankDriverData} = require("../model/driverModel");
+const { BankDriver ,BankDriverData,PositionDriver} = require("../model/driverModel");
 const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
 
 
@@ -296,6 +296,7 @@ registerRider = async (req , res , next) => {
                                             resData.data = "insert complete";
                                             res.status(201).json(resData);
                                             
+                                            
                                         }
                                     }
                                 );
@@ -440,6 +441,101 @@ editStatusWorkByRiderId = async (req, res,next) => {
         );
     }
 }
+
+updatePositionDriverByDriverId = async (req,res,next) =>{
+    //UPDATE "public"."tb_position_driver" SET "lat" = '13.860397', "lon" = '100.5136048' WHERE "id" = 1
+    //INSERT INTO "public"."tb_position_driver"("id", "rider_id", "lat", "lon", "createDate") VALUES (2, 1, '13.86', '100.51', '2020-11-13 14:55:56') RETURNING *
+    let dataPos = new PositionDriver();
+    let dataBody = req.body ;
+
+    dataPos.driver_id = dataBody.driver_id ; 
+    dataPos.lat = dataBody.lat ;
+    dataPos.lon = dataBody.lon ;
+
+    dataPos.createDate =  moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+    let checkParameter = await funCheckParameterWithOutId(dataPos);
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    } ;
+    if(checkParameter != "" ) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        res.status(200).json(resData);
+    }
+    else
+    {
+        let sql = `INSERT INTO "public"."tb_position_driver"("rider_id", "lat", "lon", "createDate") 
+        VALUES (${dataPos.driver_id}, '${dataPos.lat}', '${dataPos.lon}', 
+        '${dataPos.createDate}') RETURNING *`;
+        pool.query(
+            sql, 
+            (err, result) => {
+    
+                if (err) {
+                    //console.log(err);  
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = "error update tb_position_driver : " + err;    
+                    res.status(200).json(resData);
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "insert complete";    
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+}
+
+getPositionDriverByDriver = async (req,res,next) =>{
+    let data = req.query.driver_id
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( driver_id )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT rider_id , lat , lon FROM tb_position_driver
+                    WHERE tb_position_driver.rider_id = ${data}
+                    ORDER BY tb_position_driver."createDate"
+                    DESC LIMIT 1`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    resData.status = "success"; 
+                    resData.statusCode = 201 ;
+                    resData.data = result.rows[0] ;
+                    res.status(resData.statusCode).json(resData);
+                }
+            }
+        );
+    }
+} 
 //#endregion 
 
 
@@ -767,6 +863,8 @@ module.exports = {
     deleteDriverBank ,
     getDriverBankByDriverId,
     getDriverBankById,
-    editStatusWorkByRiderId
+    editStatusWorkByRiderId,
+    updatePositionDriverByDriverId,
+    getPositionDriverByDriver
     
 }

@@ -19,9 +19,18 @@ class BankDriverData {
   }
 }
 
+class PositionDriver {
+  constructor(driver_id,lat,lon,createDate) {
+    this.driver_id = driver_id ;
+    this.lat = lat ;
+    this.lon = lon ;
+    this.createDate = createDate
+  }
+}
 
 module.exports = {
     BankDriver,
-    BankDriverData
+    BankDriverData,
+    PositionDriver
 }
 

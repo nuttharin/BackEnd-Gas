@@ -511,6 +511,7 @@ addOrderUser = async (req,res,next) =>{
     dataOrder.order_number =  moment(new Date()).format('YYYYMMDDHmm');
     dataOrder.address_id = dataBody.address_id ;
     dataOrder.order = dataBody.order ;
+    dataOrder.machine_id = dataBody.machine_id
     let checkparameter = await funCheckParameterWithOutId(dataOrder) ;
     //console.log(checkparameter);
     console.log(dataOrder);
@@ -524,10 +525,10 @@ addOrderUser = async (req,res,next) =>{
     else
     {
         let sql = `INSERT INTO "public"."tb_order" ("user_id", "priceall", "createDate", 
-        "modifyDate", "send_type", "payment_id", "order_number", "address_id", "status") 
+        "modifyDate", "send_type", "payment_id", "order_number", "address_id", "status" ,"machine_id") 
         VALUES (${dataOrder.user_id}, '${dataOrder.priceall}', '${dataOrder.createDate}',
          '${dataOrder.modifyDate}', '${dataOrder.send_type}', ${dataOrder.payment_id}, 
-         '${dataOrder.order_number}', ${dataOrder.address_id}, 3) RETURNING *`;
+         '${dataOrder.order_number}', ${dataOrder.address_id}, 3 ,${dataOrder.machine_id}) RETURNING *`;
         pool.query(
             sql, 
             async (err, result) => {
@@ -636,6 +637,7 @@ sendOrderToDriver = async (req,res,next) => {
     //13.860396, 100.513604
     //13.860674, 100.511575
     // meter
+    // check ว่า rider มีงานค้างอยู่ไหม => ไม่ส่งเลย
     let distance = await funCalDistanceLatLon(13.860396, 100.513604,13.860674, 100.511575);
     let distance2 = await funCalDistanceLatLon2(13.860396, 100.513604,13.860674, 100.511575,"K");
     console.log(distance);
@@ -643,6 +645,140 @@ sendOrderToDriver = async (req,res,next) => {
 
 
 }
+
+driverReceiveOrder = async (req,res,next)=> {
+
+    // check ว่า order นั้นมีคนรับหรือยัง
+    //UPDATE "public"."tb_order" SET "status" = 2, "rider_id" = 1, "driverReceiveDate" = '2020-11-13 10:53:38' WHERE "id" = 2
+    let dataBody = req.body ;
+    dataBody.driverReceiveDate =  moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    } ;
+    if(dataBody.driver_id == "" || dataBody.driver_id == undefined)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( order_id )";    
+        res.status(200).json(resData);
+    }
+    else if(dataBody.order_id == "" || dataBody.order_id == undefined)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( order_id )";    
+        res.status(200).json(resData);
+    }
+    else{   
+        let sql = `SELECT tb_order."id" FROM tb_order
+                    WHERE tb_order."id" = ${dataBody.order_id} 
+                    AND tb_order.status = 3 `;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    //console.log(result.rows)
+                    if(result.rows.length > 0)
+                    {
+                        sql = `UPDATE "public"."tb_order" SET "status" = 2, 
+                                "rider_id" = ${dataBody.driver_id}, 
+                                "driverReceiveDate" = '${dataBody.driverReceiveDate}' 
+                                WHERE "id" = ${dataBody.order_id}`;
+                        pool.query(
+                            sql, 
+                            (err, result) => {
+
+                                if (err) {
+                                    //console.log(err); 
+                                    resData.status = "error"; 
+                                    resData.statusCode = 200 ;
+                                    resData.data = err ;
+                                    res.status(resData.statusCode).json(resData)
+                                }
+                                else
+                                {    
+                                    resData.status = "success"; 
+                                    resData.statusCode = 201 ;
+                                    resData.data = "insert complete" ;
+                                    res.status(resData.statusCode).json(resData);
+                                }
+                            }
+                        );
+                    }
+                    else{
+                        resData.status = "success";
+                        resData.statusCode = 200 ;
+                        resData.data ="order has been received" ;
+                        res.status(resData.statusCode).json(resData);
+                    }
+                }
+            }
+        );
+    }
+}
+
+getDriverOrderReviceByDriverId = async (req,res,next) =>{
+    // SELECT * FROM tb_order
+    // INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
+    // WHERE tb_order.rider_id = 4 
+    // AND tb_order.status = 2
+    
+    let data = req.query.driver_id
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( driver_id )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = ``;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    resData.status = "success"; 
+                    resData.statusCode = 201 ;
+                    resData.data = result.rows ;
+                    res.status(resData.statusCode).json(resData);
+                }
+            }
+        );
+    }
+}
+
+getOrderDriverReceiveNotCompleteByDriverId = async (req,res,next) =>{
+
+}
+
+
+
+
 
 
 module.exports = {
@@ -657,6 +793,7 @@ module.exports = {
     addOrderUser,
     editOrderUser,
     cancalOrderUser,
-    sendOrderToDriver
+    sendOrderToDriver,
+    driverReceiveOrder
 
 }

@@ -70,7 +70,10 @@ router.post('/post/add/bankDriver',appDriverController.addDriverBank);
 router.post('/post/edit/bankDriver',appDriverController.editDriverBank);
 router.post('/post/delete/bankDriver',appDriverController.deleteDriverBank);
 
-router.post('/post/edit/driver/workStatus',appDriverController.editStatusWorkByRiderId)
+router.post('/post/edit/driver/workStatus',appDriverController.editStatusWorkByRiderId);
+
+router.post('/post/add/driver/position',appDriverController.updatePositionDriverByDriverId);
+router.get('/get/driver/position',appDriverController.getPositionDriverByDriver);
 
 
 
@@ -96,6 +99,7 @@ router.post('/post/delete/orderUser',appOrderController.cancalOrderUser);
 //driver
 
 router.get('/post/driver/distance',appOrderController.sendOrderToDriver);
+router.post('/post/driver/driverReceiveOrder',appOrderController.driverReceiveOrder);
 
 
 
