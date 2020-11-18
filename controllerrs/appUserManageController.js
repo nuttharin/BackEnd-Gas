@@ -1,6 +1,7 @@
 const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
 const { User , Position ,PositionUserId, Rider , Order , UserData} = require("../model/userModel");
 const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
+const { generateToken , generateRefreshToken} = require('../controllerrs/appTokenManageController');
 
 
 const { Double } = require("mongodb");
@@ -15,9 +16,8 @@ const multer = require('multer');
 const storage = multer.diskStorage({
     destination : "./upload/picture/register",
     filename : (req,file,cb) =>{
-        return cb(null,`${Date.now()}_${file.originalname}`);
+        return cb(null,`${Date.now()}_picIdCard.${file.mimetype.split('/')[1]}`);
     } 
-
 }); 
 
 const upload = multer({
@@ -27,6 +27,20 @@ const upload = multer({
     }
 }).fields([{ name : 'picIdCard' } , {name : 'picIdCardFace'}]);
 
+
+const storageProfile = multer.diskStorage({
+    destination : "./upload/picture/profile",
+    filename : (req,file,cb) =>{ 
+        //console.log(file.mimetype.split('/')[1])
+        return cb(null,`${Date.now()}_picProfile.${file.mimetype.split('/')[1]}`);
+    }
+}); 
+const uploadPicProfile = multer({
+    storage : storageProfile ,
+    limits : {
+        fileSize : 1000000
+    }
+}).fields([{ name : 'picProfile' }]);
 
 //#region GET
 
@@ -129,17 +143,31 @@ userLogin = async (req , res , next) =>{
                 res.status(400).json(resData);
             }
             else
-            {
-                
+            {                
                 if(result.rows.length > 0)
                 {
                     let match = await bcrypt.compare(dataBody.password, result.rows[0].password);
                     if(match) 
                     {
                         console.log(result.rows)
+                        dataUser = result.rows[0];
+                        delete dataUser.password ;
+                        let dataGen = {
+                            username :dataUser.email ,
+                            id : dataUser.id
+                        }
+                        let accessToken = await generateToken(dataGen);
+                        let refreshToken = await generateRefreshToken(dataGen);
+
                         resData.status = "success";
                         resData.statusCode = 201 ;
-                        resData.data = result.rows ;
+                        resData.data = {
+                            user_data : dataUser ,
+                            token : {
+                                accessToken : accessToken,
+                                refreshToken : refreshToken
+                            }
+                        } ;
                         res.status(200).json(resData);
                     }
                     else{
@@ -163,15 +191,41 @@ userLogin = async (req , res , next) =>{
 
 registerUser = async (req , res , next) =>{ 
     //console.log(req.body);
-
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    };
+    // let dataToken = {
+    //     username : 1000 ,
+    //     id : 10
+    // };
+    // let token = await generateToken(dataToken);
+    // console.log(token);
+    
     upload(req, res,async function (err) {
-        console.log(req.files);
+        // console.log(req.files.picIdCard);
+        // console.log(req.files.picIdCardFace);
+        let pathUpload =  process.env.IP_ADDRESS+'/pictureRegisterUser/'
+        let pathUploadPic = {
+            cardId : pathUpload + req.files.picIdCard[0].filename,
+            cardIdFace : pathUpload + req.files.picIdCardFace[0].filename
+        };
         if (err instanceof multer.MulterError) {
           // A Multer error occurred when uploading.
+            resData.status = "error";
+            resData.statusCode = 200 ;
+            resData.data = "A Multer error occurred when uploading.";
+            res.status(201).json(resData);
+
         }
         else if (err) 
         {
           // An unknown error occurred when uploading.
+            resData.status = "error";
+            resData.statusCode = 200 ;
+            resData.data = "An unknown error occurred when uploading.";
+            res.status(201).json(resData);
         }
         else {
         
@@ -185,15 +239,13 @@ registerUser = async (req , res , next) =>{
             dataUser.phone = dataBody.phone;         
             dataUser.type = dataBody.type;
             dataUser.createDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
-            dataUser.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');           
+            dataUser.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss'); 
+            
+           
 
 
             let checkParameter = await funCheckParameterWithOutId(dataUser);
-            let resData = {
-                status : "",
-                statusCode : "",
-                data : ""
-            }   
+           
             if(checkParameter != "" )
             {
                 //console.log(checkParameter)       
@@ -230,13 +282,13 @@ registerUser = async (req , res , next) =>{
                                 dataUser.password = await bcrypt.hash(dataBody.password , parseInt(saltRounds));
 
                                 sql = `INSERT INTO "public"."tb_user"("name", "password", "idCard", "email", "phone",
-                                            "createDate", "modifyDate" ,"type" , "isDelete" ) 
+                                            "createDate", "modifyDate" ,"type" , "isDelete" , "urlPicture") 
                                         VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}'
-                                        , '${dataUser.createDate}', '${dataUser.modifyDate}','${dataUser.type}' , 0) RETURNING *`;
+                                        , '${dataUser.createDate}', '${dataUser.modifyDate}','${dataUser.type}' , 0 , '${JSON.stringify(pathUploadPic)}') RETURNING *`;
                                 // console.log(sql)
                                 pool.query(
                                     sql, 
-                                    (err, result) => 
+                                    async (err, result) => 
                                     {
                                         //console.log(err)
                                         if (err) {
@@ -252,13 +304,11 @@ registerUser = async (req , res , next) =>{
                                             resData.status = "success";
                                             resData.statusCode = 201 ;
                                             resData.data = "insert complete";
-                                            res.status(201).json(resData);
-                                            
+                                            res.status(201).json(resData);  
                                         }
                                     }
                                 );
-                            }
-                        
+                            }                        
                         
                         }
                     }
@@ -327,6 +377,66 @@ editUserByUserId = async (req , res , next) =>{
 
 
 };
+
+editUserPicProfileByUserId = async (req , res , next) =>{
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }   
+    uploadPicProfile(req, res,async function (err) {
+        //console.log(req.files);
+        console.log(req.body.user_id)
+        let pathUpload =  process.env.IP_ADDRESS+'/pictureProfile/'
+        let pathUploadPic = {
+            profile : pathUpload + req.files.picProfile[0].filename
+        };
+        if (err instanceof multer.MulterError) {
+          // A Multer error occurred when uploading.
+            resData.status = "error";
+            resData.statusCode = 200 ;
+            resData.data = "A Multer error occurred when uploading.";
+            res.status(201).json(resData);
+
+        }
+        else if (err) 
+        {
+          // An unknown error occurred when uploading.
+            resData.status = "error";
+            resData.statusCode = 200 ;
+            resData.data = "An unknown error occurred when uploading.";
+            res.status(201).json(resData);
+        }
+        else {
+            //console.log()
+            //UPDATE "public"."tb_user" SET "urlPicture" = 'x' WHERE "id" = 27
+            let sql = `UPDATE "public"."tb_user" SET "urlPictureProfile" = '${pathUploadPic.profile}' WHERE "id" = ${req.body.user_id}`;
+            // console.log(sql)
+            pool.query(
+                sql, 
+                (err, result) => 
+                {
+                    //console.log(err)
+                    if (err) {
+                        //console.log(err);                      
+                        resData.status = "error";
+                        resData.statusCode = 200 ;
+                        resData.data = "query command error tb_user: " + err;
+                        res.status(400).json(resData);
+                    }
+                    else
+                    {
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = "update complete";
+                        res.status(201).json(resData);
+                        
+                    }
+                }
+            );           
+        }
+    });
+}
 
 deleteUserByUserId = async (req , res , next) =>{
     //UPDATE "public"."tb_user" SET "isDelete" = 1 WHERE "id" = 16
@@ -666,5 +776,6 @@ module.exports = {
     addUserAddress,
     editUserAddress,
     deleteUserAddress,
-    userLogin
+    userLogin,
+    editUserPicProfileByUserId
 }; 

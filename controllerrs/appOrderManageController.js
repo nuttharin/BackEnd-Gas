@@ -729,10 +729,17 @@ driverReceiveOrder = async (req,res,next)=> {
 }
 
 getDriverOrderReviceByDriverId = async (req,res,next) =>{
-    // SELECT * FROM tb_order
+    // SELECT * , tb_machine_gas.address_name   
+    // FROM tb_order
     // INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
-    // WHERE tb_order.rider_id = 4 
+    // INNER JOIN tb_machine_gas ON tb_machine_gas.id = tb_order.machine_id                 
+    // INNER JOIN tb_provinces ON tb_provinces."id" = tb_address_user.province_id
+    // INNER JOIN tb_districts ON tb_districts."id" = tb_address_user.amphure_id
+    // INNER JOIN tb_subdistricts ON tb_subdistricts."id" = tb_address_user.district_id 
+    // INNER JOIN tb_position_driver ON  tb_position_driver.rider_id = tb_order.rider_id
+    // WHERE tb_order.rider_id = 4   
     // AND tb_order.status = 2
+    
     
     let data = req.query.driver_id
     let resData = {

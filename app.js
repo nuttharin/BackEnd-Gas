@@ -50,6 +50,7 @@ app.use('/app',appGasRouter);
 
 app.use('/pictureRegisterUser', express.static('./upload/picture/register'));
 app.use('/pictureRegisterDriver', express.static('./upload/picture/register_driver'));
+app.use('/pictureProfile' , express.static('./upload/picture/profile'))
 //app.use('/static', express.static('z'))
 
 

@@ -2,15 +2,17 @@ const express = require('express');
 const router = express.Router();
 
 const appGasController = require('../controllerrs/appGasController');
-//const appOrderController = require('../controllerrs/appOrderController');
+//const appOrderManageController = require('../controllerrs/appOrderManageController');
 const appUserManageController = require('../controllerrs/appUserManageController');
 const userController = require('../controllerrs/userController');
 const appIoTController = require('../controllerrs/appIoTManageController');
 const gasController = require('../controllerrs/gasController');
-const appDriverController = require('../controllerrs/appDriverManageController');
+const appDriverManageController = require('../controllerrs/appDriverManageController');
 const appGeneralController = require('../controllerrs/appGeneralController');
-const appOrderController = require('../controllerrs/appOrderManageController');
+//const appOrderManageController = require('../controllerrs/appOrderManageController');
 const appOrderManageController = require('../controllerrs/appOrderManageController');
+const {verifyAccessToken , RefreshToken} = require('../controllerrs/appTokenManageController');
+
 
 
 
@@ -19,7 +21,7 @@ const appOrderManageController = require('../controllerrs/appOrderManageControll
 // router.get('/get/getOrderGasById',appGasController.getOrderGasById);
 
 //===== General ===== //
-router.get('/get/province',appGeneralController.getProvince);
+router.get('/get/province',verifyAccessToken,appGeneralController.getProvince);
 router.get('/get/amphure',appGeneralController.getAmphure) ;
 router.get('/get/district',appGeneralController.getDistrict);
 router.get('/get/bankAll',appGeneralController.getBankAll);
@@ -30,16 +32,18 @@ router.get('/get/paymentChannel',appGeneralController.getPaymentChannel);
 
 //===== login =====//
 router.post('/post/login',appUserManageController.userLogin);
-router.post('/post/loginDriver',appDriverController.driverLogin);
+router.post('/post/loginDriver',appDriverManageController.driverLogin);
+router.post('/post/refreshToken',RefreshToken)
 
 
 
 //===== User Management =====//
-router.get('/get/getUserDetailById',appUserManageController.getUserDetailById)
+router.get('/get/getUserDetailById',appUserManageController.getUserDetailById);
 
 router.post('/post/registerUser',appUserManageController.registerUser);
 router.post('/post/edit/user',appUserManageController.editUserByUserId);
 router.post('/post/delete/user',appUserManageController.deleteUserByUserId);
+router.post('/post/edit/user/profile',appUserManageController.editUserPicProfileByUserId);
 
 
 
@@ -56,50 +60,51 @@ router.post('/post/delete/userAddress',appUserManageController.deleteUserAddress
 
 
 //===== Rider Management =====//
-router.get('/get/driverBankByDriverId',appDriverController.getDriverBankByDriverId);
-router.get('/get/driverBankById',appDriverController.getDriverBankById);
+router.get('/get/driverBankByDriverId',appDriverManageController.getDriverBankByDriverId);
+router.get('/get/driverBankById',appDriverManageController.getDriverBankById);
 
-router.get('/get/getDriverProfileById',appDriverController.getDriverProfileById);
+router.get('/get/getDriverProfileById',appDriverManageController.getDriverProfileById);
 
 
-router.post('/post/registerDriver',appDriverController.registerRider);
-router.post('/post/edit/driver',appDriverController.editRiderByRiderId);
-router.post('/post/delete/driver',appDriverController.deleteRiderByRiderId);
+router.post('/post/registerDriver',appDriverManageController.registerRider);
+router.post('/post/edit/driver',appDriverManageController.editRiderByRiderId);
+router.post('/post/delete/driver',appDriverManageController.deleteRiderByRiderId);
+router.post('/post/edit/driver/profile',appDriverManageController.editRiderPicProfileByRiderId);
 
-router.post('/post/add/bankDriver',appDriverController.addDriverBank);
-router.post('/post/edit/bankDriver',appDriverController.editDriverBank);
-router.post('/post/delete/bankDriver',appDriverController.deleteDriverBank);
+router.post('/post/add/bankDriver',appDriverManageController.addDriverBank);
+router.post('/post/edit/bankDriver',appDriverManageController.editDriverBank);
+router.post('/post/delete/bankDriver',appDriverManageController.deleteDriverBank);
 
-router.post('/post/edit/driver/workStatus',appDriverController.editStatusWorkByRiderId);
+router.post('/post/edit/driver/workStatus',appDriverManageController.editStatusWorkByRiderId);
 
-router.post('/post/add/driver/position',appDriverController.updatePositionDriverByDriverId);
-router.get('/get/driver/position',appDriverController.getPositionDriverByDriver);
+router.post('/post/add/driver/position',appDriverManageController.updatePositionDriverByDriverId);
+router.get('/get/driver/position',appDriverManageController.getPositionDriverByDriver);
 
 
 
 //===== Cart =====//
-router.get('/get/cart/cartByuserId',appOrderController.getOrderInCartByUserId);
+router.get('/get/cart/cartByuserId',appOrderManageController.getOrderInCartByUserId);
 
-router.post('/post/add/cart',appOrderController.addOrderInCartByUserId);
-router.post('/post/edit/cart',appOrderController.editOrderInCartById);
-router.post('/post/delete/cart',appOrderController.deleteOrderInCartById);
+router.post('/post/add/cart',appOrderManageController.addOrderInCartByUserId);
+router.post('/post/edit/cart',appOrderManageController.editOrderInCartById);
+router.post('/post/delete/cart',appOrderManageController.deleteOrderInCartById);
 
 
 //===== Order =====//
 //user
-//router.get('/get/orderUser/orderByUserId',appOrderController.getOrderByUserId);
+//router.get('/get/orderUser/orderByUserId',appOrderManageController.getOrderByUserId);
 router.get('/get/orderUser/orderHistoryAllByUserId',appOrderManageController.getOrderHistoryAllByUserId);
 router.get('/get/orderUser/orderByOrderId',appOrderManageController.getOrderByOderId);
 // router.get()
 
-router.post('/post/add/orderUser',appOrderController.addOrderUser);
-router.post('/post/edt/orderUser',appOrderController.editOrderUser);
-router.post('/post/delete/orderUser',appOrderController.cancalOrderUser);
+router.post('/post/add/orderUser',appOrderManageController.addOrderUser);
+router.post('/post/edt/orderUser',appOrderManageController.editOrderUser);
+router.post('/post/delete/orderUser',appOrderManageController.cancalOrderUser);
 
 //driver
 
-router.get('/post/driver/distance',appOrderController.sendOrderToDriver);
-router.post('/post/driver/driverReceiveOrder',appOrderController.driverReceiveOrder);
+router.get('/post/driver/distance',appOrderManageController.sendOrderToDriver);
+router.post('/post/driver/driverReceiveOrder',appOrderManageController.driverReceiveOrder);
 
 
 

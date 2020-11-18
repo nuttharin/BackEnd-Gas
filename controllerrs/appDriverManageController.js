@@ -36,6 +36,27 @@ const upload = multer({
     { name : 'picIdCardFace'}
 ]);
 
+const storageProfile = multer.diskStorage({
+    destination : "./upload/picture/profile",
+    filename : (req,file,cb) =>{ 
+        //console.log(file.mimetype.split('/')[1])
+        return cb(null,`${Date.now()}_picProfile.${file.mimetype.split('/')[1]}`);
+    }
+}); 
+const uploadPicProfile = multer({
+    storage : storageProfile ,
+    limits : {
+        fileSize : 1000000
+    }
+}).fields([{ name : 'picProfile' }]);
+
+
+
+
+
+
+
+
 //===== End Set Path Picture =====//
 
 
@@ -274,7 +295,7 @@ registerRider = async (req , res , next) => {
                                 sql = `INSERT INTO "public"."tb_rider"("name", "password", "idCard", "email", "phone",
                                             "createDate", "modifyDate" , "isDelete", "urlPicture" ,"statusWork" ) 
                                         VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}'
-                                        , '${dataUser.createDate}', '${dataUser.modifyDate}' , 0 , '${JSON.stringify(pathUploadPic)} ,1') RETURNING *`;
+                                        , '${dataUser.createDate}', '${dataUser.modifyDate}' , 0 , '${JSON.stringify(pathUploadPic)}' ,1') RETURNING *`;
                                 // console.log(sql)
                                 pool.query(
                                     sql, 
@@ -359,6 +380,68 @@ editRiderByRiderId = async (req , res , next) =>{
             }
         );
     }
+};
+
+editRiderPicProfileByRiderId = async (req , res , next) =>{
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }   
+    uploadPicProfile(req, res,async function (err) {
+        //console.log(req.files);
+        console.log(req.body.user_id)
+        let pathUpload =  process.env.IP_ADDRESS+'/pictureProfile/'
+        let pathUploadPic = {
+            profile : pathUpload + req.files.picProfile[0].filename
+        };
+        if (err instanceof multer.MulterError) {
+          // A Multer error occurred when uploading.
+            resData.status = "error";
+            resData.statusCode = 200 ;
+            resData.data = "A Multer error occurred when uploading.";
+            res.status(201).json(resData);
+
+        }
+        else if (err) 
+        {
+          // An unknown error occurred when uploading.
+            resData.status = "error";
+            resData.statusCode = 200 ;
+            resData.data = "An unknown error occurred when uploading.";
+            res.status(201).json(resData);
+        }
+        else {
+            //console.log()
+            //UPDATE "public"."tb_rider" SET "urlPictureProfile" = '1' WHERE "id" = 1
+            let sql = `UPDATE "public"."tb_rider" 
+            SET "urlPictureProfile" = '${pathUploadPic.profile}' 
+            WHERE "id" = ${req.body.driver_id}`;
+            // console.log(sql)
+            pool.query(
+                sql, 
+                (err, result) => 
+                {
+                    //console.log(err)
+                    if (err) {
+                        //console.log(err);                      
+                        resData.status = "error";
+                        resData.statusCode = 200 ;
+                        resData.data = "query command error tb_user: " + err;
+                        res.status(400).json(resData);
+                    }
+                    else
+                    {
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = "update complete";
+                        res.status(201).json(resData);
+                        
+                    }
+                }
+            );           
+        }
+    });
 };
 
 deleteRiderByRiderId = async (req , res , next) =>{
@@ -535,7 +618,7 @@ getPositionDriverByDriver = async (req,res,next) =>{
             }
         );
     }
-} 
+};
 //#endregion 
 
 
@@ -865,6 +948,7 @@ module.exports = {
     getDriverBankById,
     editStatusWorkByRiderId,
     updatePositionDriverByDriverId,
-    getPositionDriverByDriver
+    getPositionDriverByDriver,
+    editRiderPicProfileByRiderId
     
 }
