@@ -105,6 +105,7 @@ router.post('/post/delete/orderUser',appOrderManageController.cancalOrderUser);
 
 router.get('/post/driver/distance',appOrderManageController.sendOrderToDriver);
 router.post('/post/driver/driverReceiveOrder',appOrderManageController.driverReceiveOrder);
+router.get('/get/driver/getOrderCurrentByDriverId' ,appOrderManageController.getDriverOrderReviceByDriverId);
 
 
 

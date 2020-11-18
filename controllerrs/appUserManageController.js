@@ -149,7 +149,7 @@ userLogin = async (req , res , next) =>{
                     let match = await bcrypt.compare(dataBody.password, result.rows[0].password);
                     if(match) 
                     {
-                        console.log(result.rows)
+                        //console.log(result.rows)
                         dataUser = result.rows[0];
                         delete dataUser.password ;
                         let dataGen = {

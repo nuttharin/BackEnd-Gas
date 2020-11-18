@@ -104,6 +104,14 @@ function deg2rad(deg) {
     return deg * (Math.PI/180)
 }
 
+funRandomNumberString = (range) => {
+    return new Promise((resolve , reject)=>{
+            let ranStr  = Math.ceil(Math.random() * Math.pow(10,range)) ;
+            resolve(ranStr);
+        
+    })
+}
+
 //13.860396, 100.513604
 //13.860674, 100.511575
 module.exports = {
@@ -112,6 +120,7 @@ module.exports = {
     funHashString,
     funCheckBody,
     funCalDistanceLatLon,
-    funCalDistanceLatLon2
+    funCalDistanceLatLon2,
+    funRandomNumberString
     
 }

@@ -1,7 +1,13 @@
 const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
 const { User , Position ,PositionUserId, Rider  , UserData} = require("../model/userModel");
 const {CartData, Cart , Order} = require('../model/orderModel')
-const {funCheckParameterWithOutId,funCalDistanceLatLon,funCalDistanceLatLon2} =  require('../function/function');
+const {
+    funCheckParameterWithOutId
+    ,funCalDistanceLatLon
+    ,funCalDistanceLatLon2
+    ,funRandomNumberString
+
+} =  require('../function/function');
 const moment = require('moment');
 const { getOrderByRiderId } = require("./userController");
 
@@ -677,7 +683,7 @@ driverReceiveOrder = async (req,res,next)=> {
                     AND tb_order.status = 3 `;
         pool.query(
             sql, 
-            (err, result) => {
+            async (err, result) => {
 
                 if (err) {
                     //console.log(err); 
@@ -689,11 +695,15 @@ driverReceiveOrder = async (req,res,next)=> {
                 else
                 {    
                     //console.log(result.rows)
+                    // status = 2 คือมีคนรับงานแล้ว
+                    let pwdMachine = await funRandomNumberString(6) ;
+
                     if(result.rows.length > 0)
                     {
                         sql = `UPDATE "public"."tb_order" SET "status" = 2, 
                                 "rider_id" = ${dataBody.driver_id}, 
-                                "driverReceiveDate" = '${dataBody.driverReceiveDate}' 
+                                "driverReceiveDate" = '${dataBody.driverReceiveDate}' ,
+                                "pwdGasMachine"  = '${pwdMachine}'
                                 WHERE "id" = ${dataBody.order_id}`;
                         pool.query(
                             sql, 
@@ -728,55 +738,78 @@ driverReceiveOrder = async (req,res,next)=> {
     }
 }
 
-getDriverOrderReviceByDriverId = async (req,res,next) =>{
-    // SELECT * , tb_machine_gas.address_name   
-    // FROM tb_order
-    // INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
-    // INNER JOIN tb_machine_gas ON tb_machine_gas.id = tb_order.machine_id                 
-    // INNER JOIN tb_provinces ON tb_provinces."id" = tb_address_user.province_id
-    // INNER JOIN tb_districts ON tb_districts."id" = tb_address_user.amphure_id
-    // INNER JOIN tb_subdistricts ON tb_subdistricts."id" = tb_address_user.district_id 
-    // INNER JOIN tb_position_driver ON  tb_position_driver.rider_id = tb_order.rider_id
-    // WHERE tb_order.rider_id = 4   
-    // AND tb_order.status = 2
-    
-    
-    let data = req.query.driver_id
-    let resData = {
-        status : "",
-        statusCode : 200 ,
-        data : ""
-    }
-    if(data == "" || data == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( driver_id )";    
-        res.status(200).json(resData);
-    }   
-    else {
-        let sql = ``;
-        pool.query(
-            sql, 
-            (err, result) => {
+getDriverOrderReviceByDriverId = async (req,res,next) => {
+    let pwdMachine = await funRandomNumberString(6) ;
+    console.log(numberMachine)
+    res.end();
+//     SELECT * 
+// 		-- , tb_machine_gas.address_name 
+// ,tb_order.id as order_id
+// ,tb_order.order_number as order_number 
+// ,tb_order.pwdGasMachine as pwd_gas_station
+// ,tb_machine_gas.address_name as gas_station_name
+// ,tb_address_user.name_address as customer_address_name
+// ,tb_address_user.other as address_order
+// ,tb_address_user.road as address_road
+// , tb_subdistricts.name_th as subdistrict_name
+// ,tb_districts.name_th as district_name
+// ,tb_provinces.name_th as provice_name
+// ,tb_address_user.latitude as latitude_customer
+// ,tb_address_user.longitude as longitude_cusetomer
+// ,t1.lat as latitude_driver , t1.lon as longitude_driver 
 
-                if (err) {
-                    //console.log(err); 
-                    resData.status = "error"; 
-                    resData.statusCode = 200 ;
-                    resData.data = err ;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else
-                {    
-                    resData.status = "success"; 
-                    resData.statusCode = 201 ;
-                    resData.data = result.rows ;
-                    res.status(resData.statusCode).json(resData);
-                }
-            }
-        );
-    }
+
+//     FROM tb_order 
+// 		INNER JOIN tb_address_user ON tb_order.address_id = tb_address_user.id
+// 		INNER JOIN tb_machine_gas ON tb_machine_gas.id = tb_order.machine_id                 
+// 		INNER JOIN tb_provinces ON tb_provinces."id" = tb_address_user.province_id
+// 		INNER JOIN tb_districts ON tb_districts."id" = tb_address_user.amphure_id
+// 		INNER JOIN tb_subdistricts ON tb_subdistricts."id" = tb_address_user.district_id
+// 		INNER JOIN (SELECT tb_position_driver.rider_id,
+// 								tb_position_driver.lat , tb_position_driver.lon 
+// 								FROM tb_position_driver WHERE tb_position_driver.rider_id = 4 
+// 								ORDER BY "createDate" DESC LIMIT 1) t1
+// 								ON ( tb_order.rider_id = t1.rider_id )
+// 		WHERE tb_order.rider_id = 4   
+//     AND tb_order.status = 2 ;
+    
+    
+    // let data = req.query.driver_id
+    // let resData = {
+    //     status : "",
+    //     statusCode : 200 ,
+    //     data : ""
+    // }
+    // if(data == "" || data == null)
+    // {
+    //     resData.status = "error";
+    //     resData.statusCode = 200 ;
+    //     resData.data = "not have parameter ( driver_id )";    
+    //     res.status(200).json(resData);
+    // }   
+    // else {
+    //     let sql = ``;
+    //     pool.query(
+    //         sql, 
+    //         (err, result) => {
+
+    //             if (err) {
+    //                 //console.log(err); 
+    //                 resData.status = "error"; 
+    //                 resData.statusCode = 200 ;
+    //                 resData.data = err ;
+    //                 res.status(resData.statusCode).json(resData)
+    //             }
+    //             else
+    //             {    
+    //                 resData.status = "success"; 
+    //                 resData.statusCode = 201 ;
+    //                 resData.data = result.rows ;
+    //                 res.status(resData.statusCode).json(resData);
+    //             }
+    //         }
+    //     );
+    // }
 }
 
 getOrderDriverReceiveNotCompleteByDriverId = async (req,res,next) =>{
@@ -801,6 +834,7 @@ module.exports = {
     editOrderUser,
     cancalOrderUser,
     sendOrderToDriver,
-    driverReceiveOrder
+    driverReceiveOrder,
+    getDriverOrderReviceByDriverId
 
 }

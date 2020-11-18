@@ -2,6 +2,7 @@ const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
 const { User , Position ,PositionUserId, Rider , Order , UserData} = require("../model/userModel");
 const { BankDriver ,BankDriverData,PositionDriver} = require("../model/driverModel");
 const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
+const { generateToken , generateRefreshToken} = require('../controllerrs/appTokenManageController');
 
 
 const { Double } = require("mongodb");
@@ -161,7 +162,7 @@ driverLogin = async (req , res,next) =>{
         user : dataBody.username,
         pwd : dataBody.password
     }
-    console.log(dataLogin)
+    //console.log(dataLogin)
     let resData = {
         status : "",
         statusCode : 200 ,
@@ -171,7 +172,7 @@ driverLogin = async (req , res,next) =>{
     let sql = `SELECT * FROM tb_rider
                 WHERE tb_rider.email = '${dataLogin.user}'
                 AND tb_rider."isDelete" = 0 `;
-                console.log(sql)
+    //console.log(sql)
     pool.query(
         sql, 
         async (err, result) => {
@@ -183,17 +184,30 @@ driverLogin = async (req , res,next) =>{
                 res.status(resData.statusCode).json(resData);
             }
             else
-            {
-                
+            {                
                 if(result.rows.length > 0)
                 {
                     let match = await bcrypt.compare(dataBody.password, result.rows[0].password);
                     if(match) 
                     {
-                        console.log(result.rows)
+                        dataUser = result.rows[0];
+                        delete dataUser.password ;
+                        let dataGen = {
+                            username :dataUser.email ,
+                            id : dataUser.id
+                        }
+                        let accessToken = await generateToken(dataGen);
+                        let refreshToken = await generateRefreshToken(dataGen);
+
                         resData.status = "success";
                         resData.statusCode = 201 ;
-                        resData.data = result.rows ;
+                        resData.data = {
+                            user_data : dataUser ,
+                            token : {
+                                accessToken : accessToken,
+                                refreshToken : refreshToken
+                            }
+                        } ;
                         res.status(resData.statusCode).json(resData);
                     }
                     else{
@@ -295,7 +309,7 @@ registerRider = async (req , res , next) => {
                                 sql = `INSERT INTO "public"."tb_rider"("name", "password", "idCard", "email", "phone",
                                             "createDate", "modifyDate" , "isDelete", "urlPicture" ,"statusWork" ) 
                                         VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}'
-                                        , '${dataUser.createDate}', '${dataUser.modifyDate}' , 0 , '${JSON.stringify(pathUploadPic)}' ,1') RETURNING *`;
+                                        , '${dataUser.createDate}', '${dataUser.modifyDate}' , 0 , '${JSON.stringify(pathUploadPic)}' ,1) RETURNING *`;
                                 // console.log(sql)
                                 pool.query(
                                     sql, 

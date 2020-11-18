@@ -134,10 +134,6 @@ module.exports.RefreshToken = async (req , res , next) => {
                 refreshToken : refreshToken
             };    
             res.status(200).json(resData);
-
-
         }
-
     }
-
 }
