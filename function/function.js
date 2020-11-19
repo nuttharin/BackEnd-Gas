@@ -107,6 +107,8 @@ function deg2rad(deg) {
 funRandomNumberString = (range) => {
     return new Promise((resolve , reject)=>{
             let ranStr  = Math.ceil(Math.random() * Math.pow(10,range)) ;
+            ranStr = ranStr.toString();
+            //if(ranSt)
             resolve(ranStr);
         
     })

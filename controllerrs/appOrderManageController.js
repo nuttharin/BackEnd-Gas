@@ -695,16 +695,54 @@ driverReceiveOrder = async (req,res,next)=> {
                 else
                 {    
                     //console.log(result.rows)
-                    // status = 2 คือมีคนรับงานแล้ว
-                    let pwdMachine = await funRandomNumberString(6) ;
-
+                    // status = 2 คือมีคนรับงานแล้ว                    
+                   
                     if(result.rows.length > 0)
                     {
+                        let pwdMachine =  await funRandomNumberString(6) ;
+                        let checkWhile ;
+                        let dataPwd ;
+                        sql = `SELECT id, DATE(tb_order."createDate") FROM tb_order
+                        WHERE CURRENT_DATE = DATE(tb_order."createDate")`;
+                        pool.query(
+                            sql, 
+                            async (err, result) => {                
+                                if (err) {
+                                    //console.log(err); 
+                                    resData.status = "error"; 
+                                    resData.statusCode = 200 ;
+                                    resData.data = err ;
+                                    res.status(resData.statusCode).json(resData)
+                                }
+                                else
+                                {
+                                    console.log(result.rows)
+                                    dataPwd = await result.rows ;
+                                    if(result.rows.length == 0)
+                                    {
+                                        checkWhile = await false ;
+                                    }
+                                    else
+                                    {
+                                        checkWhile = await dataPwd.includes(pwdMachine);
+                                        while(checkWhile)
+                                        {
+                                            pwdMachine = await funRandomNumberString(6) ;
+                                            checkWhile = await dataPwd.includes(pwdMachine);
+                                        }
+                                        console.log(checkWhile)
+                                    }
+                                }
+                            }
+                        );
+                      
+
                         sql = `UPDATE "public"."tb_order" SET "status" = 2, 
                                 "rider_id" = ${dataBody.driver_id}, 
                                 "driverReceiveDate" = '${dataBody.driverReceiveDate}' ,
                                 "pwdGasMachine"  = '${pwdMachine}'
                                 WHERE "id" = ${dataBody.order_id}`;
+
                         pool.query(
                             sql, 
                             (err, result) => {
@@ -738,82 +776,262 @@ driverReceiveOrder = async (req,res,next)=> {
     }
 }
 
-getDriverOrderReviceByDriverId = async (req,res,next) => {
+driverSendOrderSuccess = async (req, res,next) =>{
     let pwdMachine = await funRandomNumberString(6) ;
-    console.log(numberMachine)
-    res.end();
-//     SELECT * 
-// 		-- , tb_machine_gas.address_name 
-// ,tb_order.id as order_id
-// ,tb_order.order_number as order_number 
-// ,tb_order.pwdGasMachine as pwd_gas_station
-// ,tb_machine_gas.address_name as gas_station_name
-// ,tb_address_user.name_address as customer_address_name
-// ,tb_address_user.other as address_order
-// ,tb_address_user.road as address_road
-// , tb_subdistricts.name_th as subdistrict_name
-// ,tb_districts.name_th as district_name
-// ,tb_provinces.name_th as provice_name
-// ,tb_address_user.latitude as latitude_customer
-// ,tb_address_user.longitude as longitude_cusetomer
-// ,t1.lat as latitude_driver , t1.lon as longitude_driver 
+    let data = req.body.order_id ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( order_id )";    
+        res.status(200).json(resData);
+    }   
+    else 
+    {
+        //update status = 4 , pwdGasMachine , receiveDate
+        let sql = ``;
+        pool.query(
+            sql, 
+            (err, result) => {
 
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "delete complete";    
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
 
-//     FROM tb_order 
-// 		INNER JOIN tb_address_user ON tb_order.address_id = tb_address_user.id
-// 		INNER JOIN tb_machine_gas ON tb_machine_gas.id = tb_order.machine_id                 
-// 		INNER JOIN tb_provinces ON tb_provinces."id" = tb_address_user.province_id
-// 		INNER JOIN tb_districts ON tb_districts."id" = tb_address_user.amphure_id
-// 		INNER JOIN tb_subdistricts ON tb_subdistricts."id" = tb_address_user.district_id
-// 		INNER JOIN (SELECT tb_position_driver.rider_id,
-// 								tb_position_driver.lat , tb_position_driver.lon 
-// 								FROM tb_position_driver WHERE tb_position_driver.rider_id = 4 
-// 								ORDER BY "createDate" DESC LIMIT 1) t1
-// 								ON ( tb_order.rider_id = t1.rider_id )
-// 		WHERE tb_order.rider_id = 4   
-//     AND tb_order.status = 2 ;
+}
+
+getDriverOrderReviceByDriverId = async (req,res,next) => {   
     
-    
-    // let data = req.query.driver_id
-    // let resData = {
-    //     status : "",
-    //     statusCode : 200 ,
-    //     data : ""
-    // }
-    // if(data == "" || data == null)
-    // {
-    //     resData.status = "error";
-    //     resData.statusCode = 200 ;
-    //     resData.data = "not have parameter ( driver_id )";    
-    //     res.status(200).json(resData);
-    // }   
-    // else {
-    //     let sql = ``;
-    //     pool.query(
-    //         sql, 
-    //         (err, result) => {
+    let data = req.query.driver_id
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( driver_id )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = ` SELECT 
+                    tb_order.id as order_id
+                    ,tb_order.rider_id as rider_id
+                    ,tb_order.order_number as order_number 
+                    ,tb_order."pwdGasMachine" as pwd_gas_station
+                    ,tb_machine_gas.address_name as gas_station_name
+                    ,tb_address_user.name_address as customer_address_name
+                    ,tb_address_user.other as address_order
+                    ,tb_address_user.road as address_road
+                    , tb_subdistricts.name_th as subdistrict_name
+                    ,tb_districts.name_th as district_name
+                    ,tb_provinces.name_th as provice_name
+                    ,tb_address_user.latitude as latitude_customer
+                    ,tb_address_user.longitude as longitude_cusetomer
+                    ,t1.lat as latitude_driver , t1.lon as longitude_driver 
+                    FROM tb_order 
+                    INNER JOIN tb_address_user ON tb_order.address_id = tb_address_user.id
+                    INNER JOIN tb_machine_gas ON tb_machine_gas.id = tb_order.machine_id                 
+                    INNER JOIN tb_provinces ON tb_provinces."id" = tb_address_user.province_id
+                    INNER JOIN tb_districts ON tb_districts."id" = tb_address_user.amphure_id
+                    INNER JOIN tb_subdistricts ON tb_subdistricts."id" = tb_address_user.district_id
+                    INNER JOIN (SELECT tb_position_driver.rider_id,
+                                            tb_position_driver.lat , tb_position_driver.lon 
+                                            FROM tb_position_driver WHERE tb_position_driver.rider_id = 4 
+                                            ORDER BY "createDate" DESC LIMIT 1) t1
+                                            ON ( tb_order.rider_id = t1.rider_id )
+                    WHERE tb_order.rider_id = ${data}   
+                    AND tb_order.status = 2 ;`;
 
-    //             if (err) {
-    //                 //console.log(err); 
-    //                 resData.status = "error"; 
-    //                 resData.statusCode = 200 ;
-    //                 resData.data = err ;
-    //                 res.status(resData.statusCode).json(resData)
-    //             }
-    //             else
-    //             {    
-    //                 resData.status = "success"; 
-    //                 resData.statusCode = 201 ;
-    //                 resData.data = result.rows ;
-    //                 res.status(resData.statusCode).json(resData);
-    //             }
-    //         }
-    //     );
-    // }
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {                        
+                    let dataOrder = result.rows[0];
+                    sql = `SELECT  tb_order.order_number as order_number,tb_gas_detail."name" as gas_type ,tb_order_detail.quality ,
+                            (tb_gas_detail.price) as price                  
+                            FROM tb_order
+                            INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+                            INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id
+                            WHERE tb_order.id = ${result.rows[0].order_id}`;
+                    pool.query(
+                        sql, 
+                        (err, result) => {
+            
+                            if (err) {
+                                resData.status = "error"; 
+                                resData.statusCode = 200 ;
+                                resData.data = err ;
+                                res.status(resData.statusCode).json(resData)
+                            }
+                            else
+                            {
+                                //console.log(result.rows)
+                                dataOrder.order_detail = result.rows ;
+                                resData.status = "success"; 
+                                resData.statusCode = 201 ;
+                                resData.data = dataOrder ;
+                                res.status(resData.statusCode).json(resData);
+                            }
+                        }
+                    );
+                }
+            }
+        );
+    }
 }
 
 getOrderDriverReceiveNotCompleteByDriverId = async (req,res,next) =>{
 
+}
+
+checkPwdMachineStation = (req,res,next) => {
+    // SELECT id, DATE(tb_order."driverReceiveDate") FROM tb_order
+    // WHERE CURRENT_DATE = DATE(tb_order."driverReceiveDate")
+    // AND tb_order."pwdGasMachine" = '592426' 
+    // AND (status <> 4 AND status <> 1 AND status <> 3 AND status <> 6)
+    // AND rider_id IS NOT NULL AND machine_id IS NOT NULL
+}
+
+checkQrCodeMachineReceiveGas = (req , res , next) =>{
+    // check กับ machine_code
+    let data = req.body.qrcode ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( qrcode )";    
+        res.status(200).json(resData);
+    }   
+    else 
+    {
+        let sql = `SELECT tb_order.id FROM tb_order
+        INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+        WHERE tb_order.id = 6 AND tb_machine_gas.machine_code = '${data}'`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {
+                    //console.log(result.rows[0])
+                    if(!result.rows[0])
+                    {
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = {
+                            check_qrcode : false
+                        };    
+                        res.status(201).json(resData);
+                    }
+                    else{
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = {
+                            check_qrcode : true
+                        };  
+                        res.status(201).json(resData);
+                    } 
+                }
+            }
+        );
+    }
+}
+
+checkQrCodeMachineReturnGas = (req , res , next) =>{
+    let data = req.body.qrcode ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( qrcode )";    
+        res.status(200).json(resData);
+    }   
+    else 
+    {
+        let sql = ``;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {
+                    //console.log(result.rows[0])
+                    if(!result.rows[0])
+                    {
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = {
+                            check_qrcode : false
+                        };    
+                        res.status(201).json(resData);
+                    }
+                    else{
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = {
+                            check_qrcode : true
+                        };  
+                        res.status(201).json(resData);
+                    } 
+                }
+            }
+        );
+    }
 }
 
 
@@ -835,6 +1053,7 @@ module.exports = {
     cancalOrderUser,
     sendOrderToDriver,
     driverReceiveOrder,
-    getDriverOrderReviceByDriverId
+    getDriverOrderReviceByDriverId,
+    checkQrCodeMachineReceiveGas
 
 }
