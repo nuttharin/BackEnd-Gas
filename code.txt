@@ -237,27 +237,7 @@ res.status(201).json(resData);
     }   
     else 
     {
-        let sql = `UPDATE "public"."tb_order" SET "status" = '1' WHERE "id" = ${data}`;
-        pool.query(
-            sql, 
-            (err, result) => {
-
-                if (err) {
-                    //console.log(err); 
-                    resData.status = "error"; 
-                    resData.statusCode = 200 ;
-                    resData.data = err ;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else
-                {
-                    resData.status = "success";
-                    resData.statusCode = 201 ;
-                    resData.data = "delete complete";    
-                    res.status(201).json(resData);
-                }
-            }
-        );
+ 
     }
 }
 

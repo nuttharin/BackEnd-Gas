@@ -130,7 +130,8 @@ userLogin = async (req , res , next) =>{
 
     let sql = `SELECT * FROM tb_user
                 WHERE tb_user.email = '${dataLogin.user}'
-                AND tb_user."isDelete" = 0 `;
+                AND tb_user."isDelete" = 0 
+                AND tb_user."isApproved" = 1`;
     pool.query(
         sql, 
         async (err, result) => {
@@ -320,6 +321,46 @@ registerUser = async (req , res , next) =>{
    
 
 };
+
+//UPDATE "public"."tb_user" SET "isApproved" = 1 WHERE "id" = 16
+ApprovedUser =(req ,res,next) => {
+    let data = req.body.user_id ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( user_id )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `UPDATE "public"."tb_user" SET "isApproved" = 1 WHERE "id" = ${user_id}`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    resData.status = "success"; 
+                    resData.statusCode = 201 ;
+                    resData.data = "update complete" ;
+                    res.status(resData.statusCode).json(resData);
+                }
+            }
+        );
+    }
+}
 
 editUserByUserId = async (req , res , next) =>{
     //UPDATE "public"."tb_user" SET "name" = 'x', "email" = 'x', "phone" = 'x' WHERE "id" = 16

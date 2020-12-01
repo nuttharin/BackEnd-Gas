@@ -730,7 +730,7 @@ driverReceiveOrder = async (req,res,next)=> {
                                             pwdMachine = await funRandomNumberString(6) ;
                                             checkWhile = await dataPwd.includes(pwdMachine);
                                         }
-                                        console.log(checkWhile)
+                                        //console.log(checkWhile)
                                     }
                                 }
                             }
@@ -834,7 +834,8 @@ getDriverOrderReviceByDriverId = async (req,res,next) => {
         resData.data = "not have parameter ( driver_id )";    
         res.status(200).json(resData);
     }   
-    else {
+    else 
+    {
         let sql = ` SELECT 
                     tb_order.id as order_id
                     ,tb_order.rider_id as rider_id
@@ -915,16 +916,8 @@ getOrderDriverReceiveNotCompleteByDriverId = async (req,res,next) =>{
 
 }
 
-checkPwdMachineStation = (req,res,next) => {
-    // SELECT id, DATE(tb_order."driverReceiveDate") FROM tb_order
-    // WHERE CURRENT_DATE = DATE(tb_order."driverReceiveDate")
-    // AND tb_order."pwdGasMachine" = '592426' 
-    // AND (status <> 4 AND status <> 1 AND status <> 3 AND status <> 6)
-    // AND rider_id IS NOT NULL AND machine_id IS NOT NULL
-}
-
 checkQrCodeMachineReceiveGas = (req , res , next) =>{
-    // check กับ machine_code
+    // check กับ machine_code 
     let data = req.body.qrcode ;
     let resData = {
         status : "",
@@ -1034,6 +1027,131 @@ checkQrCodeMachineReturnGas = (req , res , next) =>{
     }
 }
 
+checkPwdMachineStation = (req,res,next) => {
+    // SELECT id, DATE(tb_order."driverReceiveDate") FROM tb_order
+    // WHERE CURRENT_DATE = DATE(tb_order."driverReceiveDate")
+    // AND tb_order."pwdGasMachine" = '592426' 
+    // AND (status <> 4 AND status <> 1 AND status <> 3 AND status <> 6)
+    // AND rider_id IS NOT NULL AND machine_id IS NOT NULL
+    let data = req.body.password_machine;   
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    } ;
+    if(data == "" || data == null) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( password_machine )";    
+        res.status(200).json(resData);
+    }
+    else 
+    {
+        let sql = `SELECT id, DATE(tb_order."driverReceiveDate") FROM tb_order
+                WHERE CURRENT_DATE = DATE(tb_order."driverReceiveDate")
+                AND tb_order."pwdGasMachine" = '${data}' 
+                AND (status <> 4 AND status <> 1 AND status <> 3 AND status <> 6)
+                AND rider_id IS NOT NULL AND machine_id IS NOT NULL`;
+        pool.query(
+            sql, 
+            async (err, result) => {
+
+                if (err) {
+                    //console.log(err);  
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = err;    
+                    res.status(200).json(resData);
+                }
+                else
+                {
+                    //console.log(result.rows)
+                    if(result.rows.length == 0)
+                    {
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = {
+                            check_password : false
+                        };    
+                        res.status(201).json(resData);
+                    }
+                    else
+                    {
+                        let pwdMachine =  await funRandomNumberString(6) ;
+                        let checkWhile ;
+                        let dataPwd ;
+                        sql = `SELECT id, DATE(tb_order."createDate") FROM tb_order
+                        WHERE CURRENT_DATE = DATE(tb_order."driverReceiveDate")`;
+                        pool.query(
+                            sql, 
+                            async (err, result) => {                
+                                if (err) {
+                                    //console.log(err); 
+                                    resData.status = "error"; 
+                                    resData.statusCode = 200 ;
+                                    resData.data = err ;
+                                    res.status(resData.statusCode).json(resData)
+                                }
+                                else
+                                {
+                                    console.log(result.rows)
+                                    dataPwd = await result.rows ;
+                                    if(result.rows.length == 0)
+                                    {
+                                        checkWhile = await false ;
+                                    }
+                                    else
+                                    {
+                                        checkWhile = await dataPwd.includes(pwdMachine);
+                                        while(checkWhile)
+                                        {
+                                            pwdMachine = await funRandomNumberString(6) ;
+                                            checkWhile = await dataPwd.includes(pwdMachine);
+                                        }
+                                        console.log(pwdMachine)
+                                        console.log(result.rows[0].id)
+                                        //UPDATE "public"."tb_order" SET "pwdGasMachine" = '394236' WHERE "id" = 10
+                                        sql = `UPDATE "public"."tb_order" 
+                                                SET "pwdGasMachine" = '${pwdMachine}' 
+                                                WHERE "id" = ${result.rows[0].id}`;
+                                        pool.query(
+                                            sql, 
+                                            (err, result) => {
+                                    
+                                                if (err) {
+                                                    //console.log(err);  
+                                                    resData.status = "error";
+                                                    resData.statusCode = 200 ;
+                                                    resData.data = "error update password : " + err;    
+                                                    res.status(200).json(resData);
+                                                }
+                                                else
+                                                {
+                                                    resData.status = "success";
+                                                    resData.statusCode = 201 ;
+                                                    resData.data = {
+                                                        check_password : true
+                                                    };    
+                                                    res.status(201).json(resData);
+                                                }
+                                            }
+                                        ); 
+                                    }
+                                }
+                            }
+                        );
+
+                    }                   
+                }
+            }
+        );
+    }    
+}
+
+
+
 
 
 
@@ -1054,6 +1172,7 @@ module.exports = {
     sendOrderToDriver,
     driverReceiveOrder,
     getDriverOrderReviceByDriverId,
-    checkQrCodeMachineReceiveGas
+    checkQrCodeMachineReceiveGas,
+    checkPwdMachineStation
 
 }

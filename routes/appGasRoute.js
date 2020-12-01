@@ -11,6 +11,7 @@ const appDriverManageController = require('../controllerrs/appDriverManageContro
 const appGeneralController = require('../controllerrs/appGeneralController');
 //const appOrderManageController = require('../controllerrs/appOrderManageController');
 const appOrderManageController = require('../controllerrs/appOrderManageController');
+const appBankManageController = require('../controllerrs/appBankManageController'); 
 const {verifyAccessToken , RefreshToken} = require('../controllerrs/appTokenManageController');
 
 
@@ -60,8 +61,7 @@ router.post('/post/delete/userAddress',appUserManageController.deleteUserAddress
 
 
 //===== Rider Management =====//
-router.get('/get/driverBankByDriverId',appDriverManageController.getDriverBankByDriverId);
-router.get('/get/driverBankById',appDriverManageController.getDriverBankById);
+
 
 router.get('/get/getDriverProfileById',appDriverManageController.getDriverProfileById);
 
@@ -71,14 +71,19 @@ router.post('/post/edit/driver',appDriverManageController.editRiderByRiderId);
 router.post('/post/delete/driver',appDriverManageController.deleteRiderByRiderId);
 router.post('/post/edit/driver/profile',appDriverManageController.editRiderPicProfileByRiderId);
 
-router.post('/post/add/bankDriver',appDriverManageController.addDriverBank);
-router.post('/post/edit/bankDriver',appDriverManageController.editDriverBank);
-router.post('/post/delete/bankDriver',appDriverManageController.deleteDriverBank);
 
 router.post('/post/edit/driver/workStatus',appDriverManageController.editStatusWorkByRiderId);
 
 router.post('/post/add/driver/position',appDriverManageController.updatePositionDriverByDriverId);
 router.get('/get/driver/position',appDriverManageController.getPositionDriverByDriver);
+
+
+
+router.post('/post/add/bankDriver',appBankManageController.addDriverBank);
+router.post('/post/edit/bankDriver',appBankManageController.editDriverBank);
+router.post('/post/delete/bankDriver',appBankManageController.deleteDriverBank);
+router.get('/get/driverBankByDriverId',appBankManageController.getDriverBankByDriverId);
+router.get('/get/driverBankById',appBankManageController.getDriverBankById);
 
 
 
@@ -107,6 +112,7 @@ router.get('/post/driver/distance',appOrderManageController.sendOrderToDriver);
 router.post('/post/driver/driverReceiveOrder',appOrderManageController.driverReceiveOrder);
 router.get('/get/driver/getOrderCurrentByDriverId' ,appOrderManageController.getDriverOrderReviceByDriverId);
 router.post('/post/driver/checkQrCodeMachineReceiveGas',appOrderManageController.checkQrCodeMachineReceiveGas);
+router.post('/post/driver/checkPwdMachineStation',appOrderManageController.checkPwdMachineStation);
 
 
 
