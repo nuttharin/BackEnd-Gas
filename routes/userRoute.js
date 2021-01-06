@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const userController = require('../controllerrs/userController');
+const userController = require('../controllers/userController');
 
 // endpoint+/user 
 // router.get('/get/province', userController.getProvince );

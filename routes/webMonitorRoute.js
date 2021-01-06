@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const appGasController = require('../controllerrs/appGasController');
-const appOrderController = require('../controllerrs/appOrderController');
-const appUserManageController = require('../controllerrs/appUserManageController');
-const userController = require('../controllerrs/userController');
-const appIoTController = require('../controllerrs/appIoTManageController');
-const appDriverManageController =require('../controllerrs/appDriverManageController');
+const appGasController = require('../controllers/appGasController');
+const appOrderController = require('../controllers/appOrderController');
+const appUserManageController = require('../controllers/appUserManageController');
+const userController = require('../controllers/userController');
+const appIoTController = require('../controllers/appIoTManageController');
+const appDriverManageController =require('../controllers/appDriverManageController');
 
 
 

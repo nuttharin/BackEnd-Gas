@@ -1,18 +1,19 @@
 const express = require('express');
 const router = express.Router();
 
-const appGasController = require('../controllerrs/appGasController');
-//const appOrderManageController = require('../controllerrs/appOrderManageController');
-const appUserManageController = require('../controllerrs/appUserManageController');
-const userController = require('../controllerrs/userController');
-const appIoTController = require('../controllerrs/appIoTManageController');
-const gasController = require('../controllerrs/gasController');
-const appDriverManageController = require('../controllerrs/appDriverManageController');
-const appGeneralController = require('../controllerrs/appGeneralController');
-//const appOrderManageController = require('../controllerrs/appOrderManageController');
-const appOrderManageController = require('../controllerrs/appOrderManageController');
-const appBankManageController = require('../controllerrs/appBankManageController'); 
-const {verifyAccessToken , RefreshToken} = require('../controllerrs/appTokenManageController');
+const appGasController = require('../controllers/appGasController');
+//const appOrderManageController = require('../controllers/appOrderManageController');
+const appUserManageController = require('../controllers/appUserManageController');
+const userController = require('../controllers/userController');
+const appIoTController = require('../controllers/appIoTManageController');
+const gasController = require('../controllers/gasController');
+const appDriverManageController = require('../controllers/appDriverManageController');
+const appGeneralController = require('../controllers/appGeneralController');
+//const appOrderManageController = require('../controllers/appOrderManageController');
+const appOrderManageController = require('../controllers/appOrderManageController');
+const appBankManageController = require('../controllers/appBankManageController'); 
+const machineManageController = require('../controllers/machineManageController');
+const {verifyAccessToken , RefreshToken} = require('../controllers/appTokenManageController');
 
 
 
@@ -88,6 +89,7 @@ router.get('/get/driverBankById',appBankManageController.getDriverBankById);
 
 
 //===== Cart =====//
+
 router.get('/get/cart/cartByuserId',appOrderManageController.getOrderInCartByUserId);
 
 router.post('/post/add/cart',appOrderManageController.addOrderInCartByUserId);
@@ -111,8 +113,7 @@ router.post('/post/delete/orderUser',appOrderManageController.cancalOrderUser);
 router.get('/post/driver/distance',appOrderManageController.sendOrderToDriver);
 router.post('/post/driver/driverReceiveOrder',appOrderManageController.driverReceiveOrder);
 router.get('/get/driver/getOrderCurrentByDriverId' ,appOrderManageController.getDriverOrderReviceByDriverId);
-router.post('/post/driver/checkQrCodeMachineReceiveGas',appOrderManageController.checkQrCodeMachineReceiveGas);
-router.post('/post/driver/checkPwdMachineStation',appOrderManageController.checkPwdMachineStation);
+
 
 
 
@@ -129,9 +130,28 @@ router.post('/post/reset/iot' , appIoTController.resetGasIoT) ;
 
 
 //===== GAS =====//
+
 router.get('/get/gas/detail',appGasController.getGasDetail);
 router.get('/get/iot/gas/percentPressure',appGasController.getPercentPressureBySerialNumber);
 
+
+
+
+
+// ===== machine ===== //
+//router
+router.post('/post/test1',machineManageController.test1)
+router.post('/post/driver/checkQrCodeMachineReceiveGas',machineManageController.checkQrCodeMachineReceiveGas);
+router.post('/post/driver/checkPwdMachineStation',machineManageController.checkPwdMachineStation);
+router.post('/post/machine/command/sendCommandToMachineGasOut' , machineManageController.sendCommandToMachineGasOut);
+router.post('/post/fromMachine/update/quality/gasOut',machineManageController.updateGasOutInByOrderId);
+
+
+
+// =====  Bank  ===== //
+
+router.get("/get/bank/driver/getMoneyHistoryInBankByDriverId",appBankManageController.getMoneyHistoryInBankByDriverId);
+router.get("/get/bank/driver/getMoneyInBankByDriverBankId",appBankManageController.getMoneyInBankByDriverBankId);
 
 
 module.exports = router;

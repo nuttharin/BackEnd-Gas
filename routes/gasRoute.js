@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const gasController = require('../controllerrs/gasController');
+const gasController = require('../controllers/gasController');
 
 //GET
 router.get('/get/getLastPressureBySerialNumber', gasController.getLastPressureBySerialNumber );

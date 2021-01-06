@@ -2,7 +2,7 @@ const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
 const { User , Position ,PositionUserId, Rider , Order , UserData} = require("../model/userModel");
 const { BankDriver ,BankDriverData,PositionDriver} = require("../model/driverModel");
 const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
-const { generateToken , generateRefreshToken} = require('../controllerrs/appTokenManageController');
+const { generateToken , generateRefreshToken} = require('../controllers/appTokenManageController');
 
 
 const { Double } = require("mongodb");

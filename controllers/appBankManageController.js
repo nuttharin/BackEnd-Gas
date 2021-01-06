@@ -107,7 +107,8 @@ addDriverBank = async (req , res , next) => {
         status : "",
         statusCode : 200 ,
         data : ""
-    } ;
+    };
+
     if(checkParameter != "" ) 
     {
         //console.log(checkParameter)       
@@ -301,7 +302,85 @@ deleteDriverBank = async (req,res,next) =>{
     }
 }
 
-// manage amount 
+
+//# manage amount 
+addMoneyInBankByDriverBankId = async (req,res,next) =>{
+
+}
+
+deleteMoneyInBankByDriverBankId = async (req, res , next) =>{
+
+}
+
+getMoneyInBankByDriverBankId = async (req,res,next) => {
+    let data = req.query.driverBank_id ;
+    let resData = {
+        status : "",
+        statuCode : 200 ,
+        data : ""
+    }   
+    let sql = `SELECT * FROM tb_bank_driver
+                WHERE id = ${data} `;
+    pool.query(
+        sql, 
+        (err, result) => {
+
+            if (err) {
+                //console.log(err); 
+                resData.status = "error"; 
+                resData.statuCode = 200 ;
+                resData.data = err ;
+                res.status(resData.statuCode).json(resData)
+            }
+            else
+            {    
+                resData.status = "success"; 
+                resData.statuCode = 201 ;
+                resData.data = result.rows ;
+                res.status(resData.statuCode).json(resData);
+            }
+        }
+    );
+}
+
+getMoneyHistoryInBankByDriverId = async (req,res,next) =>{
+    let data = req.query.driverBank_id ;
+
+    let resData = {
+        status : "",
+        statuCode : 200 ,
+        data : "" 
+    }   
+
+    let sql = `SELECT * FROM tb_bank_driver_manage
+                WHERE bank_driver_id = ${data}`;
+
+    pool.query(
+        sql, 
+        (err, result) => {
+
+            if (err) {
+                //console.log(err); 
+                resData.status = "error"; 
+                resData.statuCode = 200 ;
+                resData.data = err ;
+                res.status(resData.statuCode).json(resData)
+            }
+            else
+            {    
+                resData.status = "success"; 
+                resData.statuCode = 201 ;
+                resData.data = result.rows ;
+                res.status(resData.statuCode).json(resData);
+            }
+        }
+    );
+}
+
+
+
+
+
 
 
 //#endregion 
@@ -313,4 +392,8 @@ module.exports = {
     deleteDriverBank ,
     getDriverBankByDriverId,
     getDriverBankById,
+    getMoneyHistoryInBankByDriverId,
+    getMoneyInBankByDriverBankId,
+    addMoneyInBankByDriverBankId,
+    deleteMoneyInBankByDriverBankId
 };
