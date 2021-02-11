@@ -1,13 +1,24 @@
                                                                              
 -npm init                                                       
 -npm install
--npm install express@4.16.4 --save  
+-npm install express@4.16.4 --save 
 
--npm install body-parser 1.18.3 --save 
--npm install --save morgan 1.9.1
 
--npm install --save-dev nodemon 1.18.5
--npm install mongodb@2.2.33 --save
+
+
+npm install express --save  
+npm install body-parser --save 
+npm install --save morgan 
+npm install dotenv --save
+npm install --save-dev nodemon
+npm install mongodb--save
+npm i compression --save
+npm i pg --save
+npm install jsonwebtoken --save
+npm i bcrypt --save
+npm i moment --save
+
+
 -npm uninstall mongodb --save
 -npm install ajax-request --save  // can't use sync
 -npm install deep-equal --save

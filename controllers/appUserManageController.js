@@ -208,6 +208,7 @@ registerUser = async (req , res , next) =>{
         // console.log(req.files.picIdCard);
         // console.log(req.files.picIdCardFace);
         let pathUpload =  process.env.IP_ADDRESS+'/pictureRegisterUser/'
+        console.log(req.files)
         let pathUploadPic = {
             cardId : pathUpload + req.files.picIdCard[0].filename,
             cardIdFace : pathUpload + req.files.picIdCardFace[0].filename

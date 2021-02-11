@@ -31,8 +31,8 @@ getOrderInCartByUserId = (req,res,next) =>{
         res.status(200).json(resData);
     }   
     else {
-        let sql = `SELECT tb_order_cart."id" as cart_id , user_id , "name" as product , 
-                    quality,price,(price*quality) as priceAll FROM tb_order_cart
+        let sql = `SELECT tb_order_cart."id" as cart_id , user_id , tb_gas_detail.id as gas_id 
+                    , "name" as product , quality,price,(price*quality) as priceAll FROM tb_order_cart
                     INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_cart.gas_id
                     WHERE  user_id = ${data}`;
         pool.query(
@@ -254,14 +254,14 @@ getOrderHistoryAllByUserId = async (req,res,next) => {
         let arrOrder = {} ;
         let dataAll ;
 
-        let sql = `SELECT tb_order.order_number as order_number, sum((tb_order_detail.quality * tb_gas_detail.price)) as price_all,
+        let sql = `SELECT  tb_order_detail.order_id , tb_order.order_number as order_number, sum((tb_order_detail.quality * tb_gas_detail.price)) as price_all,
         tb_order."modifyDate" as modify_date , tb_order_status."name" as status_order
         FROM tb_order
         INNER JOIN tb_order_status ON tb_order_status."id" = tb_order.status
         INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
         INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id
         WHERE tb_order.user_id = ${data} AND tb_order.status <> 1
-        GROUP BY order_number , modify_date , status_order 
+        GROUP BY order_number , modify_date , status_order , order_id 
         ORDER BY order_number `;
         pool.query(
             sql, 
@@ -345,7 +345,8 @@ getOrderByUserId = async (req,res,next) =>{
         res.status(200).json(resData);
     }   
     else {
-        let sql = `SELECT order_number , tb_order."createDate" as create_date,
+        let sql = `SELECT 
+                    order_number , tb_order."createDate" as create_date,
                     tb_order."receiveDate" as receive_date,
                     tb_order."paymentDate" as payment_date,
                     tb_order."sendDate" as send_date,
@@ -521,7 +522,7 @@ addOrderUser = async (req,res,next) =>{
     dataOrder.machine_id = dataBody.machine_id
     let checkparameter = await funCheckParameterWithOutId(dataOrder) ;
     //console.log(checkparameter);
-    console.log(dataOrder);
+    //console.log(dataOrder);
     if(checkparameter != "" )
     {
         resData.status = "error";
@@ -536,7 +537,8 @@ addOrderUser = async (req,res,next) =>{
         VALUES (${dataOrder.user_id}, '${dataOrder.priceall}', '${dataOrder.createDate}',
          '${dataOrder.modifyDate}', '${dataOrder.send_type}', ${dataOrder.payment_id}, 
          '${dataOrder.order_number}', ${dataOrder.address_id}, 3 ,${dataOrder.machine_id}) RETURNING *`;
-        pool.query(
+        
+         pool.query(
             sql, 
             async (err, result) => {
 
@@ -558,25 +560,55 @@ addOrderUser = async (req,res,next) =>{
                         sql = await sql+`INSERT INTO "public"."tb_order_detail"("order_id", "gas_id", "quality") 
                         VALUES (${dataOrder.id}, ${dataOrder.order[i].gas_id}, ${dataOrder.order[i].quality}) ;` ;                       
                         
-                    }
-                    
+                    }                    
                     pool.query(
                         sql, 
-                        (err, result) => {
+                        async (err, result) => {
             
                             if (err) {
                                 //console.log(err); 
                                 resData.status = "error"; 
                                 resData.statusCode = 200 ;
-                                resData.data = err ;
+                                resData.data = "error table tb_order_detail "+err ;
                                 res.status(resData.statusCode).json(resData)
                             }
                             else
                             {    
-                                resData.status = "success";
-                                resData.statusCode = 201 ;
-                                resData.data = "insert complete";
-                                res.status(201).json(resData);
+                                let commanDel = `DELETE FROM "public"."tb_order_cart" WHERE user_id = ${dataOrder.user_id}` ;
+                                let commandDelAll = "" ;
+                                console.log(dataOrder.order)
+                                for (let i = 0; i < dataOrder.order.length ; i++) {
+                                    commandDelAll += await commanDel + "AND gas_id = "+dataOrder.order[i].gas_id ;
+                                    if(i != dataOrder.order.length -1)
+                                    {
+                                        commandDelAll += await " ; "
+                                    }                                    
+                                }
+                                // sql = `DELETE FROM "public"."tb_order_cart" ${commanDel}`
+                                //console.log(commandDelAll)
+                                pool.query(
+                                    commandDelAll, 
+                                    async (err, result) => {                        
+                                        if (err) {
+                                            //console.log(err); 
+                                            resData.status = "error"; 
+                                            resData.statusCode = 200 ;
+                                            resData.data = "error table tb_cart " + err ;
+                                            res.status(resData.statusCode).json(resData)
+                                        }
+                                        else
+                                        {    
+                                            resData.status = "success";
+                                            resData.statusCode = 201 ;
+                                            resData.data = "insert complete";
+                                            res.status(201).json(resData);
+                                        }
+                                    }
+                                );
+
+
+
+
                             }
                         }
                     );
@@ -585,7 +617,6 @@ addOrderUser = async (req,res,next) =>{
             }
         );
     }
-
     //res.json(dataOrder)
 }
 
@@ -611,8 +642,7 @@ cancalOrderUser = (req,res,next) =>{
     }   
     else 
     {
-        let sql = `UPDATE "public"."tb_order" SET "modifyDate" = '${newDate}', "status" = '1' 
-                    WHERE "id" = ${data}`;
+        let sql = `SELECT tb_order.id , tb_order.status FROM tb_order WHERE tb_order.id = ${data}`;
         pool.query(
             sql, 
             (err, result) => {
@@ -626,10 +656,40 @@ cancalOrderUser = (req,res,next) =>{
                 }
                 else
                 {
-                    resData.status = "success";
-                    resData.statusCode = 201 ;
-                    resData.data = "delete complete";    
-                    res.status(201).json(resData);
+                   console.log(result.rows[0])
+                   if(result.rows[0].status == 3 || result.rows[0].status == 6)
+                   {
+                        sql = `UPDATE "public"."tb_order" SET "modifyDate" = '${newDate}', "status" = '1' 
+                        WHERE "id" = ${data}`;
+
+                        pool.query(
+                            sql, 
+                            (err, result) => {
+
+                                if (err) {
+                                    //console.log(err); 
+                                    resData.status = "error"; 
+                                    resData.statusCode = 200 ;
+                                    resData.data = err ;
+                                    res.status(resData.statusCode).json(resData)
+                                }
+                                else
+                                {
+                                    resData.status = "success";
+                                    resData.statusCode = 201 ;
+                                    resData.data = "delete complete";    
+                                    res.status(201).json(resData);
+                                }
+                            }
+                        );
+                   }
+                   else{
+
+                        resData.status = "error"; 
+                        resData.statusCode = 200 ;
+                        resData.data = "ไม่สามารถลบได้เนื่องจาก Order ถูกรับไปแล้ว" ;
+                        res.status(resData.statusCode).json(resData);
+                    }
                 }
             }
         );

@@ -39,6 +39,7 @@ updateStatusReceiveGas = (req ,res , next) =>{
 
 checkQrCodeMachineReceiveGas = (req , res , next) =>{
     // check กับ machine_code 
+    
     let data = req.body ;
     let resData = {
         status : "",
@@ -203,12 +204,105 @@ checkQrCodeMachineReturnGas = (req , res , next) =>{
     }
 }
 
+
+
+checkQrCodeMachineForDriver = (re1,res,next)=> {
+    // check กับ machine_code    
+    let data = req.body ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data.qrcode == "" || data.qrcode == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( qrcode )";    
+        res.status(200).json(resData);
+    }   
+    else if(data.driver_id == "" || data.driver_id == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( driver_id )";    
+        res.status(200).json(resData);
+    } 
+    else 
+    {
+        let sql = `SELECT tb_order.id FROM tb_order
+        INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+        WHERE tb_order.rider_id = ${data.driver_id} AND tb_machine_gas.machine_code = '${data.qrcode}'`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) 
+                {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {
+                    console.log(result.rows[0]);
+                    let order_id = result.rows[0].id
+                    if(!result.rows[0])
+                    {
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = {
+                            check_qrcode : false
+                        };    
+                        res.status(201).json(resData);
+                    }
+                    else{
+                        // find pwd gasmachine
+                        sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id
+                                ,"pwdGasMachine" FROM tb_order WHERE tb_order.id =${order_id}`;
+                        pool.query(
+                            sql, 
+                            (err, result) => {
+                
+                                if (err) {
+                                    //console.log(err); 
+                                    resData.status = "error"; 
+                                    resData.statusCode = 200 ;
+                                    resData.data = err ;
+                                    res.status(resData.statusCode).json(resData)
+                                }
+                                else
+                                {    
+                                    resData.status = "success"; 
+                                    resData.statusCode = 201 ;
+                                    resData.data = result.rows[0] ;
+                                    res.status(resData.statusCode).json(resData);
+                                }
+                            }
+                        );
+                    } 
+                }
+            }
+        );
+    }
+}
+
+checkQrCodeMachineForUser = (re1,res,next)=> {
+    
+}
+
+
+
+
 checkPwdMachineStation = (req,res,next) => {
     // SELECT id, DATE(tb_order."driverReceiveDate") FROM tb_order
     // WHERE CURRENT_DATE = DATE(tb_order."driverReceiveDate")
     // AND tb_order."pwdGasMachine" = '592426' 
     // AND (status <> 4 AND status <> 1 AND status <> 3 AND status <> 6)
     // AND rider_id IS NOT NULL AND machine_id IS NOT NULL
+    console.log(req.body)
     let data = req.body.password_machine;   
     let resData = {
         status : "",

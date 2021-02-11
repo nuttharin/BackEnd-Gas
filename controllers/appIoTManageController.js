@@ -17,8 +17,11 @@ const tb_map_around = process.env.DB_MONGODB_AROUND ;
 
 
 
-//#region iot device
-//#region GET
+//#region iot device 
+
+
+
+//#region GET iot device
 
 getIoTByUserId = (req ,res,next) => {
      
@@ -107,12 +110,103 @@ getIoTDeviceAll = (req , res,next) =>{
     
 }
 
+
+getApproveJoinIoTByUserId = (req , res,next) => {
+    let userID = req.query.user_id ;
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }   
+    if(userID == "" || userID == null ) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( user_id )";    
+        res.status(200).json(resData);
+    }
+    else{
+        let sql = `SELECT * FROM tb_join_iot 
+                    WHERE tb_join_iot.status = '0' AND tb_join_iot.user_main_id = ${user_id} `;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err);  
+                    let data = {
+                        status : "error",
+                        statusCode : 200,
+                        data : err
+                    }   
+                    res.status(200).json(data)
+                }
+                else
+                {
+                    let data = {
+                        status : "success",
+                        statusCode : 201,
+                        data : result.rows
+                    }
+                    res.status(201).json(data);
+                }
+            }
+        );
+    }
+}
+
+getJoinIoTByUserId = (req , res,next) => {
+    let userID = req.query.user_id ;
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }   
+    if(userID == "" || userID == null ) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( user_id )";    
+        res.status(200).json(resData);
+    }
+    else{
+        let sql = `SELECT * FROM tb_join_iot 
+                    WHERE tb_join_iot.user_main_id = ${user_id} `;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err);  
+                    let data = {
+                        status : "error",
+                        statusCode : 200,
+                        data : err
+                    }   
+                    res.status(200).json(data)
+                }
+                else
+                {
+                    let data = {
+                        status : "success",
+                        statusCode : 201,
+                        data : result.rows
+                    }
+                    res.status(201).json(data);
+                }
+            }
+        );
+    }
+}
+
 //#endregion
 
 
 
 
-//#region POST
+//#region POST iot device
 
 registerIoT = async (req ,res ,next) =>{
     let dataBody = req.body ;
@@ -402,23 +496,22 @@ resetGasIoT = (req , res , next) =>{
     
 } 
 
-//#endregion
-//#endregion
-
-
-
-
-
 
 //#endregion
 
 
-//#region POST
- 
+//#endregion  
 
 
 
-//#endregion
+
+
+
+
+
+
+
+
 
 
 
@@ -434,6 +527,8 @@ resetGasIoT = (req , res , next) =>{
 
 //#endregion
 
+// INSERT INTO "public"."tb_join_iot"("use_main_id", "user_join_id", "status", "createdate") VALUES (15, 16, '0', '2021-02-03 11:48:11') RETURNING *
+// UPDATE "public"."tb_join_iot" SET "status" = '1' WHERE "id" = 1
 
 module.exports = {
    registerIoT,
@@ -441,5 +536,7 @@ module.exports = {
    getIoTDeviceAll,
    deleteIoTByUserId,
    editIotByUserId,
-   resetGasIoT
+   resetGasIoT,
+   getApproveJoinIoTByUserId,
+   getJoinIoTByUserId
 }; 
