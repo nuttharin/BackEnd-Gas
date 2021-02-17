@@ -99,14 +99,16 @@ router.post('/post/delete/cart',appOrderManageController.deleteOrderInCartById);
 
 //===== Order =====//
 //user
-//router.get('/get/orderUser/orderByUserId',appOrderManageController.getOrderByUserId);
+router.get('/get/orderUser/orderByUserId',appOrderManageController.getOrderByUserId);
 router.get('/get/orderUser/orderHistoryAllByUserId',appOrderManageController.getOrderHistoryAllByUserId);
 router.get('/get/orderUser/orderByOrderId',appOrderManageController.getOrderByOderId);
 // router.get()
 
 router.post('/post/add/orderUser',appOrderManageController.addOrderUser);
-router.post('/post/edt/orderUser',appOrderManageController.editOrderUser);
+router.post('/post/edit/orderUser',appOrderManageController.editOrderUser);
 router.post('/post/delete/orderUser',appOrderManageController.cancalOrderUser);
+
+router.post('/post/add/orderUser2',appOrderManageController.addOrderUser2)
 
 //driver
 

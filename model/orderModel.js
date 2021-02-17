@@ -31,7 +31,7 @@ class Order {
     this.order_number = order_number ;
     this.address_id = address_id ;
     this.order = order ;
-    this.machine_id = machine_id ;
+    // this.machine_id = machine_id ;
 
   }
 }

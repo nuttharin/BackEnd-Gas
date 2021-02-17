@@ -11,6 +11,8 @@ const {
 } =  require('../function/function');
 const moment = require('moment');
 const { getOrderByRiderId } = require("./userController");
+// const { delete } = require("../routes/appGasRoute");
+// const { delete } = require("../routes/appGasRoute");
 
 
 
@@ -37,7 +39,7 @@ getOrderInCartByUserId = (req,res,next) =>{
                     WHERE  user_id = ${data}`;
         pool.query(
             sql, 
-            (err, result) => {
+            async (err, result) => {
 
                 if (err) {
                     //console.log(err); 
@@ -48,9 +50,28 @@ getOrderInCartByUserId = (req,res,next) =>{
                 }
                 else
                 {    
+
+                    resData.data = await {
+                        user_id : result.rows[0].user_id 
+                    }
+                   
+                    resData.data.order_list = [] ;
+                    resData.data.price_all = 0 ;
+                    for (let i = 0; i < result.rows.length; i++) 
+                    {
+                        resData.data.price_all = await  resData.data.price_all + result.rows[i].priceall ;
+                        resData.data.order_list[i] = await {
+                            cart_id : result.rows[i].cart_id ,
+                            product: result.rows[i].product,
+                            quality: result.rows[i].quality,
+                            price: result.rows[i].price,
+                            priceall: result.rows[i].priceall
+                        }
+                    }
+                    resData.data.price_net = await (resData.data.price_all * (100/107)).toFixed(2) ;
+                    resData.data.vat = await (resData.data.price_all * (7/107)).toFixed(2) ;
                     resData.status = "success"; 
                     resData.statusCode = 201 ;
-                    resData.data = result.rows ;
                     res.status(resData.statusCode).json(resData);
                 }
             }
@@ -331,7 +352,7 @@ getOrderByUserId = async (req,res,next) =>{
     // INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
     // INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
     
-    let data = req.query.order_id
+    let data = req.query.user_id
     let resData = {
         status : "",
         statusCode : 200 ,
@@ -341,7 +362,7 @@ getOrderByUserId = async (req,res,next) =>{
     {
         resData.status = "error";
         resData.statusCode = 200 ;
-        resData.data = "not have parameter ( order_id )";    
+        resData.data = "not have parameter ( user_id )";    
         res.status(200).json(resData);
     }   
     else {
@@ -619,6 +640,35 @@ addOrderUser = async (req,res,next) =>{
     }
     //res.json(dataOrder)
 }
+
+addOrderUser2 = async (req,res,next) => {
+    let dataBody = req.body ;
+    let dataOrder = new Order() ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    //dataOrder.id
+    
+    dataOrder.user_id =  dataBody.user_id ;
+    dataOrder.priceall = dataBody.priceall
+    dataOrder.createDate = moment(new Date(dataBody.createDate)).format('YYYY-MM-DD H:mm:ss');
+    dataOrder.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');    
+    dataOrder.send_type = dataBody.send_type ;
+    dataOrder.payment_id = dataBody.payment_id;
+    dataOrder.order_number =  moment(new Date()).format('YYYYMMDDHmm');
+    dataOrder.address_id = dataBody.address_id ;
+    dataOrder.order = dataBody.order ;
+    let checkparameter = await funCheckParameterWithOutId(dataOrder) ;
+    console.log(dataOrder)
+}
+
+addOrderCallCenter = async (req,res,next) => { }
+
+
+
+
 
 editOrderUser = (req,res,next) =>{
     
@@ -1297,5 +1347,6 @@ module.exports = {
     getDriverOrderReviceByDriverId,
     // checkQrCodeMachineReceiveGas,
     // checkPwdMachineStation
+    addOrderUser2
 
 }
