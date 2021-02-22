@@ -31,7 +31,9 @@ test1 = async (req ,res ,nex) =>{
     res.json(data)
 }
 
-
+registerMachince = () =>{
+    
+}
 
 updateStatusReceiveGas = (req ,res , next) =>{
     // UPDATE "public"."tb_order_detail" SET "statusReceive" = 1 WHERE "id" = 25

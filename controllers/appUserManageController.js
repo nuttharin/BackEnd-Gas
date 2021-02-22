@@ -774,6 +774,67 @@ getUserAddressByAddressId = (req ,res ,next) =>{
 
 //#endregion
 
+
+//#region  user Address
+
+// User Address
+
+registerMachine = async (req ,res ,next) => {
+    let dataBody = req.body ; 
+    let dataAddress = new PositionUserId();
+
+    dataAddress.user_id = dataBody.user_id;
+    dataAddress.province_id = dataBody.province ;
+    dataAddress.amphure_id = dataBody.amphure ;
+    dataAddress.district_id = dataBody.district ;
+    dataAddress.road = dataBody.road;
+    dataAddress.other = dataBody.other;
+    dataAddress.name_address = dataBody.name_address;
+    dataAddress.lat = dataBody.lat ;
+    dataAddress.lon = dataBody.lon ;
+    let checkParameter = await funCheckParameterWithOutId(dataAddress);
+    let resData = {
+        status : "",
+        statusCode : 200,
+        data : ""
+    }   
+    if(checkParameter != "" )
+    {
+        //console.log(checkParameter)
+       
+        resData.status = "error";
+        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        res.status(200).json(resData);
+    }
+    else
+    {
+        //INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id", "road", "other", "name_address", "latitude", "longitude") VALUES (21, 1, 1, 1, 'xxx', 'xxx', 'xxx-xxx', '10.111', '10.222') RETURNING *
+        sql = ``;                   
+                                
+        pool.query(
+            sql, 
+            (err, result) => {
+                //console.log(err)
+                if (err) {
+                    resData.status = "error";
+                    resData.data = "query command error tb_address_user: " + err;
+                    res.status(200).json(resData);
+                }
+                else
+                {      
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "insert complete";
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+
+}
+//#endregion
+
+
 funAddUserAddress = async () =>{
 
     sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
