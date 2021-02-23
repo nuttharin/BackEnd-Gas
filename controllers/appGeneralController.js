@@ -53,7 +53,8 @@ getAmphure = (req , res, next) => {
             (err, result) => {
     
                 if (err) {
-                    //console.log(err);  
+                    console.log(sql)
+                    console.log(err);  
                     let data = {
                         status : "error",
                         data : "query command error"
