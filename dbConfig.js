@@ -11,6 +11,7 @@ const connectionStringPostgres = `postgresql://${process.env.DB_POSTGRES_USER}:$
 const pool = new Pool({
     connectionString:  connectionStringPostgres   
 });
+console.log(pool)
 
 module.exports = {
     pool,
