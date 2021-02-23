@@ -54,13 +54,13 @@ app.use('/pictureProfile' , express.static('./upload/picture/profile'))
 //app.use('/static', express.static('z'))
 
 
-// app.get('/',(req , res , next) =>{  // path /
+app.get('/',(req , res , next) =>{  // path /
 
-//     res.status(200).json({
-//         message : 'Get rootdd /'
-//     })
+    res.status(200).json({
+        message : 'Get rootdd /'
+    })
 
-// })
+})
 
 
 // app.post('/pic',upload.single('profile') , (req,res,next) =>{
