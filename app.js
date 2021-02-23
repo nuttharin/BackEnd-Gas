@@ -36,21 +36,21 @@ app.use((req, res, next) => {
 
 
 //set Router
-// const testRouter = require('./routes/testRoute');
-// const userRouter = require('./routes/userRoute');
-// const gasRouter = require('./routes/gasRoute');
-// const appGasRouter = require('./routes/appGasRoute');
+const testRouter = require('./routes/testRoute');
+const userRouter = require('./routes/userRoute');
+const gasRouter = require('./routes/gasRoute');
+const appGasRouter = require('./routes/appGasRoute');
 
-// //set path 
+//set path 
 
-// app.use('/test',testRouter);
-// app.use('/user',userRouter);
-// app.use('/gas',gasRouter);
-// app.use('/app',appGasRouter);
+app.use('/test',testRouter);
+app.use('/user',userRouter);
+app.use('/gas',gasRouter);
+app.use('/app',appGasRouter);
 
-// app.use('/pictureRegisterUser', express.static('./upload/picture/register'));
-// app.use('/pictureRegisterDriver', express.static('./upload/picture/register_driver'));
-// app.use('/pictureProfile' , express.static('./upload/picture/profile'))
+app.use('/pictureRegisterUser', express.static('./upload/picture/register'));
+app.use('/pictureRegisterDriver', express.static('./upload/picture/register_driver'));
+app.use('/pictureProfile' , express.static('./upload/picture/profile'))
 //app.use('/static', express.static('z'))
 
 
