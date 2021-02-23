@@ -511,20 +511,16 @@ addOrderUser = async (req, res, next) => {
         statusCode: 200,
         data: ""
     }
-    //dataOrder.id
     dataOrder.user_id = dataBody.user_id;
     dataOrder.priceall = dataBody.priceall
-    dataOrder.createDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+    dataOrder.createDate = moment(new Date(dataBody.createDate)).format('YYYY-MM-DD H:mm:ss');
     dataOrder.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
     dataOrder.send_type = dataBody.send_type;
     dataOrder.payment_id = dataBody.payment_id;
     dataOrder.order_number = moment(new Date()).format('YYYYMMDDHmm');
     dataOrder.address_id = dataBody.address_id;
     dataOrder.order = dataBody.order;
-    dataOrder.machine_id = dataBody.machine_id
     let checkparameter = await funCheckParameterWithOutId(dataOrder);
-    //console.log(checkparameter);
-    //console.log(dataOrder);
     if (checkparameter != "") {
         resData.status = "error";
         resData.statusCode = 200;
@@ -533,10 +529,10 @@ addOrderUser = async (req, res, next) => {
     }
     else {
         let sql = `INSERT INTO "public"."tb_order" ("user_id", "priceall", "createDate", 
-        "modifyDate", "send_type", "payment_id", "order_number", "address_id", "status" ,"machine_id") 
+        "modifyDate", "send_type", "payment_id", "order_number", "address_id", "status" ) 
         VALUES (${dataOrder.user_id}, '${dataOrder.priceall}', '${dataOrder.createDate}',
          '${dataOrder.modifyDate}', '${dataOrder.send_type}', ${dataOrder.payment_id}, 
-         '${dataOrder.order_number}', ${dataOrder.address_id}, 3 ,${dataOrder.machine_id}) RETURNING *`;
+         '${dataOrder.order_number}', ${dataOrder.address_id}, 3 ) RETURNING *`;
 
         pool.query(
             sql,
@@ -551,6 +547,7 @@ addOrderUser = async (req, res, next) => {
                 }
                 else {
                     console.log(result.rows)
+
                     dataOrder.id = result.rows[0].id;
                     let sqlAddress;
                     sql = "";
@@ -603,12 +600,10 @@ addOrderUser = async (req, res, next) => {
                             }
                         }
                     );
-
                 }
             }
         );
     }
-    //res.json(dataOrder)
 }
 
 addOrderUser2 = async (req, res, next) => {
