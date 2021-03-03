@@ -546,8 +546,8 @@ addOrderUser = async (req, res, next) => {
                     res.status(resData.statusCode).json(resData)
                 }
                 else {
-                    console.log(result.rows)
-
+                    // console.log(result.rows)
+                    let resOrder = result.rows ;
                     dataOrder.id = result.rows[0].id;
                     let sqlAddress;
                     sql = "";
@@ -570,7 +570,7 @@ addOrderUser = async (req, res, next) => {
                             else {
                                 let commanDel = `DELETE FROM "public"."tb_order_cart" WHERE user_id = ${dataOrder.user_id}`;
                                 let commandDelAll = "";
-                                console.log(dataOrder.order)
+                                //console.log(result.rows)
                                 for (let i = 0; i < dataOrder.order.length; i++) {
                                     commandDelAll += await commanDel + "AND gas_id = " + dataOrder.order[i].gas_id;
                                     if (i != dataOrder.order.length - 1) {
@@ -592,7 +592,8 @@ addOrderUser = async (req, res, next) => {
                                         else {
                                             resData.status = "success";
                                             resData.statusCode = 201;
-                                            resData.data = "insert complete";
+                                            // resData.data = "insert complete";
+                                            resData.data = await resOrder ;
                                             res.status(201).json(resData);
                                         }
                                     }

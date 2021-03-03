@@ -39,7 +39,47 @@ updateStatusReceiveGas = (req ,res , next) =>{
     // UPDATE "public"."tb_order_detail" SET "statusReceive" = 1 WHERE "id" = 25
 }
 
-checkQrCodeMachineReceiveGas = (req , res , next) =>{
+getMachineCodeFromIP = (req ,res , next) =>{
+    let data = req.query.ip
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( IP )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT id , machine_code FROM tb_machine_gas
+                    WHERE tb_machine_gas.ip = '${data}'`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    resData.status = "success"; 
+                    resData.statusCode = 201 ;
+                    resData.data = result.rows[0];
+                    res.status(resData.statusCode).json(resData);
+                }
+            }
+        );
+    }
+}
+
+checkQrCodeMachineReceiveGasForUser = (req , res , next) =>{
     // check กับ machine_code 
     
     let data = req.body ;
@@ -66,7 +106,8 @@ checkQrCodeMachineReceiveGas = (req , res , next) =>{
     {
         let sql = `SELECT tb_order.id FROM tb_order
         INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
-        WHERE tb_order.rider_id = ${data.driver_id} AND tb_machine_gas.machine_code = '${data.qrcode}'`;
+        WHERE tb_order.rider_id = ${data.driver_id} 
+        AND tb_machine_gas.machine_code = '${data.qrcode}'`;
         pool.query(
             sql, 
             (err, result) => {
@@ -90,7 +131,7 @@ checkQrCodeMachineReceiveGas = (req , res , next) =>{
                         resData.data = {
                             check_qrcode : false
                         };    
-                        res.status(201).json(resData);
+                        res.status(resData.statusCode).json(resData);
                     }
                     else{
                         // find pwd gasmachine
@@ -122,6 +163,93 @@ checkQrCodeMachineReceiveGas = (req , res , next) =>{
         );
     }
 }
+
+checkQrCodeMachineReceiveGasForDriver = (req , res , next) =>{
+    // check กับ machine_code 
+    
+    let data = req.body ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data.qrcode == "" || data.qrcode == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( qrcode )";    
+        res.status(200).json(resData);
+    }   
+    else if(data.driver_id == "" || data.driver_id == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( driver_id )";    
+        res.status(200).json(resData);
+    } 
+    else 
+    {
+        let sql = `SELECT tb_order.id FROM tb_order
+        INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+        WHERE tb_order.rider_id = ${data.driver_id} 
+        AND tb_machine_gas.machine_code = '${data.qrcode}'`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) 
+                {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {
+                    console.log(result.rows[0]);
+                    if(!result.rows[0])
+                    {
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = {
+                            check_qrcode : false
+                        };    
+                        res.status(resData.statusCode).json(resData);
+                    }
+                    else{
+                        // find pwd gasmachine
+                        let order_id = result.rows[0].id
+
+                        sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" 
+                                FROM tb_order WHERE tb_order.id =${order_id}`;
+                        pool.query(
+                            sql, 
+                            (err, result) => {
+                
+                                if (err) {
+                                    //console.log(err); 
+                                    resData.status = "error"; 
+                                    resData.statusCode = 200 ;
+                                    resData.data = err ;
+                                    res.status(resData.statusCode).json(resData)
+                                }
+                                else
+                                {    
+                                    resData.status = "success"; 
+                                    resData.statusCode = 201 ;
+                                    resData.data = result.rows[0] ;
+                                    res.status(resData.statusCode).json(resData);
+                                }
+                            }
+                        );
+                    } 
+                }
+            }
+        );
+    }
+}
+
 
 checkQrCodeMachineReturnGas = (req , res , next) =>{
     // check กับ machine_code 
@@ -614,11 +742,13 @@ testSendCommandToMachine = async (req,res,next) =>{
 module.exports ={
     testAxios,
     test1,
-    checkQrCodeMachineReceiveGas,
+    checkQrCodeMachineReceiveGasForUser,
+    checkQrCodeMachineReceiveGasForDriver,
     checkPwdMachineStation,
     updateGasOutInByOrderId,
     sendCommandToMachineGasOut,
     sendCommandToMachineGasIn,
     sendCommandToMachineStatusDoor,
-    testSendCommandToMachine
+    testSendCommandToMachine,
+    getMachineCodeFromIP
 }
