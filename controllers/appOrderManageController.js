@@ -511,6 +511,8 @@ addOrderUser = async (req, res, next) => {
         statusCode: 200,
         data: ""
     }
+    console.log("xxx")
+    console.log(dataBody)
     dataOrder.user_id = dataBody.user_id;
     dataOrder.priceall = dataBody.priceall
     dataOrder.createDate = moment(new Date(dataBody.createDate)).format('YYYY-MM-DD H:mm:ss');
@@ -520,6 +522,8 @@ addOrderUser = async (req, res, next) => {
     dataOrder.order_number = moment(new Date()).format('YYYYMMDDHmm');
     dataOrder.address_id = dataBody.address_id;
     dataOrder.order = dataBody.order;
+    //dataOrder.machine_id = null;
+    console.log(dataOrder)
     let checkparameter = await funCheckParameterWithOutId(dataOrder);
     if (checkparameter != "") {
         resData.status = "error";
@@ -529,10 +533,10 @@ addOrderUser = async (req, res, next) => {
     }
     else {
         let sql = `INSERT INTO "public"."tb_order" ("user_id", "priceall", "createDate", 
-        "modifyDate", "send_type", "payment_id", "order_number", "address_id", "status" ) 
+        "modifyDate", "send_type", "payment_id", "order_number", "address_id", "status") 
         VALUES (${dataOrder.user_id}, '${dataOrder.priceall}', '${dataOrder.createDate}',
          '${dataOrder.modifyDate}', '${dataOrder.send_type}', ${dataOrder.payment_id}, 
-         '${dataOrder.order_number}', ${dataOrder.address_id}, 3 ) RETURNING *`;
+         '${dataOrder.order_number}', ${dataOrder.address_id}, 3  ) RETURNING *`;
 
         pool.query(
             sql,
@@ -547,7 +551,7 @@ addOrderUser = async (req, res, next) => {
                 }
                 else {
                     // console.log(result.rows)
-                    let resOrder = result.rows ;
+                    let resOrder = result.rows[0] ;
                     dataOrder.id = result.rows[0].id;
                     let sqlAddress;
                     sql = "";
@@ -590,11 +594,59 @@ addOrderUser = async (req, res, next) => {
                                             res.status(resData.statusCode).json(resData)
                                         }
                                         else {
-                                            resData.status = "success";
-                                            resData.statusCode = 201;
-                                            // resData.data = "insert complete";
-                                            resData.data = await resOrder ;
-                                            res.status(201).json(resData);
+                                            //  CREATE PASSWORD STORE ในแต่ละวันห้ามซ้ำกัน
+                                            let pwdMachine = await funRandomNumberString(6);
+                                            let checkWhile;
+                                            let dataPwd;
+                                            sql = `SELECT "pwdGasMachine" FROM tb_order
+                                            WHERE CURRENT_DATE = DATE(tb_order."createDate")`;
+                                            pool.query(
+                                                sql,
+                                                async (err, result) => {
+                                                    if (err) {
+                                                        //console.log(err); 
+                                                        resData.status = "error";
+                                                        resData.statusCode = 200;
+                                                        resData.data = err;
+                                                        res.status(resData.statusCode).json(resData)
+                                                    }
+                                                    else {
+                                                        console.log(result.rows)      
+                                                        dataPwd = await result.rows;
+                                                  
+                                                        checkWhile = await dataPwd.includes(pwdMachine);
+                                                        while (checkWhile) {
+                                                            pwdMachine = await funRandomNumberString(6);
+                                                            checkWhile = await dataPwd.includes(pwdMachine);
+                                                        }
+                                                        //console.log(checkWhile)
+                                                        sql = `UPDATE "public"."tb_order" SET "status" = 2,
+                                                                "pwdGasMachine"  = '${pwdMachine}'
+                                                                WHERE "id" = ${dataOrder.id}`;
+
+                                                        pool.query(
+                                                            sql,
+                                                            async (err, result) => {
+                                                                if (err) {
+                                                                    //console.log(err); 
+                                                                    resData.status = "error";
+                                                                    resData.statusCode = 200;
+                                                                    resData.data = "error tb_order set password : " + err;
+                                                                    res.status(resData.statusCode).json(resData)
+                                                                }
+                                                                else {
+                                                                    resData.status = "success";
+                                                                    resData.statusCode = 201;
+                                                                    // resData.data = "insert complete";
+                                                                    resData.data = await resOrder ;
+                                                                    res.status(resData.statusCode).json(resData);     
+                                                                }
+                                                            }
+                                                        );
+                                                                                                         
+                                                    }
+                                                }
+                                            );
                                         }
                                     }
                                 );
@@ -713,9 +765,6 @@ addOrderUser2 = async (req, res, next) => {
 addOrderCallCenter = async (req, res, next) => {
 
 }
-
-
-
 
 
 editOrderUser = (req, res, next) => {

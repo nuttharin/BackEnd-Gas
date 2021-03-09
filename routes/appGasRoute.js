@@ -143,8 +143,12 @@ router.get('/get/iot/gas/percentPressure',appGasController.getPercentPressureByS
 // ===== machine ===== //
 //router
 router.post('/post/test1',machineManageController.test1)
-router.post('/post/driver/checkQrCodeMachineReceiveGas',machineManageController.checkQrCodeMachineReceiveGasForDriver);
-router.post('/post/user/checkQrCodeMachineReceiveGas',machineManageController.checkQrCodeMachineReceiveGasForDriver);
+
+router.post('/post/driver/checkQrCodeMachine/receiveGas',machineManageController.checkQrCodeMachineReceiveGasForDriver);
+router.post('/post/user/checkQrCodeMachine/receiveGas',machineManageController.checkQrCodeMachineReceiveGasForUser);
+
+router.post('/post/driver/checkQrCodeMachine/returnGas',machineManageController.checkQrCodeMachineReturnGasForDriver);
+router.post('/post/user/checkQrCodeMachine/returnGas',machineManageController.checkQrCodeMachineReturnGasForUser);
 
 router.post('/post/driver/checkPwdMachineStation',machineManageController.checkPwdMachineStation);
 router.post('/post/machine/command/sendCommandToMachineGasOut' , machineManageController.sendCommandToMachineGasOut);
