@@ -153,6 +153,11 @@ router.post('/post/user/checkQrCodeMachine/returnGas',machineManageController.ch
 router.post('/post/driver/checkPwdMachineStation',machineManageController.checkPwdMachineStation);
 router.post('/post/machine/command/sendCommandToMachineGasOut' , machineManageController.sendCommandToMachineGasOut);
 router.post('/post/fromMachine/update/quality/gasOut',machineManageController.updateGasOutInByOrderId);
+router.post('/post/machine/command/testSendCommandToMachine' , machineManageController.testSendCommandToMachine);
+router.post('/post/machine/command/testGasOut' , machineManageController.testGasOut);
+router.post('/post/machine/command/testGasIn' , machineManageController.testGasIn);
+
+
 router.get('/get/machine/getMachineCodeFromIP',machineManageController.getMachineCodeFromIP);
 
 

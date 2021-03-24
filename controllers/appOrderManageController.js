@@ -511,8 +511,8 @@ addOrderUser = async (req, res, next) => {
         statusCode: 200,
         data: ""
     }
-    console.log("xxx")
-    console.log(dataBody)
+    // console.log("xxx")
+    // console.log(dataBody)
     dataOrder.user_id = dataBody.user_id;
     dataOrder.priceall = dataBody.priceall
     dataOrder.createDate = moment(new Date(dataBody.createDate)).format('YYYY-MM-DD H:mm:ss');
@@ -523,7 +523,7 @@ addOrderUser = async (req, res, next) => {
     dataOrder.address_id = dataBody.address_id;
     dataOrder.order = dataBody.order;
     //dataOrder.machine_id = null;
-    console.log(dataOrder)
+    // console.log(dataOrder)
     let checkparameter = await funCheckParameterWithOutId(dataOrder);
     if (checkparameter != "") {
         resData.status = "error";
@@ -611,7 +611,7 @@ addOrderUser = async (req, res, next) => {
                                                         res.status(resData.statusCode).json(resData)
                                                     }
                                                     else {
-                                                        console.log(result.rows)      
+                                                        //console.log(result.rows)      
                                                         dataPwd = await result.rows;
                                                   
                                                         checkWhile = await dataPwd.includes(pwdMachine);

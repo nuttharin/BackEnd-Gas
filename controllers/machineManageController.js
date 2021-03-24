@@ -839,11 +839,136 @@ sendCommandToMachineStatusDoor = async (req,res,next) =>{
 }
 
 testSendCommandToMachine = async (req,res,next) =>{
+    let data = req.body.order_id
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( order_id )";    
+        res.status(200).json(resData);
+    }   
+    else 
+    {
+
+        let sql = `SELECT tb_order.id as order_id , tb_order_detail.quality , tb_machine_gas.ip FROM tb_order
+                    LEFT JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+                    LEFT JOIN tb_order_detail ON tb_order_detail.order_id = tb_order.id
+                    WHERE tb_order.id = ${data}`;
+        pool.query(
+            sql, 
+            async (err, result) => {
+    
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statuCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statuCode).json(resData)
+                }
+                else
+                {    
+                    // resData.status = "success"; 
+                    // resData.statuCode = 201 ;
+                    // resData.data = result.rows ;
+                    // res.status(resData.statuCode).json(resData);
+                    //console.log(result.rows[0])
+                    await axios.post(
+                        `http://${result.rows[0].ip}/machine/command/test`,
+                        {
+                            command_str_0 :0,
+                            command_str_1 :1,
+                        }
+                    )
+                    .then(function (response) {
+                        // handle success
+                        //console.log(response);
+                        //console.log(response.data)
+                        if(response.data.statuCode == 201)
+                        {
+                            //console.log("sss")
+                            resData.status = "success"; 
+                            resData.statusCode = 201 ;
+                            resData.data = response.data.data ;
+                            res.status(resData.statusCode).json(resData);
+                        }
+                        else {
+                            // alert 
+                            resData.status = "error";
+                            resData.statusCode = 200 ;
+                            resData.data = "error machine :" + response.data.data;    
+                            res.status(200).json(resData);
+                        }                      
+
+                    })
+                    .catch(function (error) {
+                        // handle error
+                        // alert
+                        //console.log(error);
+                        resData.status = "error";
+                        resData.statusCode = 200 ;
+                        resData.data = "error machine :" + error;    
+                        res.status(200).json(resData);
+                    })
+                }
+            }
+        );     
+    }   
+
+
+
+}
+
+testGasIn  = async (req,res,next) =>{ 
     await axios.post(
-        `http://${result.rows[0].ip}/machine/command/gasOut`,
+        `http://192.168.1.156:5000/machine/command/test`,
         {
-            number_order : result.rows[0].quality,
-            order_id : result.rows[0].order_id
+            command_str_0 :0,
+            command_str_1 :1,
+        }
+    )
+    .then(function (response) {
+        // handle success
+        //console.log(response);
+        //console.log(response.data)
+        if(response.data.statuCode == 201)
+        {
+            //console.log("sss")
+            resData.status = "success"; 
+            resData.statusCode = 201 ;
+            resData.data = response.data.data ;
+            res.status(resData.statusCode).json(resData);
+        }
+        else {
+            // alert 
+            resData.status = "error";
+            resData.statusCode = 200 ;
+            resData.data = "error machine :" + response.data.data;    
+            res.status(200).json(resData);
+        }                      
+
+    })
+    .catch(function (error) {
+        // handle error
+        // alert
+        //console.log(error);
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "error machine :" + error;    
+        res.status(200).json(resData);
+    })
+}
+
+testGasOut  = async (req,res,next) =>{
+    await axios.post(
+        `http://192.168.1.156:5000/machine/command/test`,
+        {
+            command_str_0 :0,
+            command_str_1 :2,
         }
     )
     .then(function (response) {
@@ -894,5 +1019,7 @@ module.exports ={
     sendCommandToMachineGasIn,
     sendCommandToMachineStatusDoor,
     testSendCommandToMachine,
-    getMachineCodeFromIP
+    getMachineCodeFromIP,
+    testGasIn,
+    testGasOut
 }
