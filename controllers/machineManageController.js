@@ -924,8 +924,13 @@ testSendCommandToMachine = async (req,res,next) =>{
 }
 
 testGasIn  = async (req,res,next) =>{ 
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
     await axios.post(
-        `http://192.168.1.156:5000/machine/command/test`,
+        `http://192.168.250.12:5000/machine/command/test`,
         {
             command_str_0 :0,
             command_str_1 :1,
@@ -964,8 +969,13 @@ testGasIn  = async (req,res,next) =>{
 }
 
 testGasOut  = async (req,res,next) =>{
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
     await axios.post(
-        `http://192.168.1.156:5000/machine/command/test`,
+        `http://192.168.250.12:5000/machine/command/test`,
         {
             command_str_0 :0,
             command_str_1 :2,
