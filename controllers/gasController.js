@@ -4,7 +4,7 @@ const { Double } = require("mongodb");
 const moment = require('moment');
 var nameTable = "tb_gasDataIoT";
 var nameMapTable = "tb_mapAround";
-nameTable = 'tb_test2' ;
+//nameTable = 'tb_test2' ;
 
 collectPressureIoT = (req , res , next) =>{
     
@@ -202,7 +202,7 @@ getPercentPressureBySerialNumber = async (req , res , next) =>{
     let dataLast ;
     let dataFrist ;
     //data.serialNumber = req.body.serialNumber ;
-    console.log(req.query.serialNumber)
+    //console.log(req.query.serialNumber)
     data.serialNumber = req.query.serialNumber ;
     if( data.serialNumber == null ||  data.serialNumber == "")
     {
@@ -220,47 +220,23 @@ getPercentPressureBySerialNumber = async (req , res , next) =>{
             let dbo = db.db(process.env.DATABASE_DATA_IOT);
             var mysort = { dateTime : -1 };
            
-
-            // dbo.collection(nameTable)
-            // .aggregate([                   
-            //     {   
-            //         $match: { 
-            //             "serialNumber" : { 
-            //                $eq : data.serialNumber
-            //             }, 
-            //         } 
-            //     },
-            //     { 
-            //         $group: {
-            //             _id :  data.serialNumber,
-            //             // pressure : "$pressure" ,
-            //             lastDate : { $last : "$dateTime" }
-            //         }
-            //     },
-            //     //{ $sort: { total: -1 } }  
-            // ])
-            // .toArray(function(err ,result){
-            //     if(err) throw err ;
-            //     else {
-            //         console.log(result);
-            //     }
-            // })
-
-
             dbo.collection(nameTable)
             .find({ serialNumber: { $eq : data.serialNumber } } , {_id : 0})
             .sort(mysort)
             .limit(-1)
             .toArray(function(err, result) 
             {
+                //console.log(result)
                 //console.log(moment(result[0].dateTime).format(' D/MM/YYYY h:mm:ss'))
                 if(err) {
                     res.status(400).json(err)
                 }
-                else 
+                else if(result.length > 0)
                 {
+                    //console.log(result)
                     dataLast = result[0] ;
                     mysort = { dateTime : 1 };
+
                     dbo.collection(nameTable)
                     .find(
                         { 
@@ -272,6 +248,7 @@ getPercentPressureBySerialNumber = async (req , res , next) =>{
                     .limit(-1)
                     .toArray(function(err, result) 
                     {
+                        //console.log(result)
                         if(err) {
                             res.status(400).json(err)
                         }                        
@@ -286,19 +263,23 @@ getPercentPressureBySerialNumber = async (req , res , next) =>{
                                 dateTime : moment(dataLast.dateTime).format(' D/MM/YYYY h:mm:ss')
                             }
                             
+                            
                             res.status(200).json({
                                 status : "success",
                                 data : dataJson
-                            });      
-                            
-
-
+                            });   
 
                         }
 
                     });
                     db.close();
 
+                }
+                else {
+                    res.status(200).json({
+                        status : "success",
+                        data : "ไม่มีข้อมูล"
+                    });      
                 }
                
             });
