@@ -66,6 +66,8 @@ router.post('/post/delete/userAddress',appUserManageController.deleteUserAddress
 
 router.get('/get/getDriverProfileById',appDriverManageController.getDriverProfileById);
 
+router.post('/post/driver/statusActiveReceiveJobRider',appDriverManageController.statusActiveReceiveJobRider);
+router.post('/post/driver/statusInactiveReceiveJobRider',appDriverManageController.statusInactiveReceiveJobRider);
 
 router.post('/post/registerDriver',appDriverManageController.registerRider);
 router.post('/post/edit/driver',appDriverManageController.editRiderByRiderId);
@@ -75,7 +77,7 @@ router.post('/post/edit/driver/profile',appDriverManageController.editRiderPicPr
 
 router.post('/post/edit/driver/workStatus',appDriverManageController.editStatusWorkByRiderId);
 
-router.post('/post/add/driver/position',appDriverManageController.updatePositionDriverByDriverId);
+router.post('/post/update/driver/position',appDriverManageController.updatePositionDriverByDriverId);
 router.get('/get/driver/position',appDriverManageController.getPositionDriverByDriver);
 
 
@@ -102,7 +104,6 @@ router.post('/post/delete/cart',appOrderManageController.deleteOrderInCartById);
 router.get('/get/orderUser/orderByUserId',appOrderManageController.getOrderByUserId);
 router.get('/get/orderUser/orderHistoryAllByUserId',appOrderManageController.getOrderHistoryAllByUserId);
 router.get('/get/orderUser/orderByOrderId',appOrderManageController.getOrderByOderId);
-// router.get()
 
 router.post('/post/add/orderUser',appOrderManageController.addOrderUser);
 router.post('/post/edit/orderUser',appOrderManageController.editOrderUser);
@@ -115,6 +116,8 @@ router.post('/post/add/orderUser2',appOrderManageController.addOrderUser2)
 router.get('/post/driver/distance',appOrderManageController.sendOrderToDriver);
 router.post('/post/driver/driverReceiveOrder',appOrderManageController.driverReceiveOrder);
 router.get('/get/driver/getOrderCurrentByDriverId' ,appOrderManageController.getDriverOrderReviceByDriverId);
+router.get('/get/driver/findOrderNearDriver', appOrderManageController.findOrderNearDriver);
+// router.get('')
 
 
 

@@ -207,17 +207,37 @@ driverLogin = async (req , res,next) =>{
                         }
                         let accessToken = await generateToken(dataGen);
                         let refreshToken = await generateRefreshToken(dataGen);
-
-                        resData.status = "success";
-                        resData.statusCode = 201 ;
-                        resData.data = {
-                            user_data : dataUser ,
-                            token : {
-                                accessToken : accessToken,
-                                refreshToken : refreshToken
+                        let lastLogin =  moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+                        // update lastlogin
+                        sql = `UPDATE "public"."tb_rider" SET "lastLogin" = '${lastLogin}' WHERE "id" = ${dataUser.id}`;
+                        pool.query(
+                            sql, 
+                            (err, result) => {
+                
+                                if (err) {
+                                    //console.log(err); 
+                                    resData.status = "error"; 
+                                    resData.statusCode = 200 ;
+                                    resData.data = err + "error update lastLogin" ;
+                                    res.status(resData.statusCode).json(resData)
+                                }
+                                else
+                                {    
+                                    resData.status = "success";
+                                    resData.statusCode = 201 ;
+                                    resData.data = {
+                                        user_data : dataUser ,
+                                        token : {
+                                            accessToken : accessToken,
+                                            refreshToken : refreshToken
+                                        }
+                                    } ;
+                                    res.status(resData.statusCode).json(resData);
+                                }
                             }
-                        } ;
-                        res.status(resData.statusCode).json(resData);
+                        );
+
+                        
                     }
                     else{
                         resData.status = "error";
@@ -242,10 +262,73 @@ ApprovedDriver = (req , res,next) =>{
     //UPDATE "public"."tb_rider" SET "isApproved" = 1 WHERE "id" = 5
 }
 
+
+statusInactiveReceiveJobRider = (req , res,next) =>{
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }     
+    let id = req.body.driver_id; 
+    let sql = `UPDATE "public"."tb_rider" SET "statusWork" = 0 WHERE "id" = ${id}`;
+    pool.query(
+        sql, 
+        (err, result) => {
+
+            if (err) {
+                //console.log(err); 
+                resData.status = "error"; 
+                resData.statuCode = 200 ;
+                resData.data = err ;
+                res.status(resData.statuCode).json(resData)
+            }
+            else
+            {    
+                resData.status = "success"; 
+                resData.statuCode = 201 ;
+                resData.data = "update complete" ;
+                res.status(resData.statuCode).json(resData);
+            }
+        }
+    );
+}
+
+statusActiveReceiveJobRider = (req , res,next) =>{
+   
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }     
+    let id = req.body.driver_id; 
+    let sql = `UPDATE "public"."tb_rider" SET "statusWork" = 1 WHERE "id" = ${id}`;
+    pool.query(
+        sql, 
+        (err, result) => {
+
+            if (err) {
+                //console.log(err); 
+                resData.status = "error"; 
+                resData.statuCode = 200 ;
+                resData.data = err ;
+                res.status(resData.statuCode).json(resData)
+            }
+            else
+            {    
+                resData.status = "success"; 
+                resData.statuCode = 201 ;
+                resData.data = "update complete" ;
+                res.status(resData.statuCode).json(resData);
+            }
+        }
+    );
+}
+
 registerRider = async (req , res , next) => {
     upload(req, res,async function (err) {
         // /upload/picture/register_driver
-        let pathUpload =  process.env.IP_ADDRESS+'/pictureRegisterDriver/'
+        // let pathUpload =  process.env.IP_ADDRESS+'/pictureRegisterDriver/'
+        let pathUpload = '/pictureRegisterDriver/'
         let pathUploadPic = {
             cardId : pathUpload + req.files.picIdCard[0].filename,
             cardIdFace : pathUpload + req.files.picIdCardFace[0].filename
@@ -579,9 +662,11 @@ updatePositionDriverByDriverId = async (req,res,next) =>{
     }
     else
     {
-        let sql = `INSERT INTO "public"."tb_position_driver"("rider_id", "lat", "lon", "createDate") 
-        VALUES (${dataPos.driver_id}, '${dataPos.lat}', '${dataPos.lon}', 
-        '${dataPos.createDate}') RETURNING *`;
+        //UPDATE "public"."tb_rider" SET "lat" = '13.8603961', "lon" = '100.5235001' WHERE "id" = 6
+        let sql = `UPDATE "public"."tb_rider" SET "lat" = '${dataPos.lat}', "lon" = '${dataPos.lon}' WHERE "id" = ${dataPos.driver_id}`
+        //let sql = `INSERT INTO "public"."tb_position_driver"("rider_id", "lat", "lon", "createDate") 
+        // VALUES (${dataPos.driver_id}, '${dataPos.lat}', '${dataPos.lon}', 
+        // '${dataPos.createDate}') RETURNING *`;
         pool.query(
             sql, 
             (err, result) => {
@@ -590,14 +675,14 @@ updatePositionDriverByDriverId = async (req,res,next) =>{
                     //console.log(err);  
                     resData.status = "error";
                     resData.statusCode = 200 ;
-                    resData.data = "error update tb_position_driver : " + err;    
+                    resData.data = "error update tb_rider (lat,lon) : " + err;    
                     res.status(200).json(resData);
                 }
                 else
                 {
                     resData.status = "success";
                     resData.statusCode = 201 ;
-                    resData.data = "insert complete";    
+                    resData.data = "update complete";    
                     res.status(201).json(resData);
                 }
             }
@@ -620,10 +705,7 @@ getPositionDriverByDriver = async (req,res,next) =>{
         res.status(200).json(resData);
     }   
     else {
-        let sql = `SELECT rider_id , lat , lon FROM tb_position_driver
-                    WHERE tb_position_driver.rider_id = ${data}
-                    ORDER BY tb_position_driver."createDate"
-                    DESC LIMIT 1`;
+        let sql = `SELECT id as driver_id , lat , lon FROM "public"."tb_rider" WHERE tb_rider."id" = ${data}`;
         pool.query(
             sql, 
             (err, result) => {
@@ -964,6 +1046,8 @@ x = async (id) =>{
 
 module.exports = {
     driverLogin,
+    statusActiveReceiveJobRider,
+    statusInactiveReceiveJobRider,
     registerRider,
     getDriverProfileById,
     editRiderByRiderId ,

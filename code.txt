@@ -267,3 +267,94 @@ SELECT  tb_order.order_number as order_number,tb_gas_detail."name" as gas_type ,
                     UPDATE "public"."tb_order" SET "receiveDate" = '2020-11-10 14:13:20' WHERE "id" = 1
 
                     INSERT INTO "public"."tb_machine_gas"("owner", "phone", "lat", "lon", "status") VALUES ('chill talk', '0812318897', '10.22222', '10.11111', 1) RETURNING *
+
+
+
+
+
+
+                                                // หา diver ที่อยู่ใกล้
+                            //->หา lat lon address_user
+                            //dataOrder.address_id
+                            //position1 = "13.7510896,100.5836019" ;
+                            //position2 =  "13.7510896,100.5858107" ;
+                            let origin ;        // ที่อยู่ rider
+                            let destination ; // ที่จัดส่ง
+                            //SELECT id as address_id , latitude , longitude FROM tb_address_user WHERE tb_address_user.id = 17 
+
+                            //SELECT id as driver_id , lat , lon FROM tb_rider WHERE tb_rider."statusWork" = 1
+                            sql = `SELECT id as address_id , latitude as lat, longitude as lon
+                            FROM tb_address_user WHERE tb_address_user.id = ${dataOrder.address_id}`;
+                            pool.query(
+                                sql, 
+                                async (err, result) => {
+
+                                    if (err) {
+                                        //console.log(err); 
+                                        resData.status = "error"; 
+                                        resData.statusCode = 200 ;
+                                        resData.data = err + "error select tb_address_user" ;
+                                        res.status(resData.statusCode).json(resData)
+                                    }
+                                    else
+                                    {    
+                                        if(result.rows)
+                                        {                                                                                     
+                                            destination = await {
+                                                ADDRESS_id : result.rows[0].address_id ,
+                                                position : result.rows[0].lat+","+result.rows[0].lon
+                                            }
+                                            console.log(destination)
+                                            console.log("destination")
+
+                                            sql = `SELECT id as driver_id , lat , lon FROM tb_rider WHERE tb_rider."statusWork" = 1`;
+                                            pool.query(
+                                                sql, 
+                                                async (err, result) => {
+
+                                                    if (err) {
+                                                        //console.log(err); 
+                                                        resData.status = "error"; 
+                                                        resData.statusCode = 200 ;
+                                                        resData.data = err + "error select get tb_rider(lat,lon) ALL " ;
+                                                        res.status(resData.statusCode).json(resData)
+                                                    }
+                                                    else
+                                                    {    
+                                                        resData.status = "success"; 
+                                                        resData.statusCode = 201 ;
+                                                        // console.log(result.rows)
+                                                        result.rows.forEach(element => {
+                                                            console.log(element)
+                                                        });
+                                                        //  = {
+                                                        //     driver_id : result.rows[0].address_id ,
+                                                        //     position : result.rows[0].lat+","+result.rows[0].lon
+                                                        // }                                                                                
+                                                    }
+                                                }
+                                            );
+                                        }
+                                        else
+                                        {
+                                            resData.status = "error"; 
+                                            resData.statusCode = 200 ;
+                                            resData.data = err + "error select tb_address_user" ;
+                                            res.status(resData.statusCode).json(resData)
+                                        }                                                                                                                                                        
+                                    }
+                                }
+                            );
+
+                            
+                            // //  หา lat , lon ที่ใกล้
+                            // if(origin && destination)
+                            // {
+                            //     let positionNear = await findDistanceMatrix(origin)                                                                        
+                            // }
+                            // else {
+                            //     resData.status = "error"; 
+                            //     resData.statusCode = 200 ;
+                            //     resData.data = err + "error Unable to send an order to the driver." ;
+                            //     res.status(resData.statusCode).json(resData)
+                            // }

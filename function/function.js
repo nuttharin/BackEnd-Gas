@@ -78,7 +78,8 @@ funCalDistanceLatLon2 = async (lat1,lon1,lat2,lon2,unit) =>{
     var rlon2 = Math.PI * lon2 / 180
     var theta = lon1 - lon2
     var rtheta = Math.PI * theta / 180
-    var dist = Math.sin(rlat1) * Math.sin(rlat2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.cos(rtheta);
+    var dist = Math.sin(rlat1) * Math.sin(rlat2) + 
+    Math.cos(rlat1) * Math.cos(rlat2) * Math.cos(rtheta);
     dist = Math.acos(dist)
     dist = dist * 180 / Math.PI
     dist = dist * 60 * 1.1515

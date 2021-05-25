@@ -190,6 +190,7 @@ userLogin = async (req , res , next) =>{
     );
 };
 
+
 registerUser = async (req , res , next) =>{ 
     //console.log(req.body);
     let resData = {
@@ -207,7 +208,8 @@ registerUser = async (req , res , next) =>{
     upload(req, res,async function (err) {
         // console.log(req.files.picIdCard);
         // console.log(req.files.picIdCardFace);
-        let pathUpload =  process.env.IP_ADDRESS+'/pictureRegisterUser/'
+        // let pathUpload =  process.env.IP_ADDRESS+'/pictureRegisterUser/'
+        let pathUpload =  '/pictureRegisterUser/'
         console.log(req.files)
         let pathUploadPic = {
             cardId : pathUpload + req.files.picIdCard[0].filename,
@@ -284,9 +286,9 @@ registerUser = async (req , res , next) =>{
                                 dataUser.password = await bcrypt.hash(dataBody.password , parseInt(saltRounds));
 
                                 sql = `INSERT INTO "public"."tb_user"("name", "password", "idCard", "email", "phone",
-                                            "createDate", "modifyDate" ,"type" , "isDelete" , "urlPicture") 
+                                            "createDate", "modifyDate" ,"type" , "isDelete" , "urlPicture" ,"isApproved") 
                                         VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}'
-                                        , '${dataUser.createDate}', '${dataUser.modifyDate}','${dataUser.type}' , 0 , '${JSON.stringify(pathUploadPic)}') RETURNING *`;
+                                        , '${dataUser.createDate}', '${dataUser.modifyDate}','${dataUser.type}' , 0 , '${JSON.stringify(pathUploadPic)}' , 0) RETURNING *`;
                                 // console.log(sql)
                                 pool.query(
                                     sql, 
@@ -322,6 +324,7 @@ registerUser = async (req , res , next) =>{
    
 
 };
+
 
 //UPDATE "public"."tb_user" SET "isApproved" = 1 WHERE "id" = 16
 ApprovedUser =(req ,res,next) => {
@@ -557,10 +560,10 @@ addUserAddress = async (req , res , next) => {
     {
         //INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id", "road", "other", "name_address", "latitude", "longitude") VALUES (21, 1, 1, 1, 'xxx', 'xxx', 'xxx-xxx', '10.111', '10.222') RETURNING *
         sql = `INSERT INTO "public"."tb_address_user"("user_id", "province_id", "amphure_id", "district_id",
-                            "road", "other", "name_address", "latitude", "longitude") 
+                            "road", "other", "name_address", "latitude", "longitude" , "isDelete") 
                             VALUES (${dataAddress.user_id}, ${dataAddress.province_id}, ${dataAddress.amphure_id},
                             ${dataAddress.district_id}, '${dataAddress.road}', '${dataAddress.other}',
-                            '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}') 
+                            '${dataAddress.name_address}', '${dataAddress.lat}', '${dataAddress.lon}' , 0) 
                             RETURNING *`;                   
                                 
         pool.query(
@@ -667,7 +670,8 @@ deleteUserAddress = async (req , res , next) =>{
     }
     else
     {
-        let sql = `DELETE FROM "public"."tb_address_user" WHERE "id" = ${addressID}`;
+        //UPDATE "public"."tb_address_user" SET "isDelete" = 0 WHERE "id" = 20
+        let sql = `UPDATE "public"."tb_address_user" SET "isDelete" = 0 WHERE "id" = ${addressID}`;
         pool.query(
             sql, 
             (err, result) => {
@@ -709,7 +713,7 @@ getUserAddressByUserId = (req ,res ,next) =>{
             LEFT JOIN tb_provinces as tbP on tbP.id = tbAdd.province_id
             LEFT JOIN tb_districts as tbA on tbA.id = tbAdd.amphure_id
             LEFT JOIN tb_subdistricts as tbD on tbD.id = tbAdd.district_id
-            WHERE  tbAdd.user_id = ${userID}`;
+            WHERE  tbAdd.user_id = ${userID} AND tbAdd."isDelete" = 1` ;
     pool.query(
         sql, 
         (err, result) => {
@@ -748,7 +752,7 @@ getUserAddressByAddressId = (req ,res ,next) =>{
                 LEFT JOIN tb_provinces as tbP on tbP.id = tbAdd.province_id
                 LEFT JOIN tb_districts as tbA on tbA.id = tbAdd.amphure_id
                 LEFT JOIN tb_subdistricts as tbD on tbD.id = tbAdd.district_id
-                WHERE tbAdd.id  = ${addressID}`;
+                WHERE tbAdd.id  = ${addressID} AND tbAdd."isDelete" = 1` ;
     pool.query(
         sql, 
         (err, result) => {

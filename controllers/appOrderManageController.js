@@ -9,6 +9,13 @@ const {
     , funRandomNumberString
 
 } = require('../function/function');
+
+const { findDistanceMatrix ,
+        funFindDistanceNear ,
+        funFindMachineInCircleNear,
+        funFindMachineNearest,
+        funFindDriverNearest
+    } = require('../function/functionMapAndOrder')
 const moment = require('moment');
 const { getOrderByRiderId } = require("./userController");
 // const { delete } = require("../routes/appGasRoute");
@@ -531,12 +538,25 @@ addOrderUser = async (req, res, next) => {
         resData.data = "not have parameter ( " + checkparameter + " )";
         res.status(200).json(resData);
     }
-    else {
-        let sql = `INSERT INTO "public"."tb_order" ("user_id", "priceall", "createDate", 
-        "modifyDate", "send_type", "payment_id", "order_number", "address_id", "status") 
+    else 
+    {
+        let count = 0 ;
+        // หาเครื่องที่ใกล้
+        let machineNearest = await funFindMachineNearest(dataOrder.address_id);
+        //console.log(machineNearest)
+
+        let driverArrNearest = await funFindDriverNearest(machineNearest,10);
+        //console.log("3" , driverArrNearest)
+        let sqlDriverNearest = `INSERT INTO "public"."tb_order_send_driver"("order_id", "driver_id", "status", "createdate") VALUES ` ;
+        // driverArrNearest.forEach( async (element) => {
+        //     console.log(element)
+        // });
+        // add order in tb_order
+        let sql = await `INSERT INTO "public"."tb_order" ("user_id", "priceall", "createDate", 
+        "modifyDate", "send_type", "payment_id", "order_number", "address_id", "status" , "machine_id") 
         VALUES (${dataOrder.user_id}, '${dataOrder.priceall}', '${dataOrder.createDate}',
          '${dataOrder.modifyDate}', '${dataOrder.send_type}', ${dataOrder.payment_id}, 
-         '${dataOrder.order_number}', ${dataOrder.address_id}, 3  ) RETURNING *`;
+         '${dataOrder.order_number}', ${dataOrder.address_id}, 3 , ${machineNearest.machine_id}  ) RETURNING *`;
 
         pool.query(
             sql,
@@ -572,6 +592,7 @@ addOrderUser = async (req, res, next) => {
                                 res.status(resData.statusCode).json(resData)
                             }
                             else {
+                                // delete cart ลบสินค้าตะกร้า
                                 let commanDel = `DELETE FROM "public"."tb_order_cart" WHERE user_id = ${dataOrder.user_id}`;
                                 let commandDelAll = "";
                                 //console.log(result.rows)
@@ -620,8 +641,7 @@ addOrderUser = async (req, res, next) => {
                                                             checkWhile = await dataPwd.includes(pwdMachine);
                                                         }
                                                         //console.log(checkWhile)
-                                                        sql = `UPDATE "public"."tb_order" SET "status" = 2,
-                                                                "pwdGasMachine"  = '${pwdMachine}'
+                                                        sql = `UPDATE "public"."tb_order" SET "pwdGasMachine"  = '${pwdMachine}'
                                                                 WHERE "id" = ${dataOrder.id}`;
 
                                                         pool.query(
@@ -634,16 +654,51 @@ addOrderUser = async (req, res, next) => {
                                                                     resData.data = "error tb_order set password : " + err;
                                                                     res.status(resData.statusCode).json(resData)
                                                                 }
-                                                                else {
-                                                                    resData.status = "success";
-                                                                    resData.statusCode = 201;
-                                                                    // resData.data = "insert complete";
-                                                                    resData.data = await resOrder ;
-                                                                    res.status(resData.statusCode).json(resData);     
+                                                                else 
+                                                                {
+                                                                   
+
+                                                                    //ส่งงานให้ลูกค้า
+                                                                    let arrJoinDeiver = [] ;
+                                                                    let temp ;
+                                                                    count = 0;
+                                                                    for (let i = 0; i < driverArrNearest.length; i++) {
+                                                                        let element = driverArrNearest[i];
+
+                                                                        sqlDriverNearest = await sqlDriverNearest + ` (${dataOrder.id},${element.driver_id},  ${1},'${dataOrder.createDate}')`;
+                                                                        if(i < driverArrNearest.length - 1 ){ 
+                                                                            sqlDriverNearest = await sqlDriverNearest  + ",";
+                                                                        }                                                                        
+                                                                    }
+                                                                    sqlDriverNearest = await sqlDriverNearest + " ;";
+                                                                    //console.log(sqlDriverNearest)
+
+                                                                    sql = sqlDriverNearest;
+                                                                    pool.query(
+                                                                        sql, 
+                                                                        async (err, result) => {
+                                                                
+                                                                            if (err) {
+                                                                                //console.log(err);  
+                                                                                resData.status = "error";
+                                                                                resData.statusCode = 200 ;
+                                                                                resData.data = "error insert tb_order_send_driver tb_register_iot : " + err;    
+                                                                                res.status(200).json(resData);
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                resData.status = "success";
+                                                                                resData.statusCode = 201;
+                                                                                // resData.data = "insert complete";
+                                                                                resData.data = await resOrder ;
+                                                                                res.status(resData.statusCode).json(resData); 
+                                                                            }
+                                                                        }
+                                                                    );
+                                                                    
                                                                 }
                                                             }
-                                                        );
-                                                                                                         
+                                                        );                                                                                                         
                                                     }
                                                 }
                                             );
@@ -1103,6 +1158,69 @@ driverReceiveOrder = async (req, res, next) => {
     }
 }
 
+findOrderNearDriver = async (req, res, next) => {
+    //console.log(req.query)
+    // let data = req.query
+   
+    // let resData = {
+    //     status : "",
+    //     statusCode : 200 ,
+    //     data : ""
+    // }
+    // if(data == "" || data == null || data == undefined)
+    // {
+    //     resData.status = "error";
+    //     resData.statusCode = 200 ;
+    //     resData.data = "not have parameter ( distance , lat , lon )";    
+    //     res.status(200).json(resData);
+    // }   
+    // else 
+    // {
+    //     let sql = `SELECT "tb_order".id as order_id ,"tb_address_user"."id" as address_id
+    //                 , latitude as lat, longitude as lon 
+    //                 FROM "tb_order"
+    //                 LEFT JOIN tb_address_user ON "tb_order".address_id = tb_address_user."id"
+    //                 WHERE status = 2 AND send_type = 'delivery' `;
+
+    //     pool.query(
+    //         sql, 
+    //         async (err, result) => {
+
+    //             if (err) {
+    //                 //console.log(err); 
+    //                 resData.status = "error"; 
+    //                 resData.statusCode = 200 ;
+    //                 resData.data = err ;
+    //                 res.status(resData.statusCode).json(resData)
+    //             }
+    //             else
+    //             {   
+    //                 let origin = {
+    //                     lat : data.lat ,
+    //                     lon : data.lon
+    //                 }
+    //                 let destination = result.rows ;
+    //                 //console.log(result.rows)
+    //                 //funFindDistanceNear(origin , destination)
+    //                 //console.log(orderWithDis)
+    //                 // resData.status = "success"; 
+    //                 // resData.statusCode = 201 ;
+    //                 // resData.data = result.rows ;
+    //                 // res.status(resData.statusCode).json(resData);
+    //                 console.log(await funFindDistanceNear(origin , destination))
+    //             }
+    //         }
+    //     );
+    // }
+
+    let orderOrigin = {
+        lat : await req.query.lat,
+        lon : await req.query.lon
+    }
+
+    funFindMachineInCircleNear(orderOrigin , req.query.distance);
+}
+
 // checkQrCodeMachineReceiveGas = (req , res , next) =>{
 //     // check กับ machine_code 
 //     let data = req.body ;
@@ -1399,6 +1517,10 @@ driverReceiveOrder = async (req, res, next) => {
 // }
 
 
+testmap = () =>{
+
+}
+
 
 
 
@@ -1420,8 +1542,10 @@ module.exports = {
     sendOrderToDriver,
     driverReceiveOrder,
     getDriverOrderReviceByDriverId,
+    findOrderNearDriver,
     // checkQrCodeMachineReceiveGas,
     // checkPwdMachineStation
-    addOrderUser2
+    addOrderUser2,
+    testmap
 
 }

@@ -17,6 +17,8 @@ npm i pg --save
 npm install jsonwebtoken --save
 npm i bcrypt --save
 npm i moment --save
+npm install request-ip --save
+npm install --save axios
 
 
 -npm uninstall mongodb --save

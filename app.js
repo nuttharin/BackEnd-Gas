@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 
 const mongoClient = require('mongodb');
 const moment = require('moment');
+const requestIp = require('request-ip');
 
 
 require('dotenv').config()
@@ -53,12 +54,50 @@ app.use('/pictureRegisterDriver', express.static('./upload/picture/register_driv
 app.use('/pictureProfile' , express.static('./upload/picture/profile'))
 //app.use('/static', express.static('z'))
 
+app.use(requestIp.mw())
+ 
+
+
 
 app.get('/',(req , res , next) =>{  // path /
-
+    const ip = req.clientIp;
+    console.log(ip)
     res.status(200).json({
         message : 'Get rootdd /'
     })
+
+})
+
+app.get('/testmap',async (req , res , next) =>{  // path /
+    let urlGoogleMap = process.env.GOOGLE_MAP_URL ;
+    let key = process.env.GOOGLE_MAP_KEY
+    const axios = require('axios');
+    position1 = "13.7510896,100.5836019"
+    position2 =  "13.7510896,100.5858107"
+    let x = `distancematrix/json?origins=${position1}&destinations=side_of_road:${position2}&language=th&key=${key}`;
+
+    await axios.get(urlGoogleMap + x)
+    .then(function (response) {
+        // handle success
+        console.log(response.data);
+        if(response.data.status == "OK")
+        {
+            res.status(200).json({
+                message : response.data
+            })
+        }
+        else{
+
+        }
+      
+    })
+    .catch(function (error) {
+        // handle error
+        console.log(error);
+    })
+    .then(function () {
+        // always executed
+    });
 
 })
 

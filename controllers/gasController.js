@@ -290,8 +290,9 @@ getPercentPressureBySerialNumber = async (req , res , next) =>{
     }
 };
 
+getAllPressure = async (req , res , next) =>{
 
-
+};
 
 
 module.exports = {
