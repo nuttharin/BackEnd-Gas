@@ -6,7 +6,6 @@ const { insertIoTMongoDB } = require('../function/functionMongoDB');
 
 const { Double } = require("mongodb");
 const moment = require('moment');
-const bcrypt = require('bcrypt'); 
 const { IoT , IoTData , Gas} = require("../model/gasModel");
 // const { resetGasIoT } = require("./gasController");
 saltRounds = process.env.SALTROUND_SECRET ;

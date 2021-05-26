@@ -1,7 +1,7 @@
 const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
 const { User , Position , Rider , Order } = require("../model/userModel");
 const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 saltRounds = process.env.SALTROUND_SECRET ;
 
 

@@ -7,7 +7,7 @@ const { generateToken , generateRefreshToken} = require('../controllers/appToken
 
 const { Double } = require("mongodb");
 const moment = require('moment');
-const bcrypt = require('bcrypt'); 
+const bcrypt = require('bcryptjs'); 
 
 
 
