@@ -817,6 +817,92 @@ addOrderUser2 = async (req, res, next) => {
     }
 }
 
+getOrderByDriverId= async (req ,res , next) => {
+    let data = req.query.driver_id
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT tb_order.id as order_id ,tb_order.order_number , priceall , latitude as lat1 , longitude as lon1 
+                    , lat as lat2 , lon as lon2 FROM tb_order
+                    LEFT JOIN tb_order_send_driver ON tb_order.id = tb_order_send_driver.order_id
+                    LEFT JOIN tb_address_user ON tb_order.address_id = tb_address_user."id"
+                    LEFT JOIN tb_rider ON tb_rider.id = tb_order_send_driver.driver_id
+                    WHERE tb_order_send_driver."status" = 1 AND tb_order_send_driver.driver_id = ${data}`;
+        pool.query(
+            sql, 
+            async (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    let distance ;
+                    let statusMap = true ; 
+                    let arrResData = [] ;
+                    for (let i = 0; i < result.rows.length; i++) {
+                        const element = result.rows[i];
+                        distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
+                        console.log(distance)
+                        if(distance.status == 'NO')
+                        {
+                            statusMap = false ;
+                            BreakException;
+                        }
+                        else
+                        {
+                            arrResData.push({
+                                order_id : await element.order_id ,
+                                priceAll : await element.priceall ,
+                                distance : await distance
+                            })
+
+                        }
+                    }
+                    // result.rows.forEach(async (element) => {
+                    //     distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
+                    //     console.log(distance)
+                    //     if(distance.status == 'NO')
+                    //     {
+                    //         statusMap = false ;
+                    //         BreakException;
+                    //     }
+                    //     else
+                    //     {
+                    //         arrResData.push({
+                    //             order_id : await element.order_id ,
+                    //             priceAll : await element.priceall ,
+                    //             distance : await distance
+                    //         })
+
+                    //     }
+                    //     console.log(arrResData)
+                    //     resData.data = await arrResData ;
+                    // });
+                    resData.status = "success"; 
+                    resData.statusCode = 201 ;
+                    resData.data = await arrResData ;
+                    res.status(resData.statusCode).json(resData);
+                }
+            }
+        );
+    }
+}
+
 addOrderCallCenter = async (req, res, next) => {
 
 }
@@ -1537,6 +1623,7 @@ module.exports = {
     getOrderHistoryAllByUserId,
     getOrderByOderId,
     addOrderUser,
+    getOrderByDriverId,
     editOrderUser,
     cancalOrderUser,
     sendOrderToDriver,
