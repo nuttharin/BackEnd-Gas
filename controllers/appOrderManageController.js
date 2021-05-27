@@ -669,7 +669,7 @@ addOrderUser = async (req, res, next) => {
                                                                         if(i < driverArrNearest.length - 1 ){ 
                                                                             sqlDriverNearest = await sqlDriverNearest  + ",";
                                                                         }     
-                                                                        if(i < driverArrNearest.length)
+                                                                        if(i == driverArrNearest.length - 1 )
                                                                         {
                                                                             sqlDriverNearest = await sqlDriverNearest + " ;";
                                                                         }
@@ -704,7 +704,7 @@ addOrderUser = async (req, res, next) => {
                                                                     }
                                                                     else {
                                                                         //ไม่มี driver ให้ส่ง
-                                                                        
+
                                                                     }
                                                                     
                                                                     
