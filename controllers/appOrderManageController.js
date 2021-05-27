@@ -671,7 +671,7 @@ addOrderUser = async (req, res, next) => {
                                                                         }                                                                        
                                                                     }
                                                                     sqlDriverNearest = await sqlDriverNearest + " ;";
-                                                                    //console.log(sqlDriverNearest)
+                                                                    console.log(sqlDriverNearest)
 
                                                                     sql = await sqlDriverNearest;
                                                                     pool.query(

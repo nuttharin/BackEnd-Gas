@@ -180,8 +180,7 @@ funFindDriverNearest = async (dataOrderMachine,distanceFix) => {
         sql = `SELECT tb_rider.id as driver_id , lat , lon FROM tb_rider 
         WHERE tb_rider."isDelete" = 0 AND tb_rider."statusWork" = 1 
         AND NOT tb_rider.id IN(SELECT DISTINCT tb_order_send_driver.driver_id 
-            FROM tb_order_send_driver WHERE tb_order_send_driver.status = 1)
-        `;
+        FROM tb_order_send_driver WHERE tb_order_send_driver.status = 1)`;
         pool.query(
             sql, 
             async (err, result) => {
