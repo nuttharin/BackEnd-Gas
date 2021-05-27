@@ -828,16 +828,24 @@ getOrderByDriverId= async (req ,res , next) => {
     {
         resData.status = "error";
         resData.statusCode = 200 ;
-        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        resData.data = "not have parameter ( driver_id )";    
         res.status(200).json(resData);
     }   
     else {
-        let sql = `SELECT tb_order.id as order_id ,tb_order.order_number , priceall , latitude as lat1 , longitude as lon1 
-                    , lat as lat2 , lon as lon2 FROM tb_order
-                    LEFT JOIN tb_order_send_driver ON tb_order.id = tb_order_send_driver.order_id
-                    LEFT JOIN tb_address_user ON tb_order.address_id = tb_address_user."id"
-                    LEFT JOIN tb_rider ON tb_rider.id = tb_order_send_driver.driver_id
-                    WHERE tb_order_send_driver."status" = 1 AND tb_order_send_driver.driver_id = ${data}`;
+        let sql = `SELECT tb_order.id as order_id ,tb_order.order_number
+        , tb_rider.lat as lat1 , tb_rider.lon as lon1 
+        ,tb_machine_gas.lat as lat2 , tb_machine_gas.lon as lon2
+        ,tb_order."createDate" as create_date
+        ,tb_order."receiveDate" as receive_date
+        ,tb_gas_detail."name" as gas_type,tb_order_detail.quality as gas_quality,tb_gas_detail.price as gas_price
+        ,(tb_order_detail.quality*tb_gas_detail.price) as gas_price_all
+        FROM tb_order
+        LEFT JOIN tb_order_send_driver ON tb_order.id = tb_order_send_driver.order_id
+        LEFT JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+        LEFT JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id 
+        LEFT JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas."id"
+        LEFT JOIN tb_rider ON tb_rider.id = tb_order_send_driver.driver_id
+        WHERE tb_order_send_driver."status" = 1 AND tb_order_send_driver.driver_id = ${data}`;
         pool.query(
             sql, 
             async (err, result) => {
@@ -854,8 +862,19 @@ getOrderByDriverId= async (req ,res , next) => {
                     let distance ;
                     let statusMap = true ; 
                     let arrResData = [] ;
-                    for (let i = 0; i < result.rows.length; i++) {
-                        const element = result.rows[i];
+
+                    let dataTemp = await result.rows;
+                    //delete dataTemp.create_date ;
+                    dataTemp = dataTemp.map(x => ({
+                        gas_type: x.gas_type,
+                        prices: x.gas_price,
+                        price_all: x.gas_price_all,
+                        quality: x.gas_quality
+
+                    }));
+
+                    // for (let i = 0; i < result.rows.length; i++) {
+                        const element = result.rows[0];
                         distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
                         console.log(distance)
                         if(distance.status == 'NO')
@@ -868,39 +887,72 @@ getOrderByDriverId= async (req ,res , next) => {
                             arrResData.push({
                                 order_id : await element.order_id ,
                                 priceAll : await element.priceall ,
+                                //order
                                 distance : await distance
                             })
 
                         }
-                    }
-                    // result.rows.forEach(async (element) => {
-                    //     distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
-                    //     console.log(distance)
-                    //     if(distance.status == 'NO')
-                    //     {
-                    //         statusMap = false ;
-                    //         BreakException;
-                    //     }
-                    //     else
-                    //     {
-                    //         arrResData.push({
-                    //             order_id : await element.order_id ,
-                    //             priceAll : await element.priceall ,
-                    //             distance : await distance
-                    //         })
-
-                    //     }
-                    //     console.log(arrResData)
-                    //     resData.data = await arrResData ;
-                    // });
+                    //}
+                  
                     resData.status = "success"; 
                     resData.statusCode = 201 ;
-                    resData.data = await arrResData ;
+                    resData.data = {
+                        order_number: result.rows[0].order_number,
+                        create_date: moment(result.rows[0].create_date).format('YYYY-MM-DD H:mm:ss'),
+                        receive_date: (result.rows[0].receive_date != null)?moment(result.rows[0].receive_date).format('YYYY-MM-DD H:mm:ss'):"",
+                        order_list:await dataTemp,
+                        distance : await distance
+                    }
                     res.status(resData.statusCode).json(resData);
                 }
             }
         );
     }
+}
+
+recevieOrderByOrderId = async (req ,res , next) => {
+    let data = req.body.order_id ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    } ;
+    if(!data) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( order_id )";    
+        res.status(200).json(resData);
+    }
+    else
+    {
+        // update tb_order_send_driver all
+        // update tb_order
+        let sql = `UPDATE "public"."tb_order_send_driver" SET "status" = 2 WHERE order_id = ${data};
+                    UPDATE "public"."tb_order" SET "status" = 2 WHERE "id" = ${data};`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "insert complete";
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+
 }
 
 addOrderCallCenter = async (req, res, next) => {
@@ -1624,6 +1676,7 @@ module.exports = {
     getOrderByOderId,
     addOrderUser,
     getOrderByDriverId,
+    recevieOrderByOrderId,
     editOrderUser,
     cancalOrderUser,
     sendOrderToDriver,

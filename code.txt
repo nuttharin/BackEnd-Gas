@@ -72,17 +72,7 @@ res.status(201).json(resData);
 
 
 
-    let dataBank = new BankDriver();
     let dataBody = req.body ;
-
-
-    dataBank.driver_id = dataBody.driver_id ;
-    dataBank.bank_id = dataBody.bank_id ;
-    dataBank.name_account = dataBody.name_account ;
-    dataBank.bank_account = dataBody.bank_account;
-    dataBank.modidyDate =  moment(new Date()).format('YYYY-MM-DD H:mm:ss');
-    let checkParameter = await funCheckParameterWithOutId(dataBank);
-
     let resData = {
         status : "",
         statusCode : 200 ,
