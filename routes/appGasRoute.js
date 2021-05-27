@@ -108,6 +108,7 @@ router.get('/get/orderUser/orderByOrderId',appOrderManageController.getOrderByOd
 router.post('/post/add/orderUser',appOrderManageController.addOrderUser);
 router.get('/get/orderUser', appOrderManageController.getOrderByDriverId);
 router.post('/post/update/status/order' , appOrderManageController.updateStatusOrderByOrderId);
+router.get('/get/order/checkQRcodeForDriver' , appOrderManageController.checkQRcodeForDriver)
 router.post('/post/edit/orderUser',appOrderManageController.editOrderUser);
 router.post('/post/delete/orderUser',appOrderManageController.cancalOrderUser);
 

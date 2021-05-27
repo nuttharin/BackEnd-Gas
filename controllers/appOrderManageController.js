@@ -871,50 +871,62 @@ getOrderByDriverId= async (req ,res , next) => {
                 }
                 else
                 {    
-                    let distance ;
-                    let statusMap = true ; 
-                    let arrResData = [] ;
-
-                    let dataTemp = await result.rows;
-                    //delete dataTemp.create_date ;
-                    dataTemp = dataTemp.map(x => ({
-                        gas_type: x.gas_type,
-                        prices: x.gas_price,
-                        price_all: x.gas_price_all,
-                        quality: x.gas_quality
-
-                    }));
-
-                    const element = result.rows[0];
-                    distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
-                    console.log(distance)
-                    if(distance.status == 'NO')
+                    if(result.rows > 0)
                     {
-                        statusMap = await false ;
-                        // BreakException;
-                    }
-                     
-                    if(statusMap == true)
-                    {
-                        resData.status = "success"; 
-                        resData.statusCode = 201 ;
-                        resData.data = {
-                            order_id : result.rows[0].order_id,
-                            order_number: result.rows[0].order_number,
-                            create_date: moment(result.rows[0].create_date).format('YYYY-MM-DD H:mm:ss'),
-                            receive_date: (result.rows[0].receive_date != null)?moment(result.rows[0].receive_date).format('YYYY-MM-DD H:mm:ss'):"",
-                            order_list:await dataTemp,
-                            distance : await distance
+                        let distance ;
+                        let statusMap = true ; 
+                        let arrResData = [] ;
+    
+                        let dataTemp = await result.rows;
+                        //delete dataTemp.create_date ;
+                        dataTemp = dataTemp.map(x => ({
+                            gas_type: x.gas_type,
+                            prices: x.gas_price,
+                            price_all: x.gas_price_all,
+                            quality: x.gas_quality
+    
+                        }));
+    
+                        const element = result.rows[0];
+                        distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
+                        console.log(distance)
+                        if(distance.status == 'NO')
+                        {
+                            statusMap = await false ;
+                            // BreakException;
                         }
-                        res.status(resData.statusCode).json(resData);
-
+                         
+                        if(statusMap == true)
+                        {
+                            resData.status = "success"; 
+                            resData.statusCode = 201 ;
+                            resData.data = {
+                                order_id : result.rows[0].order_id,
+                                order_number: result.rows[0].order_number,
+                                create_date: moment(result.rows[0].create_date).format('YYYY-MM-DD H:mm:ss'),
+                                receive_date: (result.rows[0].receive_date != null)?moment(result.rows[0].receive_date).format('YYYY-MM-DD H:mm:ss'):"",
+                                order_list:await dataTemp,
+                                distance : await distance
+                            }
+                            res.status(resData.statusCode).json(resData);
+    
+                        }
+                        else {
+                            resData.status = "success"; 
+                            resData.statusCode = 200 ;
+                            resData.data = "google map error."
+                            res.status(resData.statusCode).json(resData);
+                        }
                     }
-                    else {
+                    else
+                    {
                         resData.status = "success"; 
                         resData.statusCode = 201 ;
-                        resData.data = "google map error."
+                        resData.data = "No Order"
                         res.status(resData.statusCode).json(resData);
+                    
                     }
+                   
                    
                 }
             }
@@ -925,6 +937,8 @@ getOrderByDriverId= async (req ,res , next) => {
 updateStatusOrderByOrderId = async (req ,res , next) => {
     // order_id
     // status
+    // driver_id
+
     let data = req.body ;
     let driverReceiveDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
     let sql ;
@@ -949,7 +963,7 @@ updateStatusOrderByOrderId = async (req ,res , next) => {
         {
             let status = (data.status == 1)? 1 : 2 ; 
             sql = `UPDATE "public"."tb_order_send_driver" SET "status" = ${status} WHERE order_id = ${data.order_id};
-            UPDATE "public"."tb_order" SET "status" = 2, "driverReceiveDate" = '${driverReceiveDate}' WHERE "id" = ${data.order_id} ;
+            UPDATE "public"."tb_order" SET "status" = 2, "rider_id" = ${data.driver_id} , "driverReceiveDate" = '${driverReceiveDate}' WHERE "id" = ${data.order_id} ;
             `;
             pool.query(
                 sql, 
@@ -968,7 +982,7 @@ updateStatusOrderByOrderId = async (req ,res , next) => {
                         resData.statusCode = 201 ;
                         resData.data = "update complete";
                         res.status(201).json(resData);
-                        console.log("1")
+                        //console.log("1")
                     }
                 }
             );
@@ -989,7 +1003,7 @@ updateStatusOrderByOrderId = async (req ,res , next) => {
                     }
                     else
                     {    
-                        console.log("2")
+                        //console.log("2")
                         resData.status = "success";
                         resData.statusCode = 201 ;
                         resData.data = "insert complete";
@@ -997,13 +1011,105 @@ updateStatusOrderByOrderId = async (req ,res , next) => {
                     }
                 }
             );
-        }
-        
-        
-        
+        }       
+                
     }
 
 }
+
+checkQRcodeForDriver = async (req ,res , next) => {
+    // check กับ machine_code 
+    // machine_id ได้จากสแกน
+    // machineCode
+    // order_id
+    
+    let data = req.query ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data.machine_id == "" || data.machine_id == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( machine_id )";    
+        res.status(200).json(resData);
+    }   
+    else if(data.order_id == "" || data.order_id == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( order_id )";    
+        res.status(200).json(resData);
+    } 
+    else 
+    {
+        let sql = `SELECT id as order_id , "pwdGasMachine" as password FROM tb_order 
+        WHERE tb_order.id = ${data.order_id} AND machine_id = ${data.machine_id}`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) 
+                {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {
+                    //console.log(result.rows[0]);
+                    if(result.rows > 0)
+                    {
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = "Incorrect data"
+                        res.status(resData.statusCode).json(resData);
+                    }
+                    else
+                    {
+                        // find pwd gasmachine
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = result.rows[0] ;
+                        res.status(resData.statusCode).json(resData);                        
+                        
+                    } 
+                }
+            }
+        );
+    }
+}
+
+checkQRcodeForUser = async (req ,res , next) => {
+    
+}
+
+// let sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" FROM tb_order
+//         INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+//         WHERE tb_order.rider_id = ${data.driver_id} 
+//         AND tb_machine_gas.machine_code = '${data.qrcode}'`;
+
+//         let sql = `SELECT tb_order.id FROM tb_order
+//         INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+//         WHERE tb_order.rider_id = ${data.driver_id} AND tb_machine_gas.machine_code = '${data.qrcode}'`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 addOrderCallCenter = async (req, res, next) => {
 
@@ -1727,6 +1833,7 @@ module.exports = {
     addOrderUser,
     getOrderByDriverId,
     updateStatusOrderByOrderId,
+    checkQRcodeForDriver,
     editOrderUser,
     cancalOrderUser,
     sendOrderToDriver,
