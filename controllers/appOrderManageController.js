@@ -668,33 +668,45 @@ addOrderUser = async (req, res, next) => {
                                                                         sqlDriverNearest = await sqlDriverNearest + ` (${dataOrder.id},${element.driver_id},  ${1},'${dataOrder.createDate}')`;
                                                                         if(i < driverArrNearest.length - 1 ){ 
                                                                             sqlDriverNearest = await sqlDriverNearest  + ",";
-                                                                        }                                                                        
-                                                                    }
-                                                                    sqlDriverNearest = await sqlDriverNearest + " ;";
-                                                                    console.log(sqlDriverNearest)
-
-                                                                    sql = await sqlDriverNearest;
-                                                                    pool.query(
-                                                                        sql, 
-                                                                        async (err, result) => {
-                                                                
-                                                                            if (err) {
-                                                                                //console.log(err);  
-                                                                                resData.status = "error";
-                                                                                resData.statusCode = 200 ;
-                                                                                resData.data = "error insert tb_order_send_driver tb_register_iot : " + err;    
-                                                                                res.status(200).json(resData);
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                resData.status = "success";
-                                                                                resData.statusCode = 201;
-                                                                                // resData.data = "insert complete";
-                                                                                resData.data = await resOrder ;
-                                                                                res.status(resData.statusCode).json(resData); 
-                                                                            }
+                                                                        }     
+                                                                        if(i < driverArrNearest.length)
+                                                                        {
+                                                                            sqlDriverNearest = await sqlDriverNearest + " ;";
                                                                         }
-                                                                    );
+                                                                    }
+
+                                                                    console.log(sqlDriverNearest)
+                                                                    if(  driverArrNearest.length > 0)
+                                                                    {
+                                                                        //มี driver ให้ส่ง
+                                                                        sql = await sqlDriverNearest;
+                                                                        pool.query(
+                                                                            sql, 
+                                                                            async (err, result) => {
+                                                                    
+                                                                                if (err) {
+                                                                                    //console.log(err);  
+                                                                                    resData.status = "error";
+                                                                                    resData.statusCode = 200 ;
+                                                                                    resData.data = "error insert tb_order_send_driver tb_register_iot : " + err;    
+                                                                                    res.status(200).json(resData);
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    resData.status = "success";
+                                                                                    resData.statusCode = 201;
+                                                                                    // resData.data = "insert complete";
+                                                                                    resData.data = await resOrder ;
+                                                                                    res.status(resData.statusCode).json(resData); 
+                                                                                }
+                                                                            }
+                                                                        );
+                                                                    }
+                                                                    else {
+                                                                        //ไม่มี driver ให้ส่ง
+                                                                        
+                                                                    }
+                                                                    
                                                                     
                                                                 }
                                                             }
