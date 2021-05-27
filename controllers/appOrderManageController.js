@@ -873,45 +873,49 @@ getOrderByDriverId= async (req ,res , next) => {
 
                     }));
 
-                    // for (let i = 0; i < result.rows.length; i++) {
-                        const element = result.rows[0];
-                        distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
-                        console.log(distance)
-                        if(distance.status == 'NO')
-                        {
-                            statusMap = false ;
-                            BreakException;
-                        }
-                        else
-                        {
-                            arrResData.push({
-                                order_id : await element.order_id ,
-                                priceAll : await element.priceall ,
-                                //order
-                                distance : await distance
-                            })
-
-                        }
-                    //}
-                  
-                    resData.status = "success"; 
-                    resData.statusCode = 201 ;
-                    resData.data = {
-                        order_number: result.rows[0].order_number,
-                        create_date: moment(result.rows[0].create_date).format('YYYY-MM-DD H:mm:ss'),
-                        receive_date: (result.rows[0].receive_date != null)?moment(result.rows[0].receive_date).format('YYYY-MM-DD H:mm:ss'):"",
-                        order_list:await dataTemp,
-                        distance : await distance
+                    const element = result.rows[0];
+                    distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
+                    console.log(distance)
+                    if(distance.status == 'NO')
+                    {
+                        statusMap = await false ;
+                        // BreakException;
                     }
-                    res.status(resData.statusCode).json(resData);
+                     
+                    if(statusMap == true)
+                    {
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = {
+                            order_id : result.rows[0].order_id,
+                            order_number: result.rows[0].order_number,
+                            create_date: moment(result.rows[0].create_date).format('YYYY-MM-DD H:mm:ss'),
+                            receive_date: (result.rows[0].receive_date != null)?moment(result.rows[0].receive_date).format('YYYY-MM-DD H:mm:ss'):"",
+                            order_list:await dataTemp,
+                            distance : await distance
+                        }
+                        res.status(resData.statusCode).json(resData);
+
+                    }
+                    else {
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = "google map error."
+                        res.status(resData.statusCode).json(resData);
+                    }
+                   
                 }
             }
         );
     }
 }
 
-recevieOrderByOrderId = async (req ,res , next) => {
-    let data = req.body.order_id ;
+updateStatusOrderByOrderId = async (req ,res , next) => {
+    // order_id
+    // status
+    let data = req.body ;
+    let driverReceiveDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+    let sql ;
     let resData = {
         status : "",
         statusCode : 200 ,
@@ -922,35 +926,69 @@ recevieOrderByOrderId = async (req ,res , next) => {
         //console.log(checkParameter)       
         resData.status = "error";
         resData.statusCode = 200 ;
-        resData.data = "not have parameter ( order_id )";    
+        resData.data = "not have parameter ( order_id or status )";    
         res.status(200).json(resData);
     }
     else
     {
         // update tb_order_send_driver all
         // update tb_order
-        let sql = `UPDATE "public"."tb_order_send_driver" SET "status" = 2 WHERE order_id = ${data};
-                    UPDATE "public"."tb_order" SET "status" = 2 WHERE "id" = ${data};`;
-        pool.query(
-            sql, 
-            (err, result) => {
+        if(data.status == 2 || data.status == 1) 
+        {
+            let status = (data.status == 1)? 1 : 2 ; 
+            sql = `UPDATE "public"."tb_order_send_driver" SET "status" = ${status} WHERE order_id = ${data.order_id};
+            UPDATE "public"."tb_order" SET "status" = 2, "driverReceiveDate" = '${driverReceiveDate}' WHERE "id" = ${data.order_id} ;
+            `;
+            pool.query(
+                sql, 
+                async (err, result) => {
+    
+                    if (err) {
+                        //console.log(err); 
+                        resData.status = "error"; 
+                        resData.statusCode = 200 ;
+                        resData.data = "error update tb_order_send_driver " + err ;
+                        res.status(resData.statusCode).json(resData)
+                    }
+                    else
+                    {    
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = "update complete";
+                        res.status(201).json(resData);
+                        console.log("1")
+                    }
+                }
+            );
+        }
+        else
+        {
+            sql = `UPDATE "public"."tb_order" SET "status" = ${data.status} WHERE "id" = ${data.order_id};`;
+            pool.query(
+                sql, 
+                (err, result) => {
 
-                if (err) {
-                    //console.log(err); 
-                    resData.status = "error"; 
-                    resData.statusCode = 200 ;
-                    resData.data = err ;
-                    res.status(resData.statusCode).json(resData)
+                    if (err) {
+                        //console.log(err); 
+                        resData.status = "error"; 
+                        resData.statusCode = 200 ;
+                        resData.data = "error update tb_order " + err ;
+                        res.status(resData.statusCode).json(resData)
+                    }
+                    else
+                    {    
+                        console.log("2")
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = "insert complete";
+                        res.status(201).json(resData);
+                    }
                 }
-                else
-                {    
-                    resData.status = "success";
-                    resData.statusCode = 201 ;
-                    resData.data = "insert complete";
-                    res.status(201).json(resData);
-                }
-            }
-        );
+            );
+        }
+        
+        
+        
     }
 
 }
@@ -1676,7 +1714,7 @@ module.exports = {
     getOrderByOderId,
     addOrderUser,
     getOrderByDriverId,
-    recevieOrderByOrderId,
+    updateStatusOrderByOrderId,
     editOrderUser,
     cancalOrderUser,
     sendOrderToDriver,
