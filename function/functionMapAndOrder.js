@@ -177,8 +177,10 @@ funFindDriverNearest = async (dataOrderMachine,distanceFix) => {
     // get lat lon of address_id
     let myPromise = new Promise(function(myResolve, myReject) {
 
-        sql = `SELECT id as driver_id , lat , lon FROM tb_rider 
-        where tb_rider."isDelete" = 0 AND tb_rider."statusWork" = 1`;
+        sql = `SELECT tb_rider.id as driver_id , lat , lon FROM tb_rider 
+        WHERE tb_rider."isDelete" = 0 AND tb_rider."statusWork" = 1 
+        AND NOT tb_rider.id IN(SELECT DISTINCT tb_order_send_driver.driver_id FROM tb_order_send_driver)
+        `;
         pool.query(
             sql, 
             async (err, result) => {
