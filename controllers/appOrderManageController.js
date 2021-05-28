@@ -518,7 +518,7 @@ addOrderUser = async (req, res, next) => {
         statusCode: 200,
         data: ""
     }
-    // console.log("xxx")
+    console.log("xxx")
     // console.log(dataBody)
     dataOrder.user_id = dataBody.user_id;
     dataOrder.priceall = dataBody.priceall
