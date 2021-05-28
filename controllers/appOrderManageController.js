@@ -547,7 +547,7 @@ addOrderUser = async (req, res, next) => {
         let machineNearest = await funFindMachineNearest(dataOrder.address_id);
         //console.log(machineNearest)
 
-        let driverArrNearest = await funFindDriverNearest(machineNearest,100);
+        let driverArrNearest = await funFindDriverNearest(machineNearest,10);
         //console.log("3" , driverArrNearest)
         let sqlDriverNearest = `INSERT INTO "public"."tb_order_send_driver"("order_id", "driver_id", "status", "createdate") VALUES ` ;
         // driverArrNearest.forEach( async (element) => {
