@@ -144,7 +144,7 @@ funFindMachineNearest = async (address_id ) =>{
                                             ; 
                                     c =  2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
                                     d =  R * c;
-                                    //console.log("d => " + d + "m")
+                                    console.log("d => " + d + "m")
                                     if(d < distanceMin)
                                     {
                                         distanceMin = await d ;
@@ -212,7 +212,7 @@ funFindDriverNearest = async (dataOrderMachine,distanceFix) => {
                                 ; 
                         c =  2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
                         d =  R * c;
-                        // console.log("d => " + d + "m")
+                        console.log("d => " + d + "m")
                         // console.log(d +  "<=" + distanceFix)
 
                         if(d <= distanceFix)
