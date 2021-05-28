@@ -545,7 +545,7 @@ addOrderUser = async (req, res, next) => {
         let machineNearest = await funFindMachineNearest(dataOrder.address_id);
         //console.log(machineNearest)
 
-        let driverArrNearest = await funFindDriverNearest(machineNearest,10);
+        let driverArrNearest = await funFindDriverNearest(machineNearest,100);
         //console.log("3" , driverArrNearest)
         let sqlDriverNearest = `INSERT INTO "public"."tb_order_send_driver"("order_id", "driver_id", "status", "createdate") VALUES ` ;
         // driverArrNearest.forEach( async (element) => {
@@ -704,6 +704,11 @@ addOrderUser = async (req, res, next) => {
                                                                     }
                                                                     else {
                                                                         //ไม่มี driver ให้ส่ง
+                                                                        resData.status = "success";
+                                                                        resData.statusCode = 201;
+                                                                        resData.data = "No Driver";
+                                                                        //resData.data = await resOrder ;
+                                                                        res.status(resData.statusCode).json(resData); 
 
                                                                     }
                                                                     
