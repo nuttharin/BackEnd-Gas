@@ -885,7 +885,7 @@ getOrderByDriverId= async (req ,res , next) => {
                 else
                 {    
                     console.log(result.rows)
-                    if(result.rows > 0)
+                    if(result.rows.length > 0)
                     {
                         console.log(1)
                         let distance ;
