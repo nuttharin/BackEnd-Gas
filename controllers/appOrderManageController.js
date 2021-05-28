@@ -583,6 +583,7 @@ addOrderUser = async (req, res, next) => {
                         VALUES (${dataOrder.id}, ${dataOrder.order[i].gas_id}, ${dataOrder.order[i].quality}) ;`;
 
                     }
+                    console.log(sql)
                     pool.query(
                         sql,
                         async (err, result) => {
