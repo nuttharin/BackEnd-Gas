@@ -887,6 +887,7 @@ getOrderByDriverId= async (req ,res , next) => {
                     console.log(result.rows)
                     if(result.rows > 0)
                     {
+                        console.log(1)
                         let distance ;
                         let statusMap = true ; 
                         let arrResData = [] ;
