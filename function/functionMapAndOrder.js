@@ -194,35 +194,44 @@ funFindDriverNearest = async (dataOrderMachine,distanceFix) => {
                 }
                 else
                 {
-                    console.log(result.rows)
-                    driverAll = await result.rows ;
-                    let p1 = await dataOrderMachine ;
-                    // console.log("1" , p1)
-                    // console.log("2" ,driverAll)
+                    if(result.rows.length >  0)
+                    {
+                        console.log(result.rows)
+                        driverAll = await result.rows ;
+                        let p1 = await dataOrderMachine ;
+                        // console.log("1" , p1)
+                        // console.log("2" ,driverAll)
+                    
+                        driverAll.forEach( async (p2) => {
 
-                    driverAll.forEach( async (p2) => {
+                            dLat =  (p2.lat - p1.lat) * Math.PI / 180;
+                            dLon =  (p2.lon - p1.lon ) * Math.PI / 180;
+                            // console.log(p1.lat + " " + p1.lon + " " +dLat) 
+                            // console.log(p2.lat + " " + p2.lon + " " +dLong)       
+                            a =  Math.sin(dLat/2) * Math.sin(dLat/2) +
+                                    Math.cos(p1.lat * Math.PI / 180) * Math.cos(p1.lat * Math.PI / 180) * 
+                                    Math.sin(dLon/2) * Math.sin(dLon/2)
+                                    ; 
+                            c =  2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                            d =  R * c;
+                            console.log("d => " + d + "m")
+                            // console.log(d +  "<=" + distanceFix)
 
-                        dLat =  (p2.lat - p1.lat) * Math.PI / 180;
-                        dLon =  (p2.lon - p1.lon ) * Math.PI / 180;
-                        // console.log(p1.lat + " " + p1.lon + " " +dLat) 
-                        // console.log(p2.lat + " " + p2.lon + " " +dLong)       
-                        a =  Math.sin(dLat/2) * Math.sin(dLat/2) +
-                                Math.cos(p1.lat * Math.PI / 180) * Math.cos(p1.lat * Math.PI / 180) * 
-                                Math.sin(dLon/2) * Math.sin(dLon/2)
-                                ; 
-                        c =  2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-                        d =  R * c;
-                        console.log("d => " + d + "m")
-                        // console.log(d +  "<=" + distanceFix)
-
-                        if(d <= distanceFix)
-                        {
-                            //console.log(d +  "<=" + distanceFix)
-                            driverNearestDistanceFix.push(p2)
-                        }        
-                        //console.log(driverNearestDistanceFix)                            
+                            if(d <= distanceFix)
+                            {
+                                //console.log(d +  "<=" + distanceFix)
+                                driverNearestDistanceFix.push(p2)
+                            }        
+                            //console.log(driverNearestDistanceFix)                            
+                            myResolve(driverNearestDistanceFix);                                
+                        })        
+                    }
+                    else
+                    {
                         myResolve(driverNearestDistanceFix);                                
-                    })                                
+
+                    }
+                                            
                 }
             }
         );
