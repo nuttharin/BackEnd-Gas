@@ -595,7 +595,7 @@ addOrderUser = async (req, res, next) => {
                                 // delete cart ลบสินค้าตะกร้า
                                 let commanDel = `DELETE FROM "public"."tb_order_cart" WHERE user_id = ${dataOrder.user_id}`;
                                 let commandDelAll = "";
-                                //console.log(result.rows)
+                                console.log("1")
                                 for (let i = 0; i < dataOrder.order.length; i++) {
                                     commandDelAll += await commanDel + "AND gas_id = " + dataOrder.order[i].gas_id;
                                     if (i != dataOrder.order.length - 1) {
@@ -632,6 +632,7 @@ addOrderUser = async (req, res, next) => {
                                                         res.status(resData.statusCode).json(resData)
                                                     }
                                                     else {
+                                                        console.log("2")
                                                         //console.log(result.rows)      
                                                         dataPwd = await result.rows;
                                                   
@@ -657,7 +658,7 @@ addOrderUser = async (req, res, next) => {
                                                                 else 
                                                                 {
                                                                    
-
+                                                                    console.log("3")
                                                                     //ส่งงานให้ลูกค้า
                                                                     let arrJoinDeiver = [] ;
                                                                     let temp ;
@@ -703,6 +704,7 @@ addOrderUser = async (req, res, next) => {
                                                                         );
                                                                     }
                                                                     else {
+                                                                        console.log("No Driver")
                                                                         //ไม่มี driver ให้ส่ง
                                                                         resData.status = "success";
                                                                         resData.statusCode = 201;
