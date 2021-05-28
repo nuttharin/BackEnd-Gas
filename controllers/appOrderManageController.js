@@ -576,6 +576,7 @@ addOrderUser = async (req, res, next) => {
                     console.log("insert")
                     let resOrder = result.rows[0] ;
                     dataOrder.id = result.rows[0].id;
+                    console.log(dataOrder)
                     let sqlAddress;
                     sql = "";
                     for (let i = 0; i < dataOrder.order.length; i++) {
