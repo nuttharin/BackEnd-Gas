@@ -518,7 +518,7 @@ addOrderUser = async (req, res, next) => {
         statusCode: 200,
         data: ""
     }
-    console.log("xxx")
+    //console.log("xxx")
     // console.log(dataBody)
     dataOrder.user_id = dataBody.user_id;
     dataOrder.priceall = dataBody.priceall
@@ -545,10 +545,10 @@ addOrderUser = async (req, res, next) => {
         let count = 0 ;
         // หาเครื่องที่ใกล้
         let machineNearest = await funFindMachineNearest(dataOrder.address_id);
-        console.log(machineNearest)
+        //console.log(machineNearest)
 
         let driverArrNearest = await funFindDriverNearest(machineNearest,100);
-        console.log("3" , driverArrNearest)
+        //console.log("3" , driverArrNearest)
         let sqlDriverNearest = `INSERT INTO "public"."tb_order_send_driver"("order_id", "driver_id", "status", "createdate") VALUES ` ;
         // driverArrNearest.forEach( async (element) => {
         //     console.log(element)
@@ -573,10 +573,10 @@ addOrderUser = async (req, res, next) => {
                 }
                 else {
                     // console.log(result.rows)
-                    console.log("insert")
+                   // console.log("insert")
                     let resOrder = result.rows[0] ;
                     dataOrder.id = result.rows[0].id;
-                    console.log(dataOrder)
+                    //console.log(dataOrder)
                     let sqlAddress;
                     sql = "";
                     for (let i = 0; i < dataOrder.order.length; i++) {
@@ -584,7 +584,7 @@ addOrderUser = async (req, res, next) => {
                         VALUES (${dataOrder.id}, ${dataOrder.order[i].gas_id}, ${dataOrder.order[i].quality}) ;`;
 
                     }
-                    console.log(sql)
+                    //console.log(sql)
                     pool.query(
                         sql,
                         async (err, result) => {
@@ -637,7 +637,7 @@ addOrderUser = async (req, res, next) => {
                                                         res.status(resData.statusCode).json(resData)
                                                     }
                                                     else {
-                                                        console.log("2")
+                                                        //console.log("2")
                                                         //console.log(result.rows)      
                                                         dataPwd = await result.rows;
                                                   
@@ -663,7 +663,7 @@ addOrderUser = async (req, res, next) => {
                                                                 else 
                                                                 {
                                                                    
-                                                                    console.log("3")
+                                                                    //console.log("3")
                                                                     //ส่งงานให้ลูกค้า
                                                                     let arrJoinDeiver = [] ;
                                                                     let temp ;
@@ -684,7 +684,7 @@ addOrderUser = async (req, res, next) => {
                                                                     console.log(sqlDriverNearest)
                                                                     if(  driverArrNearest.length > 0)
                                                                     {
-                                                                        console.log("4")
+                                                                        //console.log("4")
                                                                         //มี driver ให้ส่ง
                                                                         sql = await sqlDriverNearest;
                                                                         pool.query(
@@ -710,7 +710,7 @@ addOrderUser = async (req, res, next) => {
                                                                         );
                                                                     }
                                                                     else {
-                                                                        console.log("No Driver")
+                                                                        //console.log("No Driver")
                                                                         //ไม่มี driver ให้ส่ง
                                                                         resData.status = "success";
                                                                         resData.statusCode = 201;
@@ -884,10 +884,10 @@ getOrderByDriverId= async (req ,res , next) => {
                 }
                 else
                 {    
-                    console.log(result.rows)
+                    //console.log(result.rows)
                     if(result.rows.length > 0)
                     {
-                        console.log(1)
+                       // console.log(1)
                         let distance ;
                         let statusMap = true ; 
                         let arrResData = [] ;
