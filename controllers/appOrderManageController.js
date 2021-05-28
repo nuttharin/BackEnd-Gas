@@ -533,6 +533,7 @@ addOrderUser = async (req, res, next) => {
     // console.log(dataOrder)
     let checkparameter = await funCheckParameterWithOutId(dataOrder);
     if (checkparameter != "") {
+        
         resData.status = "error";
         resData.statusCode = 200;
         resData.data = "not have parameter ( " + checkparameter + " )";
@@ -540,6 +541,7 @@ addOrderUser = async (req, res, next) => {
     }
     else 
     {
+        console.log("0 else")
         let count = 0 ;
         // หาเครื่องที่ใกล้
         let machineNearest = await funFindMachineNearest(dataOrder.address_id);
@@ -571,6 +573,7 @@ addOrderUser = async (req, res, next) => {
                 }
                 else {
                     // console.log(result.rows)
+                    console.log("insert")
                     let resOrder = result.rows[0] ;
                     dataOrder.id = result.rows[0].id;
                     let sqlAddress;
