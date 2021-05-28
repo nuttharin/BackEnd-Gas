@@ -679,6 +679,7 @@ addOrderUser = async (req, res, next) => {
                                                                     console.log(sqlDriverNearest)
                                                                     if(  driverArrNearest.length > 0)
                                                                     {
+                                                                        console.log("4")
                                                                         //มี driver ให้ส่ง
                                                                         sql = await sqlDriverNearest;
                                                                         pool.query(
