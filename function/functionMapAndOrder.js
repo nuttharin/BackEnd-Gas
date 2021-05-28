@@ -194,7 +194,7 @@ funFindDriverNearest = async (dataOrderMachine,distanceFix) => {
                 }
                 else
                 {
-                    //console.log(result.rows)
+                    console.log(result.rows)
                     driverAll = await result.rows ;
                     let p1 = await dataOrderMachine ;
                     // console.log("1" , p1)
