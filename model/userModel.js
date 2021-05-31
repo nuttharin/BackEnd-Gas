@@ -16,6 +16,19 @@ class User {
     }
 }
 
+class Driver {
+    constructor(id, name, password, idCard,email,phone, createDate, modifyDate) {
+        this.id = id ;
+        this.name= name ;
+        this.password = password ;
+        this.idCard = idCard ;
+        this.email = email;
+        this.phone = phone;        
+        this.createDate = createDate ;
+        this.modifyDate = modifyDate ;
+    }
+}
+
 class UserData {
     constructor(id, name,email,phone, modifyDate) {
         this.id = id ;
@@ -103,5 +116,6 @@ module.exports = {
     Rider,
     Position,
     PositionUserId,
-    Order
+    Order,
+    Driver
 }

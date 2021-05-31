@@ -1,5 +1,5 @@
 const { pool , MongoClient , URL_MONGODB_IOT } = require("../dbConfig");
-const { User , Position ,PositionUserId, Rider , Order , UserData} = require("../model/userModel");
+const { User , Position ,PositionUserId, Rider , Order , UserData , Driver} = require("../model/userModel");
 const { BankDriver ,BankDriverData,PositionDriver} = require("../model/driverModel");
 const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
 const { generateToken , generateRefreshToken} = require('../controllers/appTokenManageController');
@@ -349,14 +349,14 @@ registerRider = async (req , res , next) => {
         else {
         
             let dataBody = req.body ;
-            let dataUser = new User();
+            let dataUser = new Driver();
             //let dataAddress = new Position();
             dataUser.name= dataBody.name ;
             dataUser.password = dataBody.password ;
             dataUser.idCard = dataBody.idCard ;
             dataUser.email = dataBody.email;
             dataUser.phone = dataBody.phone;         
-            dataUser.type = dataBody.type;
+            // dataUser.type = dataBody.type;
             dataUser.createDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
             dataUser.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');           
 
@@ -391,7 +391,7 @@ registerRider = async (req , res , next) => {
                         }
                         else
                         {
-                            console.log(result.rows)
+                            //console.log(result.rows)
                             if(result.rows.length > 0){
                                 resData.status = "error";
                                 resData.statusCode = 200 ;
@@ -403,9 +403,9 @@ registerRider = async (req , res , next) => {
                                 dataUser.password = await bcrypt.hash(dataBody.password , parseInt(saltRounds));
                                 ///pictureRegisterUser/1603179432347_userID_.jpg
                                 sql = `INSERT INTO "public"."tb_rider"("name", "password", "idCard", "email", "phone",
-                                            "createDate", "modifyDate" , "isDelete", "urlPicture" ,"statusWork" ) 
+                                            "createDate", "modifyDate" , "isDelete", "urlPicture" ,"statusWork" , "isApproved" ) 
                                         VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}'
-                                        , '${dataUser.createDate}', '${dataUser.modifyDate}' , 0 , '${JSON.stringify(pathUploadPic)}' ,1) RETURNING *`;
+                                        , '${dataUser.createDate}', '${dataUser.modifyDate}' , 0 , '${JSON.stringify(pathUploadPic)}' ,1,0) RETURNING *`;
                                 // console.log(sql)
                                 pool.query(
                                     sql, 
