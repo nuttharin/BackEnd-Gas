@@ -19,6 +19,7 @@ npm i bcrypt --save
 npm i moment --save
 npm install request-ip --save
 npm install --save axios
+npm install --save bcryptjs && npm uninstall --save bcrypt
 
 
 -npm uninstall mongodb --save

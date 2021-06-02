@@ -949,6 +949,10 @@ getOrderByDriverId= async (req ,res , next) => {
     }
 }
 
+updateStatusOrderUserByOrderId = async (req ,res , next) => {
+
+}
+
 updateStatusOrderByOrderId = async (req ,res , next) => {
     // order_id
     // status
@@ -1021,7 +1025,7 @@ updateStatusOrderByOrderId = async (req ,res , next) => {
                         //console.log("2")
                         resData.status = "success";
                         resData.statusCode = 201 ;
-                        resData.data = "insert complete";
+                        resData.data = "update complete";
                         res.status(201).json(resData);
                     }
                 }
@@ -1032,7 +1036,145 @@ updateStatusOrderByOrderId = async (req ,res , next) => {
 
 }
 
+cancalOrderUser = (req, res, next) => {
+    //UPDATE "public"."tb_order" SET "status" = '1' WHERE "id" = 2
+    let data = req.body;
+    let newDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss')
+    let resData = {
+        status: "",
+        statusCode: 200,
+        data: ""
+    }
+    if (data == "" || data == null) {
+        resData.status = "error";
+        resData.statusCode = 200;
+        resData.data = "not have parameter ( order_id )";
+        res.status(200).json(resData);
+    }
+    else {
+        let sql = `SELECT tb_order.id , tb_order.status FROM tb_order WHERE tb_order.id = ${data.order_id}`;
+        pool.query(
+            sql,
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error";
+                    resData.statusCode = 200;
+                    resData.data = err;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else {
+                    //console.log(result.rows[0])
+                    // if(result)
+                    // {
+
+                    // }
+                    if (result.rows[0].status != 1) {
+                        sql = `UPDATE "public"."tb_order" SET "modifyDate" = '${newDate}', "status" = '1' ,
+                         "reason" = '${data.reason}' WHERE "id" = ${data.order_id} ;
+                         UPDATE "public"."tb_order_send_driver" SET "status" = 3 WHERE order_id = ${data.order_id} ;`;
+
+                        pool.query(
+                            sql,
+                            (err, result) => 
+                            {
+                                if (err) {
+                                    //console.log(err); 
+                                    resData.status = "error";
+                                    resData.statusCode = 200;
+                                    resData.data = err;
+                                    res.status(resData.statusCode).json(resData)
+                                }
+                                else {
+                                    resData.status = "success";
+                                    resData.statusCode = 201;
+                                    resData.data = "delete complete";
+                                    res.status(201).json(resData);
+                                }
+                            }
+                        );
+                    }
+                    else {
+                        resData.status = "error";
+                        resData.statusCode = 200;
+                        resData.data = "คำสั่งซื้อถูกยกเลิกไปแล้ว";
+                        res.status(resData.statusCode).json(resData);
+                    }
+                }
+            }
+        );
+    }
+}
+
 checkQRcodeForDriver = async (req ,res , next) => {
+    // check กับ machine_code 
+    // machine_id ได้จากสแกน
+    // machineCode
+    // order_id
+    
+    let data = req.body ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data.machine_id == "" || data.machine_id == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( machine_id )";    
+        res.status(200).json(resData);
+    }   
+    else if(data.order_id == "" || data.order_id == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( order_id )";    
+        res.status(200).json(resData);
+    } 
+    else 
+    {
+        let sql = `SELECT id as order_id , "pwdGasMachine" as password FROM tb_order 
+        WHERE tb_order.id = ${data.order_id} AND machine_id = ${data.machine_id}`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) 
+                {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {
+                    //console.log(result.rows[0]);
+                    if(result.rows > 0)
+                    {
+                        resData.status = "success";
+                        resData.statusCode = 201 ;
+                        resData.data = "Incorrect data"
+                        res.status(resData.statusCode).json(resData);
+                    }
+                    else
+                    {
+                        // find pwd gasmachine
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = result.rows[0] ;
+                        res.status(resData.statusCode).json(resData);                        
+                        
+                    } 
+                }
+            }
+        );
+    }
+}
+
+checkQRcodeForUser = async (req ,res , next) => {
     // check กับ machine_code 
     // machine_id ได้จากสแกน
     // machineCode
@@ -1099,10 +1241,6 @@ checkQRcodeForDriver = async (req ,res , next) => {
     }
 }
 
-checkQRcodeForUser = async (req ,res , next) => {
-    
-}
-
 // let sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" FROM tb_order
 //         INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
 //         WHERE tb_order.rider_id = ${data.driver_id} 
@@ -1135,72 +1273,7 @@ editOrderUser = (req, res, next) => {
 
 }
 
-cancalOrderUser = (req, res, next) => {
-    //UPDATE "public"."tb_order" SET "status" = '1' WHERE "id" = 2
-    let data = req.body;
-    let newDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss')
-    let resData = {
-        status: "",
-        statusCode: 200,
-        data: ""
-    }
-    if (data == "" || data == null) {
-        resData.status = "error";
-        resData.statusCode = 200;
-        resData.data = "not have parameter ( order_id )";
-        res.status(200).json(resData);
-    }
-    else {
-        let sql = `SELECT tb_order.id , tb_order.status FROM tb_order WHERE tb_order.id = ${data.order_id}`;
-        pool.query(
-            sql,
-            (err, result) => {
 
-                if (err) {
-                    //console.log(err); 
-                    resData.status = "error";
-                    resData.statusCode = 200;
-                    resData.data = err;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else {
-                    console.log(result.rows[0])
-                    if (result.rows[0].status != 1) {
-                        sql = `UPDATE "public"."tb_order" SET "modifyDate" = '${newDate}', "status" = '1' ,
-                         "reason" = '${data.reason}'
-                        WHERE "id" = ${data.order_id}`;
-
-                        pool.query(
-                            sql,
-                            (err, result) => 
-                            {
-                                if (err) {
-                                    //console.log(err); 
-                                    resData.status = "error";
-                                    resData.statusCode = 200;
-                                    resData.data = err;
-                                    res.status(resData.statusCode).json(resData)
-                                }
-                                else {
-                                    resData.status = "success";
-                                    resData.statusCode = 201;
-                                    resData.data = "delete complete";
-                                    res.status(201).json(resData);
-                                }
-                            }
-                        );
-                    }
-                    else {
-                        resData.status = "error";
-                        resData.statusCode = 200;
-                        resData.data = "คำสั่งซื้อถูกยกเลิกไปแล้ว";
-                        res.status(resData.statusCode).json(resData);
-                    }
-                }
-            }
-        );
-    }
-}
 
 successOrderUser = () => {
     //UPDATE "public"."tb_order" SET "status" = 4 WHERE "id" = 3
