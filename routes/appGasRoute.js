@@ -105,10 +105,15 @@ router.get('/get/orderUser/orderByUserId',appOrderManageController.getOrderByUse
 router.get('/get/orderUser/orderHistoryAllByUserId',appOrderManageController.getOrderHistoryAllByUserId);
 router.get('/get/orderUser/orderByOrderId',appOrderManageController.getOrderByOderId);
 
+
+//flow order
 router.post('/post/add/orderUser',appOrderManageController.addOrderUser);
 router.get('/get/orderUser', appOrderManageController.getOrderByDriverId);
 router.post('/post/update/status/order' , appOrderManageController.updateStatusOrderByOrderId);
-router.post('/post/order/checkQRcodeForDriver' , appOrderManageController.checkQRcodeForDriver)
+router.post('/post/order/checkQRcodeForDriver' , appOrderManageController.checkQRcodeForDriver);
+router.post('/post/order/checkPwdFromMachineForReceive' , appOrderManageController.checkPwdFromMachineForReceive);
+router.post('/post/order/checkPwdFromMachineForReturn' , appOrderManageController.checkPwdFromMachineForReturn);
+
 
 router.post('/post/edit/orderUser',appOrderManageController.editOrderUser);
 router.post('/post/delete/orderUser',appOrderManageController.cancalOrderUser);
