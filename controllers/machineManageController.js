@@ -9,6 +9,11 @@ const apiPath = {
     gasIn : ""
 }
 
+const coilParameter = {
+    returnGas : 0 ,
+    receiveGas : 1
+}
+
 testAxios = async () =>{
     await axios.get('http://192.168.1.156:5000/testplc')
     .then(function (response) {
@@ -80,484 +85,403 @@ getMachineCodeFromIP = (req ,res , next) =>{
 }
 
 
+
+
 // ==========  check qr code ========== //
-checkQrCodeMachineReceiveGasForUser = (req , res , next) =>{
-    // check กับ machine_code 
+
+
+// checkQrCodeMachineReceiveGasForUser = (req , res , next) =>{
+//     // check กับ machine_code 
     
-    let data = req.body ;
-    let resData = {
-        status : "",
-        statusCode : 200 ,
-        data : ""
-    }
-    if(data.qrcode == "" || data.qrcode == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( qrcode )";    
-        res.status(200).json(resData);
-    }   
-    else if(data.user_id == "" || data.user_id == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( user_id )";    
-        res.status(200).json(resData);
-    } 
-    else 
-    {
-        let sql = `SELECT tb_order.id as order_id , tb_order.user_id as user_id,"pwdGasMachine" FROM tb_order
-        INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
-        WHERE tb_order.user_id = ${data.user_id} 
-        AND tb_machine_gas.machine_code = '${data.qrcode}'
-        AND CURRENT_DATE = DATE(tb_order."createDate")`;
-        pool.query(
-            sql, 
-            (err, result) => {
+//     let data = req.body ;
+//     let resData = {
+//         status : "",
+//         statusCode : 200 ,
+//         data : ""
+//     }
+//     if(data.qrcode == "" || data.qrcode == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( qrcode )";    
+//         res.status(200).json(resData);
+//     }   
+//     else if(data.user_id == "" || data.user_id == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( user_id )";    
+//         res.status(200).json(resData);
+//     } 
+//     else 
+//     {
+//         let sql = `SELECT tb_order.id as order_id , tb_order.user_id as user_id,"pwdGasMachine" FROM tb_order
+//         INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+//         WHERE tb_order.user_id = ${data.user_id} 
+//         AND tb_machine_gas.machine_code = '${data.qrcode}'
+//         AND CURRENT_DATE = DATE(tb_order."createDate")`;
+//         pool.query(
+//             sql, 
+//             (err, result) => {
 
-                if (err) 
-                {
-                    //console.log(err); 
-                    resData.status = "error"; 
-                    resData.statusCode = 200 ;
-                    resData.data = err ;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else
-                {
-                    console.log(result.rows[0]);
-                    if(!result.rows[0])
-                    {
-                        resData.status = "success";
-                        resData.statusCode = 201 ;
-                        resData.data = {
-                            check_qrcode : false
-                        };    
-                        res.status(resData.statusCode).json(resData);
-                    }
-                    else
-                    {
-                        resData.status = "success"; 
-                        resData.statusCode = 201 ;
-                        resData.data = result.rows[0] ;
-                        res.status(resData.statusCode).json(resData);
+//                 if (err) 
+//                 {
+//                     //console.log(err); 
+//                     resData.status = "error"; 
+//                     resData.statusCode = 200 ;
+//                     resData.data = err ;
+//                     res.status(resData.statusCode).json(resData)
+//                 }
+//                 else
+//                 {
+//                     console.log(result.rows[0]);
+//                     if(!result.rows[0])
+//                     {
+//                         resData.status = "success";
+//                         resData.statusCode = 201 ;
+//                         resData.data = {
+//                             check_qrcode : false
+//                         };    
+//                         res.status(resData.statusCode).json(resData);
+//                     }
+//                     else
+//                     {
+//                         resData.status = "success"; 
+//                         resData.statusCode = 201 ;
+//                         resData.data = result.rows[0] ;
+//                         res.status(resData.statusCode).json(resData);
                         
-                    } 
-                }
-            }
-        );
-    }
-}
+//                     } 
+//                 }
+//             }
+//         );
+//     }
+// }
 
-checkQrCodeMachineReceiveGasForDriver = (req , res , next) =>{
-    // check กับ machine_code 
+// checkQrCodeMachineReceiveGasForDriver = (req , res , next) =>{
+//     // check กับ machine_code 
     
-    let data = req.body ;
-    let resData = {
-        status : "",
-        statusCode : 200 ,
-        data : ""
-    }
-    if(data.qrcode == "" || data.qrcode == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( qrcode )";    
-        res.status(200).json(resData);
-    }   
-    else if(data.driver_id == "" || data.driver_id == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( driver_id )";    
-        res.status(200).json(resData);
-    } 
-    else 
-    {
-        let sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" FROM tb_order
-        INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
-        WHERE tb_order.rider_id = ${data.driver_id} 
-        AND tb_machine_gas.machine_code = '${data.qrcode}'`;
-        pool.query(
-            sql, 
-            (err, result) => {
+//     let data = req.body ;
+//     let resData = {
+//         status : "",
+//         statusCode : 200 ,
+//         data : ""
+//     }
+//     if(data.qrcode == "" || data.qrcode == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( qrcode )";    
+//         res.status(200).json(resData);
+//     }   
+//     else if(data.driver_id == "" || data.driver_id == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( driver_id )";    
+//         res.status(200).json(resData);
+//     } 
+//     else 
+//     {
+//         let sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" FROM tb_order
+//         INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+//         WHERE tb_order.rider_id = ${data.driver_id} 
+//         AND tb_machine_gas.machine_code = '${data.qrcode}'`;
+//         pool.query(
+//             sql, 
+//             (err, result) => {
 
-                if (err) 
-                {
-                    //console.log(err); 
-                    resData.status = "error"; 
-                    resData.statusCode = 200 ;
-                    resData.data = err ;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else
-                {
-                    //console.log(result.rows[0]);
-                    if(!result.rows[0])
-                    {
-                        resData.status = "success";
-                        resData.statusCode = 201 ;
-                        resData.data = {
-                            check_qrcode : false
-                        };    
-                        res.status(resData.statusCode).json(resData);
-                    }
-                    else
-                    {
-                        // find pwd gasmachine
-                        resData.status = "success"; 
-                        resData.statusCode = 201 ;
-                        resData.data = result.rows[0] ;
-                        res.status(resData.statusCode).json(resData);
+//                 if (err) 
+//                 {
+//                     //console.log(err); 
+//                     resData.status = "error"; 
+//                     resData.statusCode = 200 ;
+//                     resData.data = err ;
+//                     res.status(resData.statusCode).json(resData)
+//                 }
+//                 else
+//                 {
+//                     //console.log(result.rows[0]);
+//                     if(!result.rows[0])
+//                     {
+//                         resData.status = "success";
+//                         resData.statusCode = 201 ;
+//                         resData.data = {
+//                             check_qrcode : false
+//                         };    
+//                         res.status(resData.statusCode).json(resData);
+//                     }
+//                     else
+//                     {
+//                         // find pwd gasmachine
+//                         resData.status = "success"; 
+//                         resData.statusCode = 201 ;
+//                         resData.data = result.rows[0] ;
+//                         res.status(resData.statusCode).json(resData);
                         
                         
-                    } 
-                }
-            }
-        );
-    }
-}
+//                     } 
+//                 }
+//             }
+//         );
+//     }
+// }
 
 
-checkQrCodeMachineReturnGas = (req , res , next) =>{
-    // check กับ machine_code 
-    let data = req.body ;
-    let resData = {
-        status : "",
-        statusCode : 200 ,
-        data : ""
-    }
-    if(data.qrcode == "" || data.qrcode == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( qrcode )";    
-        res.status(200).json(resData);
-    }   
-    else if(data.driver_id == "" || data.driver_id == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( driver_id )";    
-        res.status(200).json(resData);
-    } 
-    else 
-    {
-        let sql = `SELECT tb_order.id FROM tb_order
-        INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
-        WHERE tb_order.rider_id = ${data.driver_id} AND tb_machine_gas.machine_code = '${data.qrcode}'`;
-        pool.query(
-            sql, 
-            (err, result) => {
+// checkQrCodeMachineReturnGas = (req , res , next) =>{
+//     // check กับ machine_code 
+//     let data = req.body ;
+//     let resData = {
+//         status : "",
+//         statusCode : 200 ,
+//         data : ""
+//     }
+//     if(data.qrcode == "" || data.qrcode == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( qrcode )";    
+//         res.status(200).json(resData);
+//     }   
+//     else if(data.driver_id == "" || data.driver_id == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( driver_id )";    
+//         res.status(200).json(resData);
+//     } 
+//     else 
+//     {
+//         let sql = `SELECT tb_order.id FROM tb_order
+//         INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+//         WHERE tb_order.rider_id = ${data.driver_id} AND tb_machine_gas.machine_code = '${data.qrcode}'`;
+//         pool.query(
+//             sql, 
+//             (err, result) => {
 
-                if (err) 
-                {
-                    //console.log(err); 
-                    resData.status = "error"; 
-                    resData.statusCode = 200 ;
-                    resData.data = err ;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else
-                {
-                    console.log(result.rows[0]);
-                    let order_id = result.rows[0].id
-                    if(!result.rows[0])
-                    {
-                        resData.status = "success";
-                        resData.statusCode = 201 ;
-                        resData.data = {
-                            check_qrcode : false
-                        };    
-                        res.status(201).json(resData);
-                    }
-                    else{
-                        // find pwd gasmachine
-                        sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" 
-                                FROM tb_order WHERE tb_order.id =${order_id}`;
-                        pool.query(
-                            sql, 
-                            (err, result) => {
+//                 if (err) 
+//                 {
+//                     //console.log(err); 
+//                     resData.status = "error"; 
+//                     resData.statusCode = 200 ;
+//                     resData.data = err ;
+//                     res.status(resData.statusCode).json(resData)
+//                 }
+//                 else
+//                 {
+//                     console.log(result.rows[0]);
+//                     let order_id = result.rows[0].id
+//                     if(!result.rows[0])
+//                     {
+//                         resData.status = "success";
+//                         resData.statusCode = 201 ;
+//                         resData.data = {
+//                             check_qrcode : false
+//                         };    
+//                         res.status(201).json(resData);
+//                     }
+//                     else{
+//                         // find pwd gasmachine
+//                         sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" 
+//                                 FROM tb_order WHERE tb_order.id =${order_id}`;
+//                         pool.query(
+//                             sql, 
+//                             (err, result) => {
                 
-                                if (err) {
-                                    //console.log(err); 
-                                    resData.status = "error"; 
-                                    resData.statusCode = 200 ;
-                                    resData.data = err ;
-                                    res.status(resData.statusCode).json(resData)
-                                }
-                                else
-                                {    
-                                    resData.status = "success"; 
-                                    resData.statusCode = 201 ;
-                                    resData.data = result.rows[0] ;
-                                    res.status(resData.statusCode).json(resData);
-                                }
-                            }
-                        );
-                    } 
-                }
-            }
-        );
-    }
-}
+//                                 if (err) {
+//                                     //console.log(err); 
+//                                     resData.status = "error"; 
+//                                     resData.statusCode = 200 ;
+//                                     resData.data = err ;
+//                                     res.status(resData.statusCode).json(resData)
+//                                 }
+//                                 else
+//                                 {    
+//                                     resData.status = "success"; 
+//                                     resData.statusCode = 201 ;
+//                                     resData.data = result.rows[0] ;
+//                                     res.status(resData.statusCode).json(resData);
+//                                 }
+//                             }
+//                         );
+//                     } 
+//                 }
+//             }
+//         );
+//     }
+// }
 
-checkQrCodeMachineReturnGasForUser  = (req , res , next) =>{
-    // check กับ machine_code 
-    let data = req.body ;
-    let resData = {
-        status : "",
-        statusCode : 200 ,
-        data : ""
-    }
-    if(data.qrcode == "" || data.qrcode == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( qrcode )";    
-        res.status(200).json(resData);
-    }   
-    else if(data.driver_id == "" || data.driver_id == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( driver_id )";    
-        res.status(200).json(resData);
-    } 
-    else 
-    {
-        let sql = `SELECT tb_order.id FROM tb_order
-        INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
-        WHERE tb_order.rider_id = ${data.driver_id} AND tb_machine_gas.machine_code = '${data.qrcode}'`;
-        pool.query(
-            sql, 
-            (err, result) => {
+// checkQrCodeMachineReturnGasForUser  = (req , res , next) =>{
+//     // check กับ machine_code 
+//     let data = req.body ;
+//     let resData = {
+//         status : "",
+//         statusCode : 200 ,
+//         data : ""
+//     }
+//     if(data.qrcode == "" || data.qrcode == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( qrcode )";    
+//         res.status(200).json(resData);
+//     }   
+//     else if(data.driver_id == "" || data.driver_id == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( driver_id )";    
+//         res.status(200).json(resData);
+//     } 
+//     else 
+//     {
+//         let sql = `SELECT tb_order.id FROM tb_order
+//         INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+//         WHERE tb_order.rider_id = ${data.driver_id} AND tb_machine_gas.machine_code = '${data.qrcode}'`;
+//         pool.query(
+//             sql, 
+//             (err, result) => {
 
-                if (err) 
-                {
-                    //console.log(err); 
-                    resData.status = "error"; 
-                    resData.statusCode = 200 ;
-                    resData.data = err ;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else
-                {
-                    console.log(result.rows[0]);
-                    let order_id = result.rows[0].id
-                    if(!result.rows[0])
-                    {
-                        resData.status = "success";
-                        resData.statusCode = 201 ;
-                        resData.data = {
-                            check_qrcode : false
-                        };    
-                        res.status(201).json(resData);
-                    }
-                    else{
-                        // find pwd gasmachine
-                        sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" 
-                                FROM tb_order WHERE tb_order.id =${order_id}`;
-                        pool.query(
-                            sql, 
-                            (err, result) => {
+//                 if (err) 
+//                 {
+//                     //console.log(err); 
+//                     resData.status = "error"; 
+//                     resData.statusCode = 200 ;
+//                     resData.data = err ;
+//                     res.status(resData.statusCode).json(resData)
+//                 }
+//                 else
+//                 {
+//                     console.log(result.rows[0]);
+//                     let order_id = result.rows[0].id
+//                     if(!result.rows[0])
+//                     {
+//                         resData.status = "success";
+//                         resData.statusCode = 201 ;
+//                         resData.data = {
+//                             check_qrcode : false
+//                         };    
+//                         res.status(201).json(resData);
+//                     }
+//                     else{
+//                         // find pwd gasmachine
+//                         sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" 
+//                                 FROM tb_order WHERE tb_order.id =${order_id}`;
+//                         pool.query(
+//                             sql, 
+//                             (err, result) => {
                 
-                                if (err) {
-                                    //console.log(err); 
-                                    resData.status = "error"; 
-                                    resData.statusCode = 200 ;
-                                    resData.data = err ;
-                                    res.status(resData.statusCode).json(resData)
-                                }
-                                else
-                                {    
-                                    resData.status = "success"; 
-                                    resData.statusCode = 201 ;
-                                    resData.data = result.rows[0] ;
-                                    res.status(resData.statusCode).json(resData);
-                                }
-                            }
-                        );
-                    } 
-                }
-            }
-        );
-    }
-}
+//                                 if (err) {
+//                                     //console.log(err); 
+//                                     resData.status = "error"; 
+//                                     resData.statusCode = 200 ;
+//                                     resData.data = err ;
+//                                     res.status(resData.statusCode).json(resData)
+//                                 }
+//                                 else
+//                                 {    
+//                                     resData.status = "success"; 
+//                                     resData.statusCode = 201 ;
+//                                     resData.data = result.rows[0] ;
+//                                     res.status(resData.statusCode).json(resData);
+//                                 }
+//                             }
+//                         );
+//                     } 
+//                 }
+//             }
+//         );
+//     }
+// }
 
 
-checkQrCodeMachineReturnGasForDriver = (req , res , next) =>{
-    // check กับ machine_code 
-    let data = req.body ;
-    let resData = {
-        status : "",
-        statusCode : 200 ,
-        data : ""
-    }
-    if(data.qrcode == "" || data.qrcode == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( qrcode )";    
-        res.status(200).json(resData);
-    }   
-    else if(data.driver_id == "" || data.driver_id == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( driver_id )";    
-        res.status(200).json(resData);
-    } 
-    else 
-    {
-        let sql = `SELECT tb_order.id FROM tb_order
-        INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
-        WHERE tb_order.rider_id = ${data.driver_id} AND tb_machine_gas.machine_code = '${data.qrcode}'`;
-        pool.query(
-            sql, 
-            (err, result) => {
+// checkQrCodeMachineReturnGasForDriver = (req , res , next) =>{
+//     // check กับ machine_code 
+//     let data = req.body ;
+//     let resData = {
+//         status : "",
+//         statusCode : 200 ,
+//         data : ""
+//     }
+//     if(data.qrcode == "" || data.qrcode == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( qrcode )";    
+//         res.status(200).json(resData);
+//     }   
+//     else if(data.driver_id == "" || data.driver_id == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( driver_id )";    
+//         res.status(200).json(resData);
+//     } 
+//     else 
+//     {
+//         let sql = `SELECT tb_order.id FROM tb_order
+//         INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
+//         WHERE tb_order.rider_id = ${data.driver_id} AND tb_machine_gas.machine_code = '${data.qrcode}'`;
+//         pool.query(
+//             sql, 
+//             (err, result) => {
 
-                if (err) 
-                {
-                    //console.log(err); 
-                    resData.status = "error"; 
-                    resData.statusCode = 200 ;
-                    resData.data = err ;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else
-                {
-                    console.log(result.rows[0]);
-                    let order_id = result.rows[0].id
-                    if(!result.rows[0])
-                    {
-                        resData.status = "success";
-                        resData.statusCode = 201 ;
-                        resData.data = {
-                            check_qrcode : false
-                        };    
-                        res.status(201).json(resData);
-                    }
-                    else{
-                        // find pwd gasmachine
-                        sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" 
-                                FROM tb_order WHERE tb_order.id =${order_id}`;
-                        pool.query(
-                            sql, 
-                            (err, result) => {
+//                 if (err) 
+//                 {
+//                     //console.log(err); 
+//                     resData.status = "error"; 
+//                     resData.statusCode = 200 ;
+//                     resData.data = err ;
+//                     res.status(resData.statusCode).json(resData)
+//                 }
+//                 else
+//                 {
+//                     console.log(result.rows[0]);
+//                     let order_id = result.rows[0].id
+//                     if(!result.rows[0])
+//                     {
+//                         resData.status = "success";
+//                         resData.statusCode = 201 ;
+//                         resData.data = {
+//                             check_qrcode : false
+//                         };    
+//                         res.status(201).json(resData);
+//                     }
+//                     else{
+//                         // find pwd gasmachine
+//                         sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id,"pwdGasMachine" 
+//                                 FROM tb_order WHERE tb_order.id =${order_id}`;
+//                         pool.query(
+//                             sql, 
+//                             (err, result) => {
                 
-                                if (err) {
-                                    //console.log(err); 
-                                    resData.status = "error"; 
-                                    resData.statusCode = 200 ;
-                                    resData.data = err ;
-                                    res.status(resData.statusCode).json(resData)
-                                }
-                                else
-                                {    
-                                    resData.status = "success"; 
-                                    resData.statusCode = 201 ;
-                                    resData.data = result.rows[0] ;
-                                    res.status(resData.statusCode).json(resData);
-                                }
-                            }
-                        );
-                    } 
-                }
-            }
-        );
-    }
-}
+//                                 if (err) {
+//                                     //console.log(err); 
+//                                     resData.status = "error"; 
+//                                     resData.statusCode = 200 ;
+//                                     resData.data = err ;
+//                                     res.status(resData.statusCode).json(resData)
+//                                 }
+//                                 else
+//                                 {    
+//                                     resData.status = "success"; 
+//                                     resData.statusCode = 201 ;
+//                                     resData.data = result.rows[0] ;
+//                                     res.status(resData.statusCode).json(resData);
+//                                 }
+//                             }
+//                         );
+//                     } 
+//                 }
+//             }
+//         );
+//     }
+// }
 
 
 
 
-TestcheckQrCodeMachineForDriver = (req,res,next)=> {
-    // check กับ machine_code    
-    let data = req.body ;
-    let resData = {
-        status : "",
-        statusCode : 200 ,
-        data : ""
-    }
-    if(data.qrcode == "" || data.qrcode == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( qrcode )";    
-        res.status(200).json(resData);
-    }   
-    else if(data.driver_id == "" || data.driver_id == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( driver_id )";    
-        res.status(200).json(resData);
-    } 
-    else 
-    {
-        let sql = `SELECT tb_order.id FROM tb_order
-        INNER JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
-        WHERE tb_order.rider_id = ${data.driver_id} AND tb_machine_gas.machine_code = '${data.qrcode}'`;
-        pool.query(
-            sql, 
-            (err, result) => {
 
-                if (err) 
-                {
-                    //console.log(err); 
-                    resData.status = "error"; 
-                    resData.statusCode = 200 ;
-                    resData.data = err ;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else
-                {
-                    console.log(result.rows[0]);
-                    let order_id = result.rows[0].id
-                    if(!result.rows[0])
-                    {
-                        resData.status = "success";
-                        resData.statusCode = 201 ;
-                        resData.data = {
-                            check_qrcode : false
-                        };    
-                        res.status(201).json(resData);
-                    }
-                    else{
-                        // find pwd gasmachine
-                        sql = `SELECT tb_order.id as order_id , tb_order.rider_id as driver_id
-                                ,"pwdGasMachine" FROM tb_order WHERE tb_order.id =${order_id}`;
-                        pool.query(
-                            sql, 
-                            (err, result) => {
-                
-                                if (err) {
-                                    //console.log(err); 
-                                    resData.status = "error"; 
-                                    resData.statusCode = 200 ;
-                                    resData.data = err ;
-                                    res.status(resData.statusCode).json(resData)
-                                }
-                                else
-                                {    
-                                    resData.status = "success"; 
-                                    resData.statusCode = 201 ;
-                                    resData.data = result.rows[0] ;
-                                    res.status(resData.statusCode).json(resData);
-                                }
-                            }
-                        );
-                    } 
-                }
-            }
-        );
-    }
-}
-
-TestcheckQrCodeMachineForUser = (req,res,next)=> {
-    
-}
 // ========== end =========== //
 
 
@@ -568,135 +492,7 @@ TestcheckQrCodeMachineForUser = (req,res,next)=> {
 
 
 
-checkPwdMachineStation = (req,res,next) => {
-    // SELECT id, DATE(tb_order."driverReceiveDate") FROM tb_order
-    // WHERE CURRENT_DATE = DATE(tb_order."driverReceiveDate")
-    // AND tb_order."pwdGasMachine" = '592426' 
-    // AND (status <> 4 AND status <> 1 AND status <> 3 AND status <> 6)
-    // AND rider_id IS NOT NULL AND machine_id IS NOT NULL
-    console.log(req.body)
-    let data = req.body.password_machine;   
-    let resData = {
-        status : "",
-        statusCode : 200 ,
-        data : ""
-    } ;
-    if(data == "" || data == null) 
-    {
-        //console.log(checkParameter)       
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( password_machine )";    
-        res.status(200).json(resData);
-    }
-    else 
-    {
-        let sql = `SELECT id as order_id FROM tb_order
-                WHERE CURRENT_DATE = DATE(tb_order."driverReceiveDate")
-                AND tb_order."pwdGasMachine" = '${data}' 
-                AND (status <> 4 AND status <> 1 AND status <> 3 AND status <> 6 AND status <> 7)
-                AND rider_id IS NOT NULL AND machine_id IS NOT NULL`;
-        pool.query(
-            sql, 
-            async (err, result) => {
 
-                if (err) {
-                    //console.log(err);  
-                    resData.status = "error";
-                    resData.statusCode = 200 ;
-                    resData.data = err;    
-                    res.status(200).json(resData);
-                }
-                else
-                {
-                    console.log(result.rows)
-                    if(result.rows.length == 0)
-                    {
-                        resData.status = "success";
-                        resData.statusCode = 201 ;
-                        resData.data = {
-                            check_password : false ,
-                            order_detail : []
-                        };    
-                        res.status(201).json(resData);
-                    }
-                    else
-                    {
-                        resData.status = "success";
-                        resData.statusCode = 201 ;
-                        resData.data = {
-                            check_password : true ,
-                            order_detail : result.rows[0]
-                        };    
-                        res.status(201).json(resData);
-                        // let pwdMachine =  await funRandomNumberString(6) ;
-                        // let checkWhile ;
-                        // let dataPwd ;
-                        // sql = `SELECT id, DATE(tb_order."createDate") FROM tb_order
-                        // WHERE CURRENT_DATE = DATE(tb_order."driverReceiveDate")`;
-                        // pool.query(
-                        //     sql, 
-                        //     async (err, result) => {                
-                        //         if (err) {
-                        //             //console.log(err); 
-                        //             resData.status = "error"; 
-                        //             resData.statusCode = 200 ;
-                        //             resData.data = err ;
-                        //             res.status(resData.statusCode).json(resData)
-                        //         }
-                        //         else
-                        //         {
-                        //             console.log(result.rows)
-                        //             dataPwd = await result.rows ;
-                        //             if(result.rows.length == 0)
-                        //             {
-                        //                 checkWhile = await false ;
-                        //             }
-                        //             else
-                        //             {
-                        //                 checkWhile = await dataPwd.includes(pwdMachine);
-                        //                 while(checkWhile)
-                        //                 {
-                        //                     pwdMachine = await funRandomNumberString(6) ;
-                        //                     checkWhile = await dataPwd.includes(pwdMachine);
-                        //                 }
-                        //                console.log(pwdMachine)
-                        //                 console.log(result.rows[0].id)
-                        //                 UPDATE "public"."tb_order" SET "pwdGasMachine" = '394236' WHERE "id" = 10
-                        //                 sql = `UPDATE "public"."tb_order" 
-                        //                         SET "pwdGasMachine" = '${pwdMachine}' 
-                        //                         WHERE "id" = ${result.rows[0].id}`;
-                        //                 pool.query(
-                        //                     sql, 
-                        //                     (err, result) => {                                    
-                        //                         if (err) {
-                        //                             //console.log(err);  
-                        //                             resData.status = "error";
-                        //                             resData.statusCode = 200 ;
-                        //                             resData.data = "error update password machine : " + err;    
-                        //                             res.status(200).json(resData);
-                        //                         }
-                        //                         else
-                        //                         {
-                        //                             resData.status = "success";
-                        //                             resData.statusCode = 201 ;
-                        //                             resData.data = {
-                        //                                 check_password : true
-                        //                             };    
-                        //                             res.status(201).json(resData);
-                        //                         }
-                        //                     }
-                        //                 ); 
-                        //             }
-                        //         }
-                        //     }
-                        // );
-                    }                   
-                }
-            }
-        );
-    }    
-}
 
 updateGasOutInByOrderId = (req, res ,next) =>{
     let data =req.body;
@@ -929,11 +725,12 @@ testGasIn  = async (req,res,next) =>{
         statusCode : 200 ,
         data : ""
     }
+    //192.168.0.114
     await axios.post(
-        `http://192.168.250.12:5000/machine/command/test`,
+        `http://192.168.0.114:5000/machine/command/gasIn`,
         {
             command_str_0 :0,
-            command_str_1 :1,
+            command_str_1 :0,
         }
     )
     .then(function (response) {
@@ -963,7 +760,7 @@ testGasIn  = async (req,res,next) =>{
         //console.log(error);
         resData.status = "error";
         resData.statusCode = 200 ;
-        resData.data = "error machine :" + error;    
+        resData.data = "error catch machine :" + error;    
         res.status(200).json(resData);
     })
 }
@@ -975,14 +772,14 @@ testGasOut  = async (req,res,next) =>{
         data : ""
     }
     await axios.post(
-        `http://192.168.250.12:5000/machine/command/test`,
+        `http://192.168.0.114:5000/machine/command/gasOut`,
         {
             command_str_0 :0,
-            command_str_1 :2,
+            command_str_1 :1,
         }
     )
     .then(function (response) {
-        // handle success
+        //handle success
         //console.log(response);
         //console.log(response.data)
         if(response.data.statuCode == 201)
@@ -1008,7 +805,7 @@ testGasOut  = async (req,res,next) =>{
         //console.log(error);
         resData.status = "error";
         resData.statusCode = 200 ;
-        resData.data = "error machine :" + error;    
+        resData.data = "error catch machine :" + error;    
         res.status(200).json(resData);
     })
 }
@@ -1019,11 +816,11 @@ testGasOut  = async (req,res,next) =>{
 module.exports ={
     testAxios,
     test1,
-    checkQrCodeMachineReceiveGasForUser,
-    checkQrCodeMachineReceiveGasForDriver,
-    checkQrCodeMachineReturnGasForUser,
-    checkQrCodeMachineReturnGasForDriver,
-    checkPwdMachineStation,
+    // checkQrCodeMachineReceiveGasForUser,
+    // checkQrCodeMachineReceiveGasForDriver,
+    // checkQrCodeMachineReturnGasForUser,
+    // checkQrCodeMachineReturnGasForDriver,
+    //checkPwdMachineStation,
     updateGasOutInByOrderId,
     sendCommandToMachineGasOut,
     sendCommandToMachineGasIn,
