@@ -884,7 +884,7 @@ getOrderByDriverId= async (req ,res , next) => {
                 }
                 else
                 {    
-                    //console.log(result.rows)
+                    console.log(result.rows)
                     if(result.rows.length > 0)
                     {
                        // console.log(1)
@@ -903,13 +903,13 @@ getOrderByDriverId= async (req ,res , next) => {
                         }));
     
                         const element = result.rows[0];
-                        distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
-                        console.log(distance)
-                        if(distance.status == 'NO')
-                        {
-                            statusMap = await false ;
-                            // BreakException;
-                        }
+                        //distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
+                        //console.log(distance)
+                        // if(distance.status == 'NO')
+                        // {
+                        //     statusMap = await false ;
+                        //     // BreakException;
+                        // }
                          
                         if(statusMap == true)
                         {
@@ -923,6 +923,35 @@ getOrderByDriverId= async (req ,res , next) => {
                                 order_list:await dataTemp,
                                 distance : await distance
                             }
+                            // resData.status = "success"; 
+                            // resData.statusCode = 201 ;
+                            // resData.data = {
+                            //     "order_id": 62,
+                            //     "order_number": "20210603814",
+                            //     "create_date": "2021-06-03 8:13:56",
+                            //     "receive_date": "",
+                            //     "order_list": [
+                            //         {
+                            //             "gas_type": "แก๊สปตท. 15 KG",
+                            //             "prices": 360,
+                            //             "price_all": 360,
+                            //             "quality": 1
+                            //         }
+                            //     ],
+                            //     "distance": {
+                            //         "status": "OK",
+                            //         "destination_addresses": "ศูนย์ราชการนนทบุรี ถนน รัตนาธิเบศร์ บางกระสอ ตำบลตลาดขวัญ, นนทบุรี 11000 ประเทศไทย",
+                            //         "origin_addresses": "22/52 Nonthaburi 35 Soi, Ampheo, บางกระสอ อำเภอเมืองนนทบุรี นนทบุรี 11000 ประเทศไทย",
+                            //         "distance": {
+                            //             "kilometer": "6.2 กม.",
+                            //             "meter": 6187
+                            //         },
+                            //         "duration": {
+                            //             "minute": "11 นาที",
+                            //             "secound": 654
+                            //         }
+                            //     }
+                            // }
                             res.status(resData.statusCode).json(resData);
     
                         }

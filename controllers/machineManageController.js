@@ -727,7 +727,7 @@ testGasIn  = async (req,res,next) =>{
     }
     //192.168.0.114
     await axios.post(
-        `http://192.168.0.114:5000/machine/command/gasIn`,
+        `http://192.168.250.10:5000/machine/command/gasIn`,
         {
             command_str_0 :0,
             command_str_1 :0,
@@ -772,7 +772,7 @@ testGasOut  = async (req,res,next) =>{
         data : ""
     }
     await axios.post(
-        `http://192.168.0.114:5000/machine/command/gasOut`,
+        `http://192.168.250.10:5000/machine/command/gasOut`,
         {
             command_str_0 :0,
             command_str_1 :1,
@@ -781,7 +781,7 @@ testGasOut  = async (req,res,next) =>{
     .then(function (response) {
         //handle success
         //console.log(response);
-        //console.log(response.data)
+        console.log(response.data)
         if(response.data.statuCode == 201)
         {
             //console.log("sss")
@@ -802,7 +802,7 @@ testGasOut  = async (req,res,next) =>{
     .catch(function (error) {
         // handle error
         // alert
-        //console.log(error);
+        console.log(error);
         resData.status = "error";
         resData.statusCode = 200 ;
         resData.data = "error catch machine :" + error;    

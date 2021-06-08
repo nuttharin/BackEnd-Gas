@@ -523,7 +523,54 @@ deleteUserByUserId = async (req , res , next) =>{
     }
 };
 
+editPasswordUserByUserId = async (req , res , next) =>{
+    let dataBody = req.body;
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }     
+    dataBody.id = dataBody.user_id;
+    //dataBody.password = dataBody.password ;    
+    dataBody.password = await bcrypt.hash(dataBody.password , parseInt(saltRounds));
+    dataBody.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
 
+    
+
+    if(dataBody.id == "" || dataBody.id == null || dataBody.password == "" || dataBody.password == null  ) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( user_id , password )";    
+        res.status(200).json(resData);
+    }
+    else{       
+        //UPDATE "public"."tb_user" SET "password" = '$2b$08$aFztgUarWaAD0QNcl3hPa.5JdWC0Gaco/X.2qz.WZ4dFPpp4kcUjW' WHERE "id" = 35
+        let sql = `UPDATE "public"."tb_user" 
+        SET "password" = '${dataBody.password}' WHERE "id" = ${dataBody.id}`;
+        pool.query(
+            sql, 
+            (err, result) => {
+    
+                if (err) {
+                    //console.log(err);  
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = "error update tb_user password : " + err;    
+                    res.status(200).json(resData);
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "update complete";    
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+}
 
 
 //#region  user Address
@@ -879,6 +926,7 @@ module.exports = {
     getUserAddressByAddressId,
     registerUser,
     editUserByUserId,
+    editPasswordUserByUserId,
     deleteUserByUserId,
     addUserAddress,
     editUserAddress,

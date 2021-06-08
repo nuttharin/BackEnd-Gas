@@ -46,6 +46,7 @@ router.post('/post/registerUser',appUserManageController.registerUser);
 router.post('/post/edit/user',appUserManageController.editUserByUserId);
 router.post('/post/delete/user',appUserManageController.deleteUserByUserId);
 router.post('/post/edit/user/profile',appUserManageController.editUserPicProfileByUserId);
+router.post('/post/edit/user/password',appUserManageController.editPasswordUserByUserId) ;
 
 
 
@@ -73,6 +74,7 @@ router.post('/post/registerDriver',appDriverManageController.registerRider);
 router.post('/post/edit/driver',appDriverManageController.editRiderByRiderId);
 router.post('/post/delete/driver',appDriverManageController.deleteRiderByRiderId);
 router.post('/post/edit/driver/profile',appDriverManageController.editRiderPicProfileByRiderId);
+router.post('/post/edit/user/password', appDriverManageController.editPasswordDriverByDriverId);
 
 
 router.post('/post/edit/driver/workStatus',appDriverManageController.editStatusWorkByRiderId);

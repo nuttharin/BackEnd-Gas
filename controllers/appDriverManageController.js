@@ -554,6 +554,55 @@ editRiderPicProfileByRiderId = async (req , res , next) =>{
     });
 };
 
+editPasswordDriverByDriverId = async (req , res , next) =>{
+    let dataBody = req.body;
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    }     
+    dataBody.id = dataBody.driver_id;
+    //dataBody.password = dataBody.password ;    
+    dataBody.password = await bcrypt.hash(dataBody.password , parseInt(saltRounds));
+    dataBody.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+
+    
+
+    if(dataBody.id == "" || dataBody.id == null || dataBody.password == "" || dataBody.password == null  ) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( driver_id , password )";    
+        res.status(200).json(resData);
+    }
+    else{       
+        // UPDATE "public"."tb_rider" SET "password" = '$08$99USrI8FfgecdSP95auxZeFzfs666AIbpMxiCZp1fZFiklnZOCXrm' WHERE "id" = 1
+        let sql = `UPDATE "public"."tb_rider" SET "password" = '${dataBody.password}' WHERE "id" = ${dataBody.id}`;
+        pool.query(
+            sql, 
+            (err, result) => {
+    
+                if (err) {
+                    //console.log(err);  
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = "error update tb_user password : " + err;    
+                    res.status(200).json(resData);
+                }
+                else
+                {
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "update complete";    
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+}
+
+
 deleteRiderByRiderId = async (req , res , next) =>{
     //UPDATE "public"."tb_user" SET "isDelete" = 1 WHERE "id" = 16
     let user_id = req.body.driver_id ;
@@ -1050,6 +1099,7 @@ module.exports = {
     statusInactiveReceiveJobRider,
     registerRider,
     getDriverProfileById,
+    editPasswordDriverByDriverId,
     editRiderByRiderId ,
     deleteRiderByRiderId,
     // addDriverBank,

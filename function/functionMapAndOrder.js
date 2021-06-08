@@ -166,7 +166,7 @@ funFindMachineNearest = async (address_id ) =>{
 funFindDriverNearest = async (dataOrderMachine,distanceFix) => {
     //dataOrderMachine ข้อมูลของ machine ที่ order นั้นอยู่
     //distanceFix ระยะทางค้นหา driver (km)
-
+    distanceFix = 10000
     distanceFix = distanceFix * 1000 ; // KM
     let driverAll  ;
     let driverNearestDistanceFix = [] ;
