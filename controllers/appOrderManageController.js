@@ -904,7 +904,7 @@ getOrderByDriverId= async (req ,res , next) => {
     
                         const element = result.rows[0];
                         distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
-                        // console.log(distance)
+                        //  
                         if(distance.status == 'NO')
                         {
                             statusMap = await false ;
@@ -952,6 +952,114 @@ getOrderByDriverId= async (req ,res , next) => {
                             //         }
                             //     }
                             // }
+                            res.status(resData.statusCode).json(resData);
+    
+                        }
+                        else {
+                            resData.status = "success"; 
+                            resData.statusCode = 200 ;
+                            resData.data = "google map error."
+                            res.status(resData.statusCode).json(resData);
+                        }
+                    }
+                    else
+                    {
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = "No Order"
+                        res.status(resData.statusCode).json(resData);
+                    
+                    }
+                   
+                   
+                }
+            }
+        );
+    }
+}
+
+getOrderByDriverIdCard= async (req ,res , next) => {
+    let data = req.query.id_card
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( driver_id )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT tb_order.id as order_id ,tb_order.order_number
+        , tb_rider.lat as lat1 , tb_rider.lon as lon1 
+        ,tb_machine_gas.lat as lat2 , tb_machine_gas.lon as lon2
+        ,tb_order."createDate" as create_date
+        ,tb_order."receiveDate" as receive_date
+        ,tb_gas_detail."name" as gas_type,tb_order_detail.quality as gas_quality,tb_gas_detail.price as gas_price
+        ,(tb_order_detail.quality*tb_gas_detail.price) as gas_price_all
+        FROM tb_order
+        LEFT JOIN tb_order_send_driver ON tb_order.id = tb_order_send_driver.order_id
+        LEFT JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+        LEFT JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id 
+        LEFT JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas."id"
+        LEFT JOIN tb_rider ON tb_rider.id = tb_order_send_driver.driver_id
+        WHERE tb_order_send_driver."status" = 1 AND tb_rider."idCard" = '${data}'`;
+        pool.query(
+            sql, 
+            async (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    //console.log(result.rows)
+                    if(result.rows.length > 0)
+                    {
+                       // console.log(1)
+                        let distance ;
+                        let statusMap = true ; 
+                        let arrResData = [] ;
+    
+                        let dataTemp = await result.rows;
+                        //delete dataTemp.create_date ;
+                        dataTemp = dataTemp.map(x => ({
+                            gas_type: x.gas_type,
+                            prices: x.gas_price,
+                            price_all: x.gas_price_all,
+                            quality: x.gas_quality
+    
+                        }));
+    
+                        const element = result.rows[0];
+                        distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
+                        //  
+                        if(distance.status == 'NO')
+                        {
+                            statusMap = await false ;
+                            // BreakException;
+                        }
+                         
+                        if(statusMap == true)
+                        {
+                            resData.status = "success"; 
+                            resData.statusCode = 201 ;
+                            resData.data = {
+                                order_id : result.rows[0].order_id,
+                                order_number: result.rows[0].order_number,
+                                create_date: moment(result.rows[0].create_date).format('YYYY-MM-DD H:mm:ss'),
+                                receive_date: (result.rows[0].receive_date != null)?moment(result.rows[0].receive_date).format('YYYY-MM-DD H:mm:ss'):"",
+                                order_list:await dataTemp,
+                                distance : await distance
+                            }
+                            
                             res.status(resData.statusCode).json(resData);
     
                         }
@@ -2173,6 +2281,7 @@ module.exports = {
     getOrderByOderId,
     addOrderUser,
     getOrderByDriverId,
+    getOrderByDriverIdCard,
     updateStatusOrderByOrderId,
     checkQRcodeForDriver,
     checkPwdFromMachineForReceive,

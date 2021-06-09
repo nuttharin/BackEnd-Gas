@@ -111,6 +111,7 @@ router.get('/get/orderUser/orderByOrderId',appOrderManageController.getOrderByOd
 //flow order
 router.post('/post/add/orderUser',appOrderManageController.addOrderUser);
 router.get('/get/orderUser', appOrderManageController.getOrderByDriverId);
+router.get('/get/orderUserByIdCard',appOrderManageController.getOrderByDriverIdCard);
 router.post('/post/update/status/order' , appOrderManageController.updateStatusOrderByOrderId);
 router.post('/post/order/checkQRcodeForDriver' , appOrderManageController.checkQRcodeForDriver);
 router.post('/post/order/checkPwdFromMachineForReceive' , appOrderManageController.checkPwdFromMachineForReceive);
