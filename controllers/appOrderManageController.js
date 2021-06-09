@@ -903,13 +903,13 @@ getOrderByDriverId= async (req ,res , next) => {
                         }));
     
                         const element = result.rows[0];
-                        //distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
-                        //console.log(distance)
-                        // if(distance.status == 'NO')
-                        // {
-                        //     statusMap = await false ;
-                        //     // BreakException;
-                        // }
+                        distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
+                        // console.log(distance)
+                        if(distance.status == 'NO')
+                        {
+                            statusMap = await false ;
+                            // BreakException;
+                        }
                          
                         if(statusMap == true)
                         {
