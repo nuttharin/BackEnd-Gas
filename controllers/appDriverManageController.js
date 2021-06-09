@@ -71,48 +71,6 @@ const uploadPicProfile = multer({
 
 //#region GET
 
-getRiderDetailById = (req ,res ,next) =>{
-
-    let userID = req.query.user_id ;
-
-    let sql = `SELECT tb_user.id , tb_user.name , tb_user.email , tb_user.phone from tb_user
-    LEFT JOIN tb_address_user on tb_address_user.user_id = tb_user.id
-    LEFT JOIN tb_province on tb_province.id = tb_address_user.province_id
-    LEFT JOIN tb_amphure on tb_amphure.id = tb_address_user.amphure_id
-    LEFT JOIN tb_district on tb_district.id = tb_address_user.district_id
-    WHERE tb_user.id = ${userID}`;
-    pool.query(
-        sql, 
-        (err, result) => {
-
-            if (err) {
-                //console.log(err);  
-                let data = {
-                    status : "error",
-                    statusCode : 200,
-
-                    data : err
-                }   
-                res.status(200).json(data)
-            }
-            else
-            {
-                let data = {
-                    status : "success",
-                    statusCode : 201,
-
-                    data : result.rows
-                }
-                res.status(201).json(data);
-            }
-        }
-    );
-};
-
-
-
-
-
 
 
 //#endregion
@@ -141,6 +99,46 @@ getDriverProfileById = async (req , res,next) =>{
     else {
         let sql = `SELECT id,name,email,phone FROM "public"."tb_rider"
                     WHERE id = ${data} `;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    resData.status = "success"; 
+                    resData.statusCode = 201 ;
+                    resData.data = result.rows ;
+                    res.status(resData.statusCode).json(resData);
+                }
+            }
+        );
+    }
+}
+
+getDriverByIdCard = async (req , res,next) =>{
+    let data = req.query.id_card
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( id_card )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT id,name,email,phone , "idCard" , CASE  WHEN "isApproved" = 1 THEN  'true'  ELSE  'false'  END as approve  
+        FROM "public"."tb_rider" WHERE tb_rider."idCard" = '${data}' `;
         pool.query(
             sql, 
             (err, result) => {
@@ -1102,6 +1100,7 @@ module.exports = {
     editPasswordDriverByDriverId,
     editRiderByRiderId ,
     deleteRiderByRiderId,
+    getDriverByIdCard ,
     // addDriverBank,
     // editDriverBank,
     // deleteDriverBank ,

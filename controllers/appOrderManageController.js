@@ -989,7 +989,7 @@ getOrderByDriverIdCard= async (req ,res , next) => {
     {
         resData.status = "error";
         resData.statusCode = 200 ;
-        resData.data = "not have parameter ( driver_id )";    
+        resData.data = "not have parameter ( id_card )";    
         res.status(200).json(resData);
     }   
     else {

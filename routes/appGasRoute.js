@@ -41,6 +41,7 @@ router.post('/post/refreshToken',RefreshToken)
 
 //===== User Management =====//
 router.get('/get/getUserDetailById',appUserManageController.getUserDetailById);
+router.get('/get/getUserByIdCard' ,appUserManageController.getUserByIdCard)
 
 router.post('/post/registerUser',appUserManageController.registerUser);
 router.post('/post/edit/user',appUserManageController.editUserByUserId);
@@ -66,6 +67,7 @@ router.post('/post/delete/userAddress',appUserManageController.deleteUserAddress
 
 
 router.get('/get/getDriverProfileById',appDriverManageController.getDriverProfileById);
+router.get('/get/getDriverByIdCard', appDriverManageController.getDriverByIdCard);
 
 router.post('/post/driver/statusActiveReceiveJobRider',appDriverManageController.statusActiveReceiveJobRider);
 router.post('/post/driver/statusInactiveReceiveJobRider',appDriverManageController.statusInactiveReceiveJobRider);
