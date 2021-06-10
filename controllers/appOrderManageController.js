@@ -911,10 +911,10 @@ getOrderByDriverId= async (req ,res , next) => {
                             statusMap = await false ;
                             // BreakException;
                         }
-                        dataTemp.destination_lat = element.lat2 ;
-                        dataTemp.destination_lon = element.lon2 ;
-                        dataTemp.origin_lat = element.lat1 ;
-                        dataTemp.origin_lon = element.lon1 ;
+                        distance.destination_lat = await element.lat2 ;
+                        distance.destination_lon = await element.lon2 ;
+                        distance.origin_lat = await element.lat1 ;
+                        distance.origin_lon = await element.lon1 ;
                         if(statusMap == true)
                         {
                             resData.status = "success"; 
