@@ -903,24 +903,28 @@ getOrderByDriverId= async (req ,res , next) => {
                         }));
     
                         const element = result.rows[0];
-                        distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 )
-                        //  
+                        // lat1 , lon1 is driver
+                        distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 ) ;
+                        
                         if(distance.status == 'NO')
                         {
                             statusMap = await false ;
                             // BreakException;
                         }
-                         
+                        dataTemp.destination_lat = element.lat2 ;
+                        dataTemp.destination_lon = element.lon2 ;
+                        dataTemp.origin_lat = element.lat1 ;
+                        dataTemp.origin_lon = element.lon1 ;
                         if(statusMap == true)
                         {
                             resData.status = "success"; 
                             resData.statusCode = 201 ;
                             resData.data = {
                                 order_id : result.rows[0].order_id,
-                                order_number: result.rows[0].order_number,
-                                create_date: moment(result.rows[0].create_date).format('YYYY-MM-DD H:mm:ss'),
-                                receive_date: (result.rows[0].receive_date != null)?moment(result.rows[0].receive_date).format('YYYY-MM-DD H:mm:ss'):"",
-                                order_list:await dataTemp,
+                                order_number : result.rows[0].order_number,
+                                create_date : moment(result.rows[0].create_date).format('YYYY-MM-DD H:mm:ss'),
+                                receive_date : (result.rows[0].receive_date != null) ? moment(result.rows[0].receive_date).format('YYYY-MM-DD H:mm:ss') : "",
+                                order_list : await dataTemp,
                                 distance : await distance
                             }
                             // resData.status = "success"; 
