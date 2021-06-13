@@ -1413,7 +1413,7 @@ checkPwdFromMachineForReceive = async (req , res , next) =>{
     }
     else 
     {
-        let sql = `SELECT tb_order.id as order_id , order_number FROM tb_order
+        let sql = `SELECT tb_order.id as order_id , order_number ,send_type FROM tb_order
                     LEFT JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
                     WHERE tb_order."pwdGasMachine" = '${data.password}' 
                     AND tb_machine_gas.machine_code = '${data.machine_code}' 
@@ -1539,7 +1539,7 @@ checkPwdFromMachineForReturn = async (req , res , next) =>{
     }
     else 
     {
-        let sql = `SELECT tb_order.id as order_id , order_number FROM tb_order
+        let sql = `SELECT tb_order.id as order_id , order_number ,send_type FROM tb_order
                     LEFT JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
                     WHERE tb_order."pwdGasMachine" = '${data.password}' 
                     AND tb_machine_gas.machine_code = '${data.machine_code}' 

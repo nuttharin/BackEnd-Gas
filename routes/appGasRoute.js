@@ -174,12 +174,15 @@ router.post('/post/fromMachine/update/quality/gasOut',machineManageController.up
 router.post('/post/machine/command/testSendCommandToMachine' , machineManageController.testSendCommandToMachine);
 
 
-router.post('/post/machine/command/testGasOut' , machineManageController.testGasOut);
-router.post('/post/machine/command/testGasIn' , machineManageController.testGasIn);
+router.post('/post/machine/command/sendCommandToMachineGasOut' , machineManageController.sendCommandToMachineGasOut);
+router.post('/post/machine/command/sendCommandToMachineGasIn' , machineManageController.sendCommandToMachineGasIn);
 
 
 router.get('/get/machine/getMachineCodeFromIP',machineManageController.getMachineCodeFromIP);
 
+router.post('/post/machine/command/testOut' , machineManageController.testGasOut);
+router.post('/post/machine/command/testIn' , machineManageController.testGasIn);
+router.post('/post/machine/command/testInOut' , machineManageController.testGasInOut);
 
 
 // =====  Bank  ===== //
