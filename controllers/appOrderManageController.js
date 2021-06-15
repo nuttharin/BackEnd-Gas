@@ -903,6 +903,7 @@ getOrderByDriverId= async (req ,res , next) => {
                         }));
     
                         const element = result.rows[0];
+                        statusMap = true
                         // lat1 , lon1 is driver
                         distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 ) ;
                         
@@ -930,7 +931,7 @@ getOrderByDriverId= async (req ,res , next) => {
                             // resData.status = "success"; 
                             // resData.statusCode = 201 ;
                             // resData.data = {
-                            //     "order_id": 62,
+                            //     "order_id": 64,
                             //     "order_number": "20210603814",
                             //     "create_date": "2021-06-03 8:13:56",
                             //     "receive_date": "",
@@ -953,7 +954,11 @@ getOrderByDriverId= async (req ,res , next) => {
                             //         "duration": {
                             //             "minute": "11 นาที",
                             //             "secound": 654
-                            //         }
+                            //         },
+                            //         "destination_lat": "13.860396",
+                            //         "destination_lon": "100.513604",
+                            //         "origin_lat": "13.860396",
+                            //         "origin_lon": "100.523500"
                             //     }
                             // }
                             res.status(resData.statusCode).json(resData);
