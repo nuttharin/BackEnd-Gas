@@ -858,8 +858,8 @@ getOrderByDriverId= async (req ,res , next) => {
     }   
     else {
         let sql = `SELECT tb_order.id as order_id ,tb_order.order_number
-        , tb_rider.lat as lat1 , tb_rider.lon as lon1 
-        ,tb_machine_gas.lat as lat2 , tb_machine_gas.lon as lon2
+        ,tb_address_user.latitude as lat2 , tb_address_user.longitude as lon2
+        ,tb_machine_gas.lat as lat1 , tb_machine_gas.lon as lon1
         ,tb_order."createDate" as create_date
         ,tb_order."receiveDate" as receive_date
         ,tb_gas_detail."name" as gas_type,tb_order_detail.quality as gas_quality,tb_gas_detail.price as gas_price
@@ -870,6 +870,7 @@ getOrderByDriverId= async (req ,res , next) => {
         LEFT JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id 
         LEFT JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas."id"
         LEFT JOIN tb_rider ON tb_rider.id = tb_order_send_driver.driver_id
+        LEFT JOIN tb_address_user ON tb_order.address_id = tb_address_user."id"
         WHERE tb_order_send_driver."status" = 1 AND tb_order_send_driver.driver_id = ${data}`;
         pool.query(
             sql, 
@@ -904,7 +905,8 @@ getOrderByDriverId= async (req ,res , next) => {
     
                         const element = result.rows[0];
                         statusMap = true
-                        // lat1 , lon1 is driver
+                        // lat1 , lon1 is macchine
+                        // lat 2 lon 2 is user_address
                         distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 ) ;
                         
                         if(distance.status == 'NO')

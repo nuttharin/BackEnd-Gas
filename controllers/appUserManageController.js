@@ -34,7 +34,8 @@ const storageProfile = multer.diskStorage({
         //console.log(file.mimetype.split('/')[1])
         return cb(null,`${Date.now()}_picProfile.${file.mimetype.split('/')[1]}`);
     }
-}); 
+});
+ 
 const uploadPicProfile = multer({
     storage : storageProfile ,
     limits : {
@@ -612,45 +613,45 @@ editPasswordUserByUserId = async (req , res , next) =>{
     }
 }
 
-getUserByIdCard = async (req , res,next) =>{
-    let data = req.query.id_card
-    let resData = {
-        status : "",
-        statusCode : 200 ,
-        data : ""
-    }
-    if(data == "" || data == null)
-    {
-        resData.status = "error";
-        resData.statusCode = 200 ;
-        resData.data = "not have parameter ( id_card )";    
-        res.status(200).json(resData);
-    }   
-    else {
-        let sql = `SELECT id,name , email,phone , "idCard" , CASE  WHEN "isApproved" = 1 THEN  'true'  ELSE  'false'  END as approve 
-         FROM "public"."tb_user" WHERE tb_user."idCard" =  '${data}' `;
-        pool.query(
-            sql, 
-            (err, result) => {
+// getUserByIdCard = async (req , res,next) =>{
+//     let data = req.query.id_card
+//     let resData = {
+//         status : "",
+//         statusCode : 200 ,
+//         data : ""
+//     }
+//     if(data == "" || data == null)
+//     {
+//         resData.status = "error";
+//         resData.statusCode = 200 ;
+//         resData.data = "not have parameter ( id_card )";    
+//         res.status(200).json(resData);
+//     }   
+//     else {
+//         let sql = `SELECT id,name , email,phone , "idCard" , CASE  WHEN "isApproved" = 1 THEN  'true'  ELSE  'false'  END as approve 
+//          FROM "public"."tb_user" WHERE tb_user."idCard" =  '${data}' `;
+//         pool.query(
+//             sql, 
+//             (err, result) => {
 
-                if (err) {
-                    //console.log(err); 
-                    resData.status = "error"; 
-                    resData.statusCode = 200 ;
-                    resData.data = err ;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else
-                {    
-                    resData.status = "success"; 
-                    resData.statusCode = 201 ;
-                    resData.data = result.rows ;
-                    res.status(resData.statusCode).json(resData);
-                }
-            }
-        );
-    }
-}
+//                 if (err) {
+//                     //console.log(err); 
+//                     resData.status = "error"; 
+//                     resData.statusCode = 200 ;
+//                     resData.data = err ;
+//                     res.status(resData.statusCode).json(resData)
+//                 }
+//                 else
+//                 {    
+//                     resData.status = "success"; 
+//                     resData.statusCode = 201 ;
+//                     resData.data = result.rows ;
+//                     res.status(resData.statusCode).json(resData);
+//                 }
+//             }
+//         );
+//     }
+// }
 
 //#region  user Address
 

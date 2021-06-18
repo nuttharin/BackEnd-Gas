@@ -38,7 +38,7 @@ test1 = async (req ,res ,nex) =>{
     res.json(data)
 }
 
-registerMachince = () =>{
+registerMachince = () => {
     
 }
 
