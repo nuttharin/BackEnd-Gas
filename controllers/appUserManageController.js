@@ -72,7 +72,7 @@ const uploadPicProfile = multer({
 // LEFT JOIN tb_district on tb_district.id = tb_address_user.district_id
 // WHERE tb_user.id = 1
 
-// User
+// User App
 getUserDetailById = (req ,res ,next) =>{
 
     let userID = req.query.user_id ;
@@ -230,7 +230,6 @@ userLogin = async (req , res , next) =>{
         }
     );
 };
-
 
 registerUser = async (req , res , next) =>{ 
     //console.log(req.body);
@@ -613,49 +612,8 @@ editPasswordUserByUserId = async (req , res , next) =>{
     }
 }
 
-// getUserByIdCard = async (req , res,next) =>{
-//     let data = req.query.id_card
-//     let resData = {
-//         status : "",
-//         statusCode : 200 ,
-//         data : ""
-//     }
-//     if(data == "" || data == null)
-//     {
-//         resData.status = "error";
-//         resData.statusCode = 200 ;
-//         resData.data = "not have parameter ( id_card )";    
-//         res.status(200).json(resData);
-//     }   
-//     else {
-//         let sql = `SELECT id,name , email,phone , "idCard" , CASE  WHEN "isApproved" = 1 THEN  'true'  ELSE  'false'  END as approve 
-//          FROM "public"."tb_user" WHERE tb_user."idCard" =  '${data}' `;
-//         pool.query(
-//             sql, 
-//             (err, result) => {
-
-//                 if (err) {
-//                     //console.log(err); 
-//                     resData.status = "error"; 
-//                     resData.statusCode = 200 ;
-//                     resData.data = err ;
-//                     res.status(resData.statusCode).json(resData)
-//                 }
-//                 else
-//                 {    
-//                     resData.status = "success"; 
-//                     resData.statusCode = 201 ;
-//                     resData.data = result.rows ;
-//                     res.status(resData.statusCode).json(resData);
-//                 }
-//             }
-//         );
-//     }
-// }
-
 //#region  user Address
 
-// User Address
 addUserAddress = async (req , res , next) => {
     let dataBody = req.body ; 
     let dataAddress = new PositionUserId();
@@ -901,9 +859,112 @@ getUserAddressByAddressId = (req ,res ,next) =>{
         }
     );
 };
+//#endregion
 
+
+
+//#region  user machine
+
+//INSERT INTO "public"."tb_user_machine"("name", "password", "idCard", "email", "phone", "createDate", "type", "isDelete", "isApproved") VALUES ('owner2', '111111', '1111111111111', 'nut2@hotmail.com', '0812318897', '2021-06-18 15:41:52', '0', 0, 1) RETURNING *
+//console.log(req.body);
+
+registerUserMachine = async (req ,res ,next) => {
+    
+    let resData = {
+        status : "",
+        statusCode : "",
+        data : ""
+    };    
+    let dataBody = req.body ;
+    let dataUser = new User();
+    console.log( req.body)
+    //let dataAddress = new Position();
+    dataUser.name = dataBody.name ;
+    dataUser.password = dataBody.password ;
+    dataUser.idCard = dataBody.idCard ;
+    dataUser.email = dataBody.email;
+    dataUser.phone = dataBody.phone;         
+    dataUser.type = dataBody.type;
+    dataUser.createDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');
+    dataUser.modifyDate = moment(new Date()).format('YYYY-MM-DD H:mm:ss');   
+
+    let checkParameter = await funCheckParameterWithOutId(dataUser);
+    
+    if(checkParameter != "" )
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        res.status(200).json(resData);
+    }
+    else
+    {       
+        let sql = `SELECT * FROM tb_user_machine
+        WHERE tb_user_machine.email = '${dataUser.email}'`;
+        pool.query(
+            sql, 
+            async (err, result) => {
+                //console.log(err)
+                if (err) {
+                    resData.status = "error";
+                    resData.statusCode = 200 ;
+                    resData.data = "query command error : " +err;
+                    res.status(200).json(resData);
+                }
+                else
+                {
+                    //console.log(result.rows)
+                    if(result.rows.length > 0){
+                        resData.status = "error";
+                        resData.statusCode = 200 ;
+                        resData.data = "Duplicate username";
+                        res.status(200).json(resData);
+                    }
+                    else
+                    {
+                        dataUser.password = await bcrypt.hash(dataBody.password , parseInt(saltRounds));
+
+                        sql = `INSERT INTO "public"."tb_user_machine"("name", "password", "idCard", "email", "phone", "createDate", "type", "isDelete", "isApproved") 
+                        VALUES ('${dataUser.name}', '${dataUser.password}', '${dataUser.idCard}', '${dataUser.email}', '${dataUser.phone}', '${dataUser.createDate}', '${dataUser.type}', 0, 0) RETURNING *`;
+                        // console.log(sql)
+                        pool.query(
+                            sql, 
+                            async (err, result) => 
+                            {
+                                //console.log(err)
+                                if (err) {
+                                    //console.log(err);                      
+                                    resData.status = "error";
+                                    resData.statusCode = 200 ;
+
+                                    resData.data = "query command error tb_user: " + err;
+                                    res.status(400).json(resData);
+                                }
+                                else
+                                {
+                                    resData.status = "success";
+                                    resData.statusCode = 201 ;
+                                    resData.data = "insert complete";
+                                    res.status(201).json(resData);  
+                                }
+                            }
+                        );
+                    }                        
+                
+                }
+            }
+        );  
+        
+    }
+
+}
 
 //#endregion
+
+
+
+
 
 
 //#region  user Address
@@ -963,6 +1024,7 @@ registerMachine = async (req ,res ,next) => {
     }
 
 }
+
 //#endregion
 
 
@@ -1013,5 +1075,6 @@ module.exports = {
     editUserAddress,
     deleteUserAddress,
     userLogin,
-    editUserPicProfileByUserId
+    editUserPicProfileByUserId,
+    registerUserMachine
 }; 

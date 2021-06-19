@@ -38,9 +38,6 @@ test1 = async (req ,res ,nex) =>{
     res.json(data)
 }
 
-registerMachince = () => {
-    
-}
 
 updateStatusReceiveGas = (req ,res , next) =>{
     // UPDATE "public"."tb_order_detail" SET "statusReceive" = 1 WHERE "id" = 25
@@ -487,6 +484,45 @@ getMachineCodeFromIP = (req ,res , next) =>{
 // ========== end =========== //
 
 
+registerMachince = () => {
+    let dataBody = req.body ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    } ;
+    if(checkParameter != "" ) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( "+ checkParameter +" )";    
+        res.status(200).json(resData);
+    }
+    else{   
+        let sql = ``;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "insert complete";
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
+}
 
 
 
