@@ -885,7 +885,7 @@ getOrderByDriverId= async (req ,res , next) => {
                 }
                 else
                 {    
-                    console.log(result.rows[0])
+                    //console.log(result.rows[0])
                     if(result.rows.length > 0)
                     {
                        // console.log(1)
@@ -908,7 +908,7 @@ getOrderByDriverId= async (req ,res , next) => {
                         // lat1 , lon1 is macchine
                         // lat 2 lon 2 is user_address
                         distance = await findDistanceMatrix(element.lat1+","+element.lon1 ,element.lat2+","+element.lon2 ) ;
-                        console.log(distance)                        
+                        //console.log(distance)                        
                         if(distance.status == 'NO')
                         {
                             statusMap = await false ;
@@ -918,7 +918,7 @@ getOrderByDriverId= async (req ,res , next) => {
                         distance.destination_lon = await element.lon2 ;
                         distance.origin_lat = await element.lat1 ;
                         distance.origin_lon = await element.lon1 ;
-                        console.log(distance)
+                        //console.log(distance)
                         if(statusMap == true)
                         {
                             resData.status = "success"; 

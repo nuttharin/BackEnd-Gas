@@ -23,7 +23,7 @@ const {verifyAccessToken , RefreshToken} = require('../controllers/appTokenManag
 // router.get('/get/getOrderGasById',appGasController.getOrderGasById);
 
 //===== General ===== //
-router.get('/get/province',verifyAccessToken,appGeneralController.getProvince);
+router.get('/get/province',appGeneralController.getProvince);
 router.get('/get/amphure',appGeneralController.getAmphure) ;
 router.get('/get/district',appGeneralController.getDistrict);
 router.get('/get/bankAll',appGeneralController.getBankAll);
