@@ -1180,10 +1180,50 @@ updateStatusOrderByOrderId = async (req ,res , next) => {
                     }
                 }
             );
-        }       
-                
+        }      
     }
+}
 
+updateStatusOrderByMachine = async (req,res,next) => {
+    let data = req.body ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    };
+    if(!data) 
+    {
+        //console.log(checkParameter)       
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( order_id or status )";    
+        res.status(200).json(resData);
+    }
+    else
+    {
+        sql = `UPDATE "public"."tb_order" SET "status" = ${data.status} WHERE "id" = ${data.order_id};`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = "error update tb_order " + err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    //console.log("2")
+                    resData.status = "success";
+                    resData.statusCode = 201 ;
+                    resData.data = "update complete";
+                    res.status(201).json(resData);
+                }
+            }
+        );
+    }
 }
 
 cancalOrderUser = (req, res, next) => {
@@ -1421,12 +1461,15 @@ checkPwdFromMachineForReceive = async (req , res , next) =>{
     }
     else 
     {
-        let sql = `SELECT tb_order.id as order_id , order_number ,send_type FROM tb_order
+        let sql = `SELECT tb_order.id as order_id , machine_id ,order_number ,send_type , quality , tb_order.status as statusOrder,"statusReceive" , "qualityReceive"
+                    FROM tb_order
                     LEFT JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
-                    WHERE tb_order."pwdGasMachine" = '${data.password}' 
-                    AND tb_machine_gas.machine_code = '${data.machine_code}' 
-                    AND CURRENT_DATE = DATE(tb_order."driverReceiveDate")
-                    AND rider_id IS NOT NULL AND machine_id IS NOT NULL`;
+                    LEFT JOIN tb_order_detail ON tb_order."id" = tb_order_detail.order_id
+                    WHERE 
+                    CURRENT_DATE = DATE(tb_order."driverReceiveDate")
+                    AND rider_id IS NOT NULL AND machine_id IS NOT NULL
+                    AND tb_order."pwdGasMachine" = '${data.password}' 
+                    AND tb_machine_gas.machine_code = '${data.machine_code}'`;
         pool.query(
             sql, 
             async (err, result) => {
@@ -1547,12 +1590,15 @@ checkPwdFromMachineForReturn = async (req , res , next) =>{
     }
     else 
     {
-        let sql = `SELECT tb_order.id as order_id , order_number ,send_type FROM tb_order
+        let sql = `SELECT tb_order.id as order_id , machine_id ,order_number ,send_type , quality , tb_order.status as statusOrder,"statusReceive" , "qualityReceive"
+                    FROM tb_order
                     LEFT JOIN tb_machine_gas ON tb_order.machine_id = tb_machine_gas.id
-                    WHERE tb_order."pwdGasMachine" = '${data.password}' 
-                    AND tb_machine_gas.machine_code = '${data.machine_code}' 
-                    AND CURRENT_DATE = DATE(tb_order."driverReceiveDate")
-                    AND rider_id IS NOT NULL AND machine_id IS NOT NULL`;
+                    LEFT JOIN tb_order_detail ON tb_order."id" = tb_order_detail.order_id
+                    WHERE 
+                    CURRENT_DATE = DATE(tb_order."driverReceiveDate")
+                    AND rider_id IS NOT NULL AND machine_id IS NOT NULL
+                    AND tb_order."pwdGasMachine" = '${data.password}' 
+                    AND tb_machine_gas.machine_code = '${data.machine_code}'`;
         pool.query(
             sql, 
             async (err, result) => {

@@ -68,6 +68,14 @@ app.get('/',(req , res , next) =>{  // path /
 
 })
 
+app.post('/' ,(req ,res ,next) => {
+    console.log(req.body.status)
+    console.log('post /')
+    res.status(200).json({
+        message : 'POST root /'
+    })
+})
+
 app.get('/testmap',async (req , res , next) =>{  // path /
     let urlGoogleMap = process.env.GOOGLE_MAP_URL ;
     let key = process.env.GOOGLE_MAP_KEY

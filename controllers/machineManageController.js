@@ -4,6 +4,7 @@ const { BankDriver ,BankDriverData,PositionDriver} = require("../model/driverMod
 const {funCheckParameterWithOutId,funCheckParameter} =  require('../function/function');
 const { generateToken , generateRefreshToken} = require('../controllers/appTokenManageController');
 const axios = require('axios');
+const { registerMachine } = require("../model/machineModel");
 const apiPath = {
     gasOut : "",
     gasIn : ""
@@ -485,7 +486,8 @@ getMachineCodeFromIP = (req ,res , next) =>{
 
 
 registerMachince = () => {
-    let dataBody = req.body ;
+    let dataBody = new registerMachine();
+    
     let resData = {
         status : "",
         statusCode : 200 ,
@@ -901,6 +903,7 @@ testGasOut = async (req,res,next) => {
         {
             command_str_0 :0,
             command_str_1 :0,
+            order_id : 51
         }
     )
     .then(function (response) {
@@ -945,6 +948,7 @@ testGasIn = async (req,res,next) => {
         {
             command_str_0 :0 ,
             command_str_1 :1 ,
+            order_id : 51
         }
     )
     .then(function (response) {

@@ -798,7 +798,7 @@ getUserAddressByUserId = (req ,res ,next) =>{
             LEFT JOIN tb_provinces as tbP on tbP.id = tbAdd.province_id
             LEFT JOIN tb_districts as tbA on tbA.id = tbAdd.amphure_id
             LEFT JOIN tb_subdistricts as tbD on tbD.id = tbAdd.district_id
-            WHERE  tbAdd.user_id = ${userID} AND tbAdd."isDelete" = 1` ;
+            WHERE  tbAdd.user_id = ${userID} AND tbAdd."isDelete" = 0` ;
     pool.query(
         sql, 
         (err, result) => {
@@ -837,7 +837,7 @@ getUserAddressByAddressId = (req ,res ,next) =>{
                 LEFT JOIN tb_provinces as tbP on tbP.id = tbAdd.province_id
                 LEFT JOIN tb_districts as tbA on tbA.id = tbAdd.amphure_id
                 LEFT JOIN tb_subdistricts as tbD on tbD.id = tbAdd.district_id
-                WHERE tbAdd.id  = ${addressID} AND tbAdd."isDelete" = 1` ;
+                WHERE tbAdd.id  = ${addressID} AND tbAdd."isDelete" = 0` ;
     pool.query(
         sql, 
         (err, result) => {
