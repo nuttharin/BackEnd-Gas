@@ -22,10 +22,12 @@ findDistanceMatrix = async (posit1 , posit2) =>{
     position2 =  posit2
     let myPromise = new Promise( async (myResolve, myReject) => {
         let urlDistanceMatrix = `distancematrix/json?origins=${position1}&destinations=side_of_road:${position2}&language=th&key=${key}`;
+        console.log(urlDistanceMatrix)
         await axios.get(urlGoogleMap + urlDistanceMatrix)
         .then( async (response) => {
             // handle success
-            //console.log(response.data);
+            console.log(response.data);
+            console.log(response.data.rows[0]);
             if(response.data.status == "OK")
             {
                 let elements = response.data.rows[0].elements[0] ;
