@@ -31,26 +31,34 @@ findDistanceMatrix = async (posit1 , posit2) =>{
             if(response.data.status == "OK")
             {
                 let elements = response.data.rows[0].elements[0] ;
-                let finalData =  {
-                    status : "OK" ,
-                    destination_addresses : response.data.destination_addresses[0] ,
-                    origin_addresses : response.data.origin_addresses[0] ,
-                    distance : {
-                        kilometer : elements.distance.text ,
-                        meter :elements.distance.value
-                    },
-                    duration : {
-                        minute : elements.duration.text ,
-                        secound :elements.duration.value
-                    },
+
+                if(elements.status == "OK" )
+                {
+                    let finalData =  {
+                        status : "OK" ,
+                        destination_addresses : response.data.destination_addresses[0] ,
+                        origin_addresses : response.data.origin_addresses[0] ,
+                        distance : {
+                            kilometer : elements.distance.text ,
+                            meter :elements.distance.value
+                        },
+                        duration : {
+                            minute : elements.duration.text ,
+                            secound :elements.duration.value
+                        },
+                    }
+                    returnData = await finalData ;
+                    //returnData.distance =  ;                
+                    //return returnData ;
+                    myResolve(returnData); 
                 }
-
-                returnData = await finalData ;
-                //returnData.distance =  ;
-            
-                //return returnData ;
-                myResolve(returnData);   
-
+                else
+                {
+                    returnData.status = "NO" ;
+                    //return returnData ;
+                    myResolve(returnData);   
+    
+                }      
             }
             else
             {
