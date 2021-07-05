@@ -1099,15 +1099,7 @@ getOrderByDriverIdCard = async (req ,res , next) => {
 }
 
 getOrderHistoryByDriverId = async (req ,res , next) => {
-    // SELECT tb_order."id" , tb_order."createDate" , send_type , tb_payment_channel."name"  as payment
-    // , tb_order_detail.quality , tb_gas_detail."name"  as gas_type , tb_order_status."name"
-    // FROM tb_order
-    // LEFT JOIN tb_order_status ON tb_order.status = tb_order_status."id"
-    // LEFT JOIN tb_payment_channel ON tb_order.payment_id = tb_payment_channel."id"
-    // LEFT JOIN tb_order_detail ON tb_order.id = tb_order_detail.order_id
-    // LEFT JOIN tb_gas_detail ON tb_order_detail.gas_id = tb_gas_detail."id"
-
-    // WHERE tb_order.rider_id = 6
+    
     let data = req.query.driver_id ;
     if(data == null || data == "")
     {
@@ -1119,8 +1111,8 @@ getOrderHistoryByDriverId = async (req ,res , next) => {
     }
     else
     {
-        let sql = `SELECT tb_order."id" as order_id , tb_order."createDate" , send_type , tb_payment_channel."name"  as payment
-        , tb_order_detail.quality , tb_gas_detail."name"  as gas_type , tb_order_status."name"
+        let sql = `SELECT tb_order."id" ,order_number, tb_order."createDate" , send_type ,
+        tb_payment_channel."name"  as payment , tb_order_detail.quality , tb_gas_detail."name" as gas_type ,tb_order.priceall, tb_order_status."name"
         FROM tb_order
         LEFT JOIN tb_order_status ON tb_order.status = tb_order_status."id"
         LEFT JOIN tb_payment_channel ON tb_order.payment_id = tb_payment_channel."id"
