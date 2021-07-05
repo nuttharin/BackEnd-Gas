@@ -765,6 +765,8 @@ sendCommandToMachineGasIn  = async (req,res,next) =>{
         statusCode : 200 ,
         data : ""
     }
+
+    let data = req.body ;
     //192.168.0.114
     await axios.post(
         `${ipPLC}:5000/machine/command/gasIn`,

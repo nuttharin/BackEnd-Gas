@@ -108,6 +108,7 @@ router.post('/post/delete/cart',appOrderManageController.deleteOrderInCartById);
 router.get('/get/orderUser/orderByUserId',appOrderManageController.getOrderByUserId);
 router.get('/get/orderUser/orderHistoryAllByUserId',appOrderManageController.getOrderHistoryAllByUserId);
 router.get('/get/orderUser/orderByOrderId',appOrderManageController.getOrderByOderId);
+router.get('/get/orderDriver/getOrderHistoryByDriverId',appOrderManageController.getOrderHistoryByDriverId)
 
 
 //flow order

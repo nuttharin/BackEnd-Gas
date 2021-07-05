@@ -842,7 +842,7 @@ addOrderUser2 = async (req, res, next) => {
     }
 }
 
-getOrderByDriverId= async (req ,res , next) => {
+getOrderByDriverId = async (req ,res , next) => {
     let data = req.query.driver_id
     let resData = {
         status : "",
@@ -990,7 +990,7 @@ getOrderByDriverId= async (req ,res , next) => {
     }
 }
 
-getOrderByDriverIdCard= async (req ,res , next) => {
+getOrderByDriverIdCard = async (req ,res , next) => {
     let data = req.query.id_card
     let resData = {
         status : "",
@@ -1096,6 +1096,62 @@ getOrderByDriverIdCard= async (req ,res , next) => {
             }
         );
     }
+}
+
+getOrderHistoryByDriverId = async (req ,res , next) => {
+    // SELECT tb_order."id" , tb_order."createDate" , send_type , tb_payment_channel."name"  as payment
+    // , tb_order_detail.quality , tb_gas_detail."name"  as gas_type , tb_order_status."name"
+    // FROM tb_order
+    // LEFT JOIN tb_order_status ON tb_order.status = tb_order_status."id"
+    // LEFT JOIN tb_payment_channel ON tb_order.payment_id = tb_payment_channel."id"
+    // LEFT JOIN tb_order_detail ON tb_order.id = tb_order_detail.order_id
+    // LEFT JOIN tb_gas_detail ON tb_order_detail.gas_id = tb_gas_detail."id"
+
+    // WHERE tb_order.rider_id = 6
+    let data = req.query.driver_id ;
+    if(data == null || data == "")
+    {
+        let data = {
+            status : "error",
+            data : "not have parameter driver_id"
+        }   
+        res.status(400).json(data)
+    }
+    else
+    {
+        let sql = `SELECT tb_order."id" as order_id , tb_order."createDate" , send_type , tb_payment_channel."name"  as payment
+        , tb_order_detail.quality , tb_gas_detail."name"  as gas_type , tb_order_status."name"
+        FROM tb_order
+        LEFT JOIN tb_order_status ON tb_order.status = tb_order_status."id"
+        LEFT JOIN tb_payment_channel ON tb_order.payment_id = tb_payment_channel."id"
+        LEFT JOIN tb_order_detail ON tb_order.id = tb_order_detail.order_id
+        LEFT JOIN tb_gas_detail ON tb_order_detail.gas_id = tb_gas_detail."id"  
+        WHERE tb_order.rider_id = ${data} `;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    console.log(sql)
+                    console.log(err);  
+                    let data = {
+                        status : "error",
+                        data : "query command error"
+                    }   
+                    res.status(400).json(data);
+                }
+                else
+                {
+                    let data = {
+                        status : "success",
+                        data : result.rows
+                    }
+                    res.status(200).json(data);
+                }
+            }
+        );
+    }
+    
 }
 
 updateStatusOrderUserByOrderId = async (req ,res , next) => {
@@ -2337,6 +2393,7 @@ module.exports = {
     getOrderByUserId,
     getOrderHistoryAllByUserId,
     getOrderByOderId,
+    getOrderHistoryByDriverId,
     addOrderUser,
     getOrderByDriverId,
     getOrderByDriverIdCard,
