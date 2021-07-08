@@ -365,6 +365,157 @@ registerUser = async (req , res , next) =>{
 
 };
 
+checkRegisterUserEmail = async (req , res , next) =>{
+    let data = req.body.email ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( email )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT * FROM tb_user
+        WHERE tb_user.email = '${data}'`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    if(result.rows.length > 0)
+                    {
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = false ;
+                        res.status(resData.statusCode).json(resData);
+                    }
+                    else {
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = true ;
+                        res.status(resData.statusCode).json(resData);
+                    }
+                    
+                }
+            }
+        );
+    }
+
+};
+
+checkRegisterUserIdcard= async (req , res , next) =>{
+    let data = req.body.idCard ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( idCard )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT * FROM tb_user
+        WHERE tb_user."idCard" = '${data}'`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    if(result.rows.length > 0)
+                    {
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = false ;
+                        res.status(resData.statusCode).json(resData);
+                    }
+                    else {
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = true ;
+                        res.status(resData.statusCode).json(resData);
+                    }
+                }
+            }
+        );
+    }
+
+};
+
+checkRegisterUserPhone= async (req , res , next) =>{
+    let data = req.body.phone ;
+    let resData = {
+        status : "",
+        statusCode : 200 ,
+        data : ""
+    }
+    if(data == "" || data == null)
+    {
+        resData.status = "error";
+        resData.statusCode = 200 ;
+        resData.data = "not have parameter ( phone )";    
+        res.status(200).json(resData);
+    }   
+    else {
+        let sql = `SELECT * FROM tb_user
+        WHERE tb_user.phone = '${phone}'`;
+        pool.query(
+            sql, 
+            (err, result) => {
+
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error"; 
+                    resData.statusCode = 200 ;
+                    resData.data = err ;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else
+                {    
+                    if(result.rows.length > 0)
+                    {
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = false ;
+                        res.status(resData.statusCode).json(resData);
+                    }
+                    else {
+                        resData.status = "success"; 
+                        resData.statusCode = 201 ;
+                        resData.data = true ;
+                        res.status(resData.statusCode).json(resData);
+                    }
+                    
+                }
+            }
+        );
+    }
+
+};
 
 //UPDATE "public"."tb_user" SET "isApproved" = 1 WHERE "id" = 16
 ApprovedUser =(req ,res,next) => {
@@ -1068,6 +1219,9 @@ module.exports = {
     getUserAddressByAddressId,
     getUserByIdCard,
     registerUser,
+    checkRegisterUserEmail,
+    checkRegisterUserIdcard,
+    checkRegisterUserPhone,
     editUserByUserId,
     editPasswordUserByUserId,
     deleteUserByUserId,
