@@ -45,7 +45,7 @@ router.get('/get/getUserByIdCard' ,appUserManageController.getUserByIdCard)
 
 router.post('/post/registerUser',appUserManageController.registerUser);
 router.post('/post/user/checkRegisterUserEmail',appUserManageController.checkRegisterUserEmail);
-router.post('/post/user/checkRegisterUserIdcard',appUserManageController.checkRegisterUserIdcard);
+router.post('/post/user/checkRegisterUserIdCard',appUserManageController.checkRegisterUserIdcard);
 router.post('/post/user/checkRegisterUserPhone',appUserManageController.checkRegisterUserPhone);
 router.post('/post/edit/user',appUserManageController.editUserByUserId);
 router.post('/post/delete/user',appUserManageController.deleteUserByUserId);
