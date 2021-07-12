@@ -191,8 +191,11 @@ userLogin = async (req , res , next) =>{
                     let match = await bcrypt.compare(dataBody.password, result.rows[0].password);
                     if(match) 
                     {
+                        
                         //console.log(result.rows)
-                        dataUser = result.rows[0];
+                        dataUser = result.rows[0];  
+                        dataUser.urlPictureProfile  = (dataUser.urlPictureProfile != null && dataUser.urlPictureProfile != "" ) ? await process.env.IP_ADDRESS +  dataUser.urlPictureProfile : "";                                   
+                        delete dataUser.urlPicture ;                       
                         delete dataUser.password ;
                         let dataGen = {
                             username :dataUser.email ,
@@ -621,9 +624,11 @@ editUserPicProfileByUserId = async (req , res , next) =>{
         data : ""
     }   
     uploadPicProfile(req, res,async function (err) {
-        //console.log(req.files);
+        //console.log(req)
+        console.log(req.files.picProfile);
         console.log(req.body.user_id)
-        let pathUpload =  process.env.IP_ADDRESS+'/pictureProfile/'
+        // let pathUpload =  process.env.IP_ADDRESS+'/pictureProfile/'
+        let pathUpload = '/pictureProfile/'
         let pathUploadPic = {
             profile : pathUpload + req.files.picProfile[0].filename
         };

@@ -49,7 +49,7 @@ router.post('/post/user/checkRegisterUserIdCard',appUserManageController.checkRe
 router.post('/post/user/checkRegisterUserPhone',appUserManageController.checkRegisterUserPhone);
 router.post('/post/edit/user',appUserManageController.editUserByUserId);
 router.post('/post/delete/user',appUserManageController.deleteUserByUserId);
-router.post('/post/edit/user/profile',appUserManageController.editUserPicProfileByUserId);
+router.post('/post/edit/user/pictureProfile',appUserManageController.editUserPicProfileByUserId);
 router.post('/post/edit/user/password',appUserManageController.editPasswordUserByUserId) ;
 
 
