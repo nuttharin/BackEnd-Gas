@@ -198,6 +198,9 @@ driverLogin = async (req , res,next) =>{
                     if(match) 
                     {
                         dataUser = result.rows[0];
+                        dataUser.urlPictureProfile  = (dataUser.urlPictureProfile != null && dataUser.urlPictureProfile != "" ) ? await process.env.IP_ADDRESS +  dataUser.urlPictureProfile : "";                                   
+
+                        delete dataUser.urlPicture ;
                         delete dataUser.password ;
                         let dataGen = {
                             username :dataUser.email ,
