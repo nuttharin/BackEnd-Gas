@@ -427,24 +427,201 @@ getOrderByOderId = async (req, res, next) => {
         pool.query(
             sql,
             async (err, result) => {
-                if (err) {
+                console.log(result.rows)
+                if (err) 
+                {
                     //console.log(err); 
+                    console.log(1)
                     resData.status = "error";
                     resData.statusCode = 200;
                     resData.data = err;
                     res.status(resData.statusCode).json(resData)
                 }
-                else {
+                else 
+                {
+                    console.log(2)
+                    let dataTemp; 
+                    let resultList ;
                     if(result.rows.length > 0)
                     {
-                        if(result.rows[0].rider_id){
-                                
-                        }
-                        else{
+                        console.log(3)
+                        if(result.rows[0].rider_id == null)
+                        {
+                            console.log(4)
+                            sql = `SELECT order_number , tb_order."createDate" as create_date,
+                                    tb_order."receiveDate" as receive_date,
+                                    tb_order."paymentDate" as payment_date,
+                                    tb_order."sendDate" as send_date,
+                                    tb_address_user.other as address_other,
+                                    tb_address_user.road as address_road,
+                                    tb_subdistricts.name_th as subdis_name,
+                                    tb_districts.name_th as dis_name,
+                                    tb_provinces.name_th as provice_name,
+                                    tb_subdistricts.zip_code as zip_code,
+                                    tb_address_user.name_address,
+                                    tb_gas_detail."name" as gas_type,
+                                    tb_order_detail.quality as gas_quality,
+                                    tb_gas_detail.price as gas_price,
+                                    (tb_order_detail.quality*tb_gas_detail.price) as gas_price_all
+                                    FROM tb_order
+                                    INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+                                    INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id 
+                                    INNER JOIN tb_payment_channel ON tb_payment_channel."id" = tb_order.payment_id
+                                    INNER JOIN tb_order_status ON tb_order_status."id" = tb_order.status
+                                    INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
+                                    INNER JOIN tb_provinces ON tb_provinces."id" = tb_address_user.province_id
+                                    INNER JOIN tb_districts ON tb_districts."id" = tb_address_user.amphure_id
+                                    INNER JOIN tb_subdistricts ON tb_subdistricts."id" = tb_address_user.district_id
+                                    WHERE tb_order."id" = ${data}`;
 
+                            pool.query(
+                                sql,
+                                async (err, result) => {
+                                    console.log(result.rows)
+                                    if (err) {
+                                        //console.log(err); 
+                                        resData.status = "error";
+                                        resData.statusCode = 200;
+                                        resData.data = err;
+                                        res.status(resData.statusCode).json(resData)
+                                    }
+                                    else {
+                                        dataTemp = await result.rows;
+                                        resultList = await result.rows ;
+                                        console.log(dataTemp)
+
+                                        resultList[0].driver_name =  await "";
+                                        resultList[0].driver_phone =  await "";
+                                        //delete dataTemp.create_date ;    
+                                        dataTemp = await dataTemp.map(x => ({
+                                            gas_type: x.gas_type,
+                                            prices: x.gas_price,
+                                            price_all: x.gas_price_all,
+                                            quality: x.gas_quality
+                
+                                        }));
+                                        console.log(dataTemp)
+                                        console.log(resultList[0].dis_name.substring(0, 4) + "xx")
+                                        //resultList[0].payment_date = await moment( resultList[0].payment_date).format('YYYY-MM-DD H:mm:ss');
+                                        resData.status = "success";
+                                        resData.statusCode = 201;
+                                        resData.data = await {
+                                            order_number: resultList[0].order_number,
+                                            create_date: moment(resultList[0].create_date).format('YYYY-MM-DD H:mm:ss'),
+                                            receive_date: (moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss')== null) ? moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss') : "",
+                                            payment_date:(moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss')== null) ? moment(resultList[0].payment_date).format('YYYY-MM-DD H:mm:ss') : "",
+                                            send_date: (moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss')== null) ?moment(resultList[0].send_date).format('YYYY-MM-DD H:mm:ss') : "",
+                                            driver_name: (resultList[0].driver_name) ? resultList[0].driver_name : "",
+                                            driver_phone: (resultList[0].driver_name) ? resultList[0].driver_phone : "",
+                                            address: `${resultList[0].name_address} ` +
+                                                `${resultList[0].address_other} ${resultList[0].address_road} ` +
+                                                `${(resultList[0].dis_name.substring(0, 4) == "เขต ") ? "แขวง " + resultList[0].subdis_name : "ต." + resultList[0].subdis_name}` +
+                                                `${(resultList[0].dis_name.substring(0, 4) == "เขต ") ? "เขต " + resultList[0].dis_name : " อ." + resultList[0].dis_name}` +
+                                                ` จ. ${resultList[0].provice_name} ${resultList[0].zip_code}`,
+                                            name_address: resultList[0].name_address,
+                                            address_other: resultList[0].address_other,
+                                            address_road: resultList[0].address_road,
+                                            district: resultList[0].dis_name,
+                                            subdistrict: resultList[0].subdis_name,
+                                            order_list: dataTemp,
+                                        };
+                                        res.status(resData.statusCode).json(resData);
+                                    }
+                                }
+                            );
                         }
+                        else
+                        {
+                            console.log(5)
+                            sql = `SELECT order_number , tb_order."createDate" as create_date,
+                                    tb_order."receiveDate" as receive_date,
+                                    tb_order."paymentDate" as payment_date,
+                                    tb_order."sendDate" as send_date,
+                                    tb_address_user.other as address_other,
+                                    tb_address_user.road as address_road,
+                                    tb_subdistricts.name_th as subdis_name,
+                                    tb_districts.name_th as dis_name,
+                                    tb_provinces.name_th as provice_name,
+                                    tb_subdistricts.zip_code as zip_code,
+                                    tb_address_user.name_address,
+                                    tb_rider."name" as driver_name,
+                                    tb_rider.phone as driver_phone,
+                                    tb_gas_detail."name" as gas_type,
+                                    tb_order_detail.quality as gas_quality,
+                                    tb_gas_detail.price as gas_price,
+                                    (tb_order_detail.quality*tb_gas_detail.price) as gas_price_all
+                                    FROM tb_order
+                                    INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
+                                    INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id 
+                                    INNER JOIN tb_payment_channel ON tb_payment_channel."id" = tb_order.payment_id
+                                    INNER JOIN tb_order_status ON tb_order_status."id" = tb_order.status
+                                    INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
+                                    INNER JOIN tb_provinces ON tb_provinces."id" = tb_address_user.province_id
+                                    INNER JOIN tb_districts ON tb_districts."id" = tb_address_user.amphure_id
+                                    INNER JOIN tb_subdistricts ON tb_subdistricts."id" = tb_address_user.district_id
+                                    INNER JOIN tb_rider ON tb_rider."id" = tb_order.rider_id
+                                    WHERE tb_order."id" = ${data}`;
+
+                            pool.query(
+                                sql,
+                                async (err, result) => {
+
+                                    if (err) {
+                                        //console.log(err); 
+                                        resData.status = "error";
+                                        resData.statusCode = 200;
+                                        resData.data = err;
+                                        res.status(resData.statusCode).json(resData)
+                                    }
+                                    else {
+                                        dataTemp = await result.rows;
+                                        resultList = await result.rows ;
+                                        console.log(dataTemp)
+
+
+                                        //delete dataTemp.create_date ;   
+                                        dataTemp = await dataTemp.map(x => ({
+                                            gas_type: x.gas_type,
+                                            prices: x.gas_price,
+                                            price_all: x.gas_price_all,
+                                            quality: x.gas_quality
+                
+                                        }));
+                                        console.log(dataTemp)
+                                        console.log(resultList[0].dis_name.substring(0, 4) + "xx")
+                                        //resultList[0].payment_date = await moment( resultList[0].payment_date).format('YYYY-MM-DD H:mm:ss');
+                                        resData.status = "success";
+                                        resData.statusCode = 201;
+                                        resData.data = await {
+                                            order_number: resultList[0].order_number,
+                                            create_date: moment(resultList[0].create_date).format('YYYY-MM-DD H:mm:ss'),
+                                            receive_date: (moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss') == null) ? moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss') : "",
+                                            payment_date:(moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss')== null) ? moment(resultList[0].payment_date).format('YYYY-MM-DD H:mm:ss') : "",
+                                            send_date: (moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss')== null) ?moment(resultList[0].send_date).format('YYYY-MM-DD H:mm:ss') : "",
+                                            driver_name: (resultList[0].driver_name) ? resultList[0].driver_name : "",
+                                            driver_phone: (resultList[0].driver_name) ? resultList[0].driver_phone : "",
+                                            address: `${resultList[0].name_address} ` +
+                                                `${resultList[0].address_other} ${resultList[0].address_road} ` +
+                                                `${(resultList[0].dis_name.substring(0, 4) == "เขต ") ? "แขวง " + resultList[0].subdis_name : "ต." + resultList[0].subdis_name}` +
+                                                `${(resultList[0].dis_name.substring(0, 4) == "เขต ") ? "เขต " + resultList[0].dis_name : " อ." + resultList[0].dis_name}` +
+                                                ` จ. ${resultList[0].provice_name} ${resultList[0].zip_code}`,
+                                            name_address: resultList[0].name_address,
+                                            address_other: resultList[0].address_other,
+                                            address_road: resultList[0].address_road,
+                                            district: resultList[0].dis_name,
+                                            subdistrict: resultList[0].subdis_name,
+                                            order_list: dataTemp,
+                                        };
+                                        res.status(resData.statusCode).json(resData);                                    
+                                    }
+                                }
+                            );
+                        }                  
+
+
                     }
-                    else{
+                    else
+                    {
                         resData.status = "success";
                         resData.statusCode = 201;
                         resData.data = "not found";
@@ -457,84 +634,7 @@ getOrderByOderId = async (req, res, next) => {
 
 
 
-        sql = `SELECT order_number , tb_order."createDate" as create_date,
-                    tb_order."receiveDate" as receive_date,
-                    tb_order."paymentDate" as payment_date,
-                    tb_order."sendDate" as send_date,
-                    tb_address_user.other as address_other,
-                    tb_address_user.road as address_road,
-                    tb_subdistricts.name_th as subdis_name,
-                    tb_districts.name_th as dis_name,
-                    tb_provinces.name_th as provice_name,
-                    tb_subdistricts.zip_code as zip_code,
-                    tb_address_user.name_address,
-                    tb_rider."name" as driver_name,
-                    tb_rider.phone as driver_phone,
-                    tb_gas_detail."name" as gas_type,
-                    tb_order_detail.quality as gas_quality,
-                    tb_gas_detail.price as gas_price,
-                    (tb_order_detail.quality*tb_gas_detail.price) as gas_price_all
-                    FROM tb_order
-                    INNER JOIN tb_order_detail ON tb_order_detail.order_id = tb_order."id"
-                    INNER JOIN tb_gas_detail ON tb_gas_detail."id" = tb_order_detail.gas_id 
-                    INNER JOIN tb_payment_channel ON tb_payment_channel."id" = tb_order.payment_id
-                    INNER JOIN tb_order_status ON tb_order_status."id" = tb_order.status
-                    INNER JOIN tb_address_user ON tb_address_user."id" = tb_order.address_id
-                    INNER JOIN tb_provinces ON tb_provinces."id" = tb_address_user.province_id
-                    INNER JOIN tb_districts ON tb_districts."id" = tb_address_user.amphure_id
-                    INNER JOIN tb_subdistricts ON tb_subdistricts."id" = tb_address_user.district_id
-                    INNER JOIN tb_rider ON tb_rider."id" = tb_order.rider_id
-                    WHERE tb_order."id" = ${data}`;
-        pool.query(
-            sql,
-            async (err, result) => {
-
-                if (err) {
-                    //console.log(err); 
-                    resData.status = "error";
-                    resData.statusCode = 200;
-                    resData.data = err;
-                    res.status(resData.statusCode).json(resData)
-                }
-                else {
-                    let dataTemp = await result.rows;
-                    //delete dataTemp.create_date ;
-                    dataTemp = dataTemp.map(x => ({
-                        gas_type: x.gas_type,
-                        prices: x.gas_price,
-                        price_all: x.gas_price_all,
-                        quality: x.gas_quality
-
-                    }));
-                    console.log(dataTemp)
-                    console.log(result.rows[0].dis_name.substring(0, 4) + "xx")
-                    //result.rows[0].payment_date = await moment( result.rows[0].payment_date).format('YYYY-MM-DD H:mm:ss');
-                    resData.status = "success";
-                    resData.statusCode = 201;
-                    resData.data = await {
-                        order_number: result.rows[0].order_number,
-                        create_date: moment(result.rows[0].create_date).format('YYYY-MM-DD H:mm:ss'),
-                        receive_date: moment(result.rows[0].receive_date).format('YYYY-MM-DD H:mm:ss'),
-                        payment_date: moment(result.rows[0].payment_date).format('YYYY-MM-DD H:mm:ss'),
-                        send_date: moment(result.rows[0].send_date).format('YYYY-MM-DD H:mm:ss'),
-                        driver_name: result.rows[0].driver_name,
-                        driver_phone: result.rows[0].driver_phone,
-                        address: `${result.rows[0].name_address} ` +
-                            `${result.rows[0].address_other} ${result.rows[0].address_road} ` +
-                            `${(result.rows[0].dis_name.substring(0, 4) == "เขต ") ? "แขวง " + result.rows[0].subdis_name : "ต." + result.rows[0].subdis_name}` +
-                            `${(result.rows[0].dis_name.substring(0, 4) == "เขต ") ? "เขต " + result.rows[0].dis_name : " อ." + result.rows[0].dis_name}` +
-                            ` จ. ${result.rows[0].provice_name} ${result.rows[0].zip_code}`,
-                        name_address: result.rows[0].name_address,
-                        address_other: result.rows[0].address_other,
-                        address_road: result.rows[0].address_road,
-                        district: result.rows[0].dis_name,
-                        subdistrict: result.rows[0].subdis_name,
-                        order_list: dataTemp,
-                    };
-                    res.status(resData.statusCode).json(resData);
-                }
-            }
-        );
+        
     }
 }
 
