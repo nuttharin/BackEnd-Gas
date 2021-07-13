@@ -485,7 +485,7 @@ checkRegisterUserPhone= async (req , res , next) =>{
     }   
     else {
         let sql = `SELECT * FROM tb_user
-        WHERE tb_user.phone = '${phone}'`;
+        WHERE tb_user.phone = '${data}'`;
         pool.query(
             sql, 
             (err, result) => {

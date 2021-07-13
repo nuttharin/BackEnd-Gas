@@ -422,7 +422,42 @@ getOrderByOderId = async (req, res, next) => {
         res.status(200).json(resData);
     }
     else {
-        let sql = `SELECT order_number , tb_order."createDate" as create_date,
+        let sql = `SELECT * FROM tb_order
+        WHERE tb_order."id" = ${data}`
+        pool.query(
+            sql,
+            async (err, result) => {
+                if (err) {
+                    //console.log(err); 
+                    resData.status = "error";
+                    resData.statusCode = 200;
+                    resData.data = err;
+                    res.status(resData.statusCode).json(resData)
+                }
+                else {
+                    if(result.rows.length > 0)
+                    {
+                        if(result.rows[0].rider_id){
+                                
+                        }
+                        else{
+
+                        }
+                    }
+                    else{
+                        resData.status = "success";
+                        resData.statusCode = 201;
+                        resData.data = "not found";
+                        res.status(resData.statusCode).json(resData)
+                    }
+                    
+                }
+            }
+        );
+
+
+
+        sql = `SELECT order_number , tb_order."createDate" as create_date,
                     tb_order."receiveDate" as receive_date,
                     tb_order."paymentDate" as payment_date,
                     tb_order."sendDate" as send_date,
