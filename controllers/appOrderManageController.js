@@ -448,7 +448,7 @@ getOrderByOderId = async (req, res, next) => {
                         if(result.rows[0].rider_id == null)
                         {
                             console.log(4)
-                            sql = `SELECT order_number , tb_order."createDate" as create_date,
+                            sql = `SELECT tb_order.id as order_id ,order_number , tb_order."createDate" as create_date,
                                     tb_order."receiveDate" as receive_date,
                                     tb_order."paymentDate" as payment_date,
                                     tb_order."sendDate" as send_date,
@@ -506,6 +506,7 @@ getOrderByOderId = async (req, res, next) => {
                                         resData.status = "success";
                                         resData.statusCode = 201;
                                         resData.data = await {
+                                            order_id : resultList[0].order_id,
                                             order_number: resultList[0].order_number,
                                             create_date: moment(resultList[0].create_date).format('YYYY-MM-DD H:mm:ss'),
                                             receive_date: (moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss')== null) ? moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss') : "",
@@ -533,7 +534,7 @@ getOrderByOderId = async (req, res, next) => {
                         else
                         {
                             console.log(5)
-                            sql = `SELECT order_number , tb_order."createDate" as create_date,
+                            sql = `SELECT tb_order.id as order_id ,order_number , tb_order."createDate" as create_date,
                                     tb_order."receiveDate" as receive_date,
                                     tb_order."paymentDate" as payment_date,
                                     tb_order."sendDate" as send_date,
@@ -593,6 +594,7 @@ getOrderByOderId = async (req, res, next) => {
                                         resData.status = "success";
                                         resData.statusCode = 201;
                                         resData.data = await {
+                                            order_id : resultList[0].order_id,
                                             order_number: resultList[0].order_number,
                                             create_date: moment(resultList[0].create_date).format('YYYY-MM-DD H:mm:ss'),
                                             receive_date: (moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss') == null) ? moment(resultList[0].receive_date).format('YYYY-MM-DD H:mm:ss') : "",
